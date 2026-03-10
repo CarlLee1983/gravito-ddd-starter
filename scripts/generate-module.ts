@@ -421,7 +421,9 @@ ${pascalCase}/
 			const migrationFile = `${seq}_create_${tableName}_table`
 
 			// migration 內容
-			const migration = `import type { AtlasOrbit } from '@gravito/atlas'
+			const migration = `// biome-ignore lint/suspicious/noExplicitAny: AtlasOrbit 型別由框架提供
+type AtlasOrbit = any
+
 import { createTable, dropTableIfExists } from '../MigrationHelper'
 
 export async function up(db: AtlasOrbit): Promise<void> {
