@@ -18,7 +18,6 @@
 import type { PlanetCore, GravitoContext } from '@gravito/core'
 import { fromGravitoContext } from '@/Shared/Presentation/IHttpContext'
 import { createGravitoModuleRouter } from '@/adapters/GravitoModuleRouter'
-import { registerHealthRoutes } from '@/Modules/Health/Presentation/Routes/health.routes'
 import { HealthController } from '@/Modules/Health/Presentation/Controllers/HealthController'
 import { registerUserRoutes } from '@/Modules/User/Presentation/Routes/api'
 import { UserController } from '@/Modules/User/Presentation/Controllers/UserController'

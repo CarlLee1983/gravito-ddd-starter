@@ -5,7 +5,7 @@
  * 確保生成的模組遵循框架無關的架構模式：
  * - Routes 接收 IModuleRouter + controller（無容器耦合）
  * - Controllers 接收 IHttpContext（無 GravitoContext 耦合）
- * - ServiceProvider 只負責領域服務依賴
+ * - ServiceProvider 只負責領域服務依賴（繼承 ModuleServiceProvider）
  * - Wiring 層負責適配器 + DI 組裝
  *
  * 用法: bun scripts/generate-module.ts <ModuleName>
@@ -104,24 +104,36 @@ export class ${pascalCase}Repository implements I${pascalCase}Repository {
 		)
 		console.log(`  ✓ Infrastructure/Repositories/${pascalCase}Repository.ts`)
 
-		// 生成 ServiceProvider
+		// 生成 ServiceProvider（框架無關）
 		const serviceProvider = `/**
  * ${pascalCase}ServiceProvider
- * 配置 ${pascalCase} 模組的依賴
+ * 配置 ${pascalCase} 模組的領域服務依賴
+ *
+ * 設計原則：
+ * - 繼承框架無關的 ModuleServiceProvider
+ * - 不依賴 @gravito/core（框架解耦）
+ * - 只負責註冊領域和應用層依賴
+ * - Presentation 層的依賴由 Wiring 層組裝
  */
 
-import { ServiceProvider, type Container, type PlanetCore } from '@gravito/core'
+import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
 import { ${pascalCase}Repository } from '../Repositories/${pascalCase}Repository'
 
-export class ${pascalCase}ServiceProvider extends ServiceProvider {
-	register(container: Container): void {
+export class ${pascalCase}ServiceProvider extends ModuleServiceProvider {
+	/**
+	 * 註冊所有領域依賴
+	 */
+	override register(container: IContainer): void {
 		// 註冊 Repository (單例)
 		container.singleton('${moduleName}Repository', () => {
 			return new ${pascalCase}Repository()
 		})
 	}
 
-	boot(_core: PlanetCore): void {
+	/**
+	 * 啟動時執行初始化邏輯
+	 */
+	override boot(_context: any): void {
 		console.log('✨ [${pascalCase}] Module loaded')
 	}
 }
@@ -325,14 +337,20 @@ ${pascalCase}/
 
 ## 使用
 
-1. 註冊 ServiceProvider 在 \`src/app.ts\`
+1. 在 \`src/app.ts\` 中使用適配器註冊 ServiceProvider：
+   \`\`\`typescript
+   core.register(createGravitoServiceProvider(new ${pascalCase}ServiceProvider()))
+   \`\`\`
+
 2. 在 \`src/wiring/index.ts\` 中添加 \`register${pascalCase}\` 函式
+
 3. 在 \`src/routes.ts\` 中調用 \`register${pascalCase}(core)\`
 
 ## 框架無關設計
 
 - Routes 接收 \`IModuleRouter\` + \`controller\`
 - Controllers 接收 \`IHttpContext\`（不依賴 \`GravitoContext\`）
+- ServiceProvider 繼承 \`ModuleServiceProvider\`（不依賴 \`@gravito/core\`）
 - 未來換框架只需修改 \`adapters/\`
 `
 		await writeFile(join(modulePath, 'README.md'), readme)
@@ -340,7 +358,7 @@ ${pascalCase}/
 
 		console.log(`\n✅ 模組 ${pascalCase} 生成成功！`)
 		console.log(`\n📝 後續步驟：`)
-		console.log(`1. 在 src/app.ts 中註冊 ${pascalCase}ServiceProvider`)
+		console.log(`1. 在 src/app.ts 中使用適配器註冊 ${pascalCase}ServiceProvider`)
 		console.log(`2. 在 src/wiring/index.ts 中添加 register${pascalCase}() 函式`)
 		console.log(`3. 在 src/routes.ts 中調用 register${pascalCase}(core)`)
 		console.log(`4. 根據需要修改 Domain/、Application/ 層的實現`)
