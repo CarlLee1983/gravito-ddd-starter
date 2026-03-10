@@ -8,7 +8,7 @@ export type RouteHandler = (ctx: IHttpContext) => Promise<Response>
  * 呼叫 next() 繼續管線，或直接回傳 Response 短路
  *
  * @example
- * const jwtGuard: Middleware = async (ctx, next) => {
+ * const authGuard: Middleware = async (ctx, next) => {
  *   const token = ctx.getHeader('Authorization')
  *   if (!token) return ctx.json({ error: 'Unauthorized' }, 401)
  *   return next()
@@ -33,8 +33,8 @@ export type Middleware = (
  * router.post('/users', createUser)
  *
  * @example 帶中間件
- * router.get('/users/me', [jwtGuard], getProfile)
- * router.delete('/users/:id', [jwtGuard, adminGuard], deleteUser)
+ * router.get('/users/me', [authGuard], getProfile)
+ * router.delete('/users/:id', [authGuard, adminGuard], deleteUser)
  *
  * @example 路由群組
  * router.group('/api/v1', (r) => {

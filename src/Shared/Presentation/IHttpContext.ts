@@ -1,8 +1,8 @@
 /**
  * IHttpContext - HTTP 上下文介面（框架無關）
  *
- * Controller 依賴此介面而非具體框架實作（GravitoContext），
- * 允許未來換框架或用 pure mock 單元測試 Controller。
+ * 控制器依賴此介面而非具體框架實作（GravitoContext），
+ * 允許未來換框架或用 pure mock 單元測試。
  */
 
 import type { GravitoContext } from '@gravito/core'
@@ -45,11 +45,9 @@ export interface IHttpContext {
 /**
  * 工廠函式：將 GravitoContext 適配為 IHttpContext
  *
- * 在 routes.ts 中使用，完成框架耦合的適配：
- *
  * @example
- * core.router.post("/auth/register", (ctx) =>
- *   controller.register(fromGravitoContext(ctx))
+ * core.router.post("/users", (ctx) =>
+ *   controller.create(fromGravitoContext(ctx))
  * )
  */
 export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
