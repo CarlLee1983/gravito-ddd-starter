@@ -36,6 +36,12 @@ mkdir -p src/Modules/Product/{Domain/{Entities,ValueObjects,Repositories,Service
 
 **目標模組**: 部落格文章 (BlogPost)
 
+---
+
+### 3. [可插拔模組設計](./03-pluggable-modules-design.md)
+
+**目標模組**: 購物 (Shop)
+
 **包含內容**:
 - ✅ 自定義異常和錯誤處理
 - ✅ 領域事件 (BlogPostCreatedEvent, BlogPostPublishedEvent)
@@ -59,6 +65,56 @@ mkdir -p src/Modules/BlogPost/{Domain/{Entities,ValueObjects,Repositories,Servic
 # 複製檔案內容到對應位置
 # （詳見範例文檔中的檔案清單）
 ```
+
+---
+
+### 3. [可插拔模組設計](./03-pluggable-modules-design.md)
+
+**目標模組**: 購物 (Shop)
+
+**包含內容**:
+- ✅ 完全的模組隔離設計
+- ✅ 清晰的公開 API (index.ts)
+- ✅ 依賴注入配置 (ModuleConfig)
+- ✅ 多個可互換的倉庫實作 (SQLite/MongoDB/PostgreSQL)
+- ✅ 無痛切換資料庫實作
+- ✅ 介面驅動的設計
+- ✅ 隔離性測試與驗證
+
+**適用場景**:
+- 你想設計真正可插拔、可抽離的模組
+- 你需要支援多個資料庫
+- 你想確保模組可以無副作用地抽離
+- 你想學習 Dependency Inversion Principle (DIP)
+- 你的專案有高複雜度和多個團隊
+
+**設計亮點**:
+```
+模組隔離：
+  └─ 只暴露介面和 DTO
+  └─ 實作細節完全隱藏
+  └─ 透過 initModule(config) 初始化
+
+可替換性：
+  └─ SqliteRepository → MongoRepository → PostgresRepository
+  └─ 上層代碼無需任何改動
+  └─ 只需改 app.ts 中的 DI 配置
+
+零依賴：
+  └─ 服務只依賴介面
+  └─ 介面通過建構函數注入
+  └─ 無硬編碼的模組耦合
+
+**複製指令**:
+```bash
+# 建立完整的模組結構
+mkdir -p src/Modules/Shop/{Domain/{Entities,ValueObjects,Repositories},Application/{Services,DTOs,Contracts},Presentation/{Controllers,Routes},Infrastructure/{Repositories}}
+
+# 複製所有檔案（約 15 個檔案）
+# 參考範例中的完整實作
+```
+
+**專用文檔**: 參考 [MODULE_INTEGRATION.md](../docs/MODULE_INTEGRATION.md) 詳細設計指南
 
 ---
 
@@ -204,20 +260,61 @@ src/Modules/
 
 ---
 
+## 學習路徑
+
+### 初學者路線
+```
+1. 範例 1（簡單 CRUD）
+   └─ 理解基本的 4 層架構
+   └─ 5-10 分鐘
+
+2. 範例 2（驗證和事件）
+   └─ 學習複雜業務邏輯
+   └─ 10-15 分鐘
+
+3. 開始寫你的模組
+   └─ 根據實際需求選擇設計
+```
+
+### 進階開發者路線
+```
+1. 範例 3（可插拔設計）
+   └─ 理解模組隔離和 DIP
+   └─ 15-20 分鐘
+
+2. 閱讀 MODULE_INTEGRATION.md
+   └─ 深入理解設計原則
+   └─ 20-30 分鐘
+
+3. 設計高複雜度、多模組系統
+   └─ 應用可插拔架構
+```
+
 ## 後續步驟
 
 1. **深化學習**
-   - 閱讀 [MODULE_GUIDE.md](../docs/MODULE_GUIDE.md)
-   - 閱讀 [ARCHITECTURE.md](../docs/ARCHITECTURE.md)
+   - 📖 [MODULE_GUIDE.md](../docs/MODULE_GUIDE.md) - 模組建立詳細指南
+   - 📖 [MODULE_INTEGRATION.md](../docs/MODULE_INTEGRATION.md) - 模組隔離設計指南
+   - 📖 [ARCHITECTURE.md](../docs/ARCHITECTURE.md) - 整體架構說明
 
-2. **貢獻你自己的範例**
-   - 建立 `03-advanced-module.md`
-   - 分享你的模組設計模式
+2. **實踐應用**
+   - 基於範例 1 建立簡單模組
+   - 基於範例 2 實作複雜業務邏輯
+   - 基於範例 3 設計可插拔架構
 
-3. **自動化生成模組**
+3. **自動化生成**
    ```bash
    bun add -D @gravito/pulse
    bun gravito module generate YourModuleName
+   ```
+
+4. **驗證隔離性**
+   ```bash
+   # 確保你的模組設計良好
+   1. 切換倉庫實作（SQLite → MongoDB）
+   2. 執行 bun run typecheck
+   3. 執行 bun test
+   4. 如果都通過 → 模組隔離完美 ✅
    ```
 
 ---
