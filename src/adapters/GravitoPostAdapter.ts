@@ -13,12 +13,8 @@
 
 import type { PlanetCore } from '@gravito/core'
 
-
-import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/IDatabaseConnectivityCheck'
 import { createGravitoModuleRouter } from './GravitoModuleRouter'
-
-
-import { createGravitoDatabaseConnectivityCheck } from './Atlas'
+import { createGravitoDatabaseAccess } from './Atlas'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { PostController } from '@/Modules/Post/Presentation/Controllers/PostController'
 import { registerPostRoutes } from '@/Modules/Post/Presentation/Routes/Post.routes'
@@ -27,17 +23,11 @@ import { registerPostRoutes } from '@/Modules/Post/Presentation/Routes/Post.rout
  * 註冊 Post 模組與 Gravito 框架
  */
 export function registerPostWithGravito(core: PlanetCore): void {
-	// 從 PlanetCore 容器提取原始服務
-
-
-
-	// 適配為框架無關的介面（null 表示未設定）
-
-
-	const databaseCheck = createGravitoDatabaseConnectivityCheck()
+	// 建立資料庫訪問實例（使用 Atlas adapter）
+	const db = createGravitoDatabaseAccess()
 
 	// 組裝應用層
-	const repository = new PostRepository()
+	const repository = new PostRepository(db)
 	const controller = new PostController(repository)
 
 	// 建立框架無關的路由介面
