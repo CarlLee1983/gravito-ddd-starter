@@ -50,7 +50,9 @@
     "@gravito/prism": "^3.1.1",
     "@gravito/sentinel": "^4.0.1",
     "@gravito/signal": "^3.1.0",
-    "@gravito/stasis": "^3.2.0"
+    "@gravito/stasis": "^3.2.0",
+    "@libsql/client": "^0.17.0",
+    "drizzle-orm": "^0.45.1"
   },
   "overrides": {
     "@gravito/photon": "1.0.1",
@@ -61,6 +63,7 @@
     "@gravito/pulse": "^3.4.0",
     "biome": "latest",
     "bun-types": "latest",
+    "drizzle-kit": "^0.31.9",
     "typescript": "^5.3.0"
   }
 }
