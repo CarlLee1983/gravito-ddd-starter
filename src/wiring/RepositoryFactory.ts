@@ -1,34 +1,27 @@
 /**
- * Repository Factory - 統一的 ORM 選擇點
+ * Repository Factory - 優化的工具函式集（簡潔版）
  *
- * 設計原則：
- * - 提供統一的 Factory 函式用於選擇 Repository 實現
- * - 根據環境變數 (ORM) 或配置決定使用哪個實現
- * - 每個模組的 ServiceProvider 都可以使用此 Factory
- * - 完全不破壞既有的 ServiceProvider 結構
+ * 職責（精簡）：
+ * - 提供 ORM 選擇的工具函式
+ * - 不涉及具體的 Repository 建立邏輯
  *
- * 使用場景：
+ * 核心函式：
+ * 1. getCurrentORM() - 讀取環境變數決定 ORM
+ * 2. getDatabaseAccess() - 初始化 Database 適配器
  *
- * // 在 UserServiceProvider.register() 中：
- * container.singleton('userRepository', () => {
- *   return createRepository('user')  // 自動選擇 in-memory 或 Drizzle
- * })
+ * Repository 建立邏輯完全委托給 RepositoryRegistry
+ * （見 src/wiring/RepositoryRegistry.ts）
  *
- * // 在 PostServiceProvider.register() 中：
- * container.singleton('PostRepository', () => {
- *   return createRepository('post')  // 自動選擇 in-memory 或 Drizzle
- * })
+ * 設計優勢：
+ * ✅ RepositoryFactory 保持簡潔（只有 2 個函式）
+ * ✅ 各模組在 registerXRepositories.ts 中獨立定義工廠
+ * ✅ 新增模組時無需修改此檔案
+ * ✅ 遵循單一責任原則
  *
  * @example
- * // ORM=memory bun run dev  → 使用 in-memory Repository
- * // ORM=drizzle bun run dev → 使用 Drizzle Repository
+ * // ORM=memory bun run dev  → 所有模組使用 in-memory Repository
+ * // ORM=drizzle bun run dev → 所有模組使用 Drizzle Repository
  */
-
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
-import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
-import { DrizzleUserRepository } from '@/adapters/Drizzle/Repositories/DrizzleUserRepository'
-import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
-import { DrizzlePostRepository } from '@/adapters/Drizzle/Repositories/DrizzlePostRepository'
 
 /**
  * 支援的 ORM 類型
@@ -36,13 +29,15 @@ import { DrizzlePostRepository } from '@/adapters/Drizzle/Repositories/DrizzlePo
 export type ORMType = 'memory' | 'drizzle' | 'atlas' | 'prisma'
 
 /**
- * 支援的 Repository 類型
- */
-export type RepositoryType = 'user' | 'post'
-
-/**
  * 從環境變數讀取 ORM 設定
+ *
+ * 這是應用的核心 ORM 選擇點
+ * 所有模組都根據此值選擇對應的 Repository 實現
+ *
  * @returns 當前選擇的 ORM 類型
+ *
+ * @example
+ * const orm = getCurrentORM()  // 'memory' | 'drizzle' | ...
  */
 export function getCurrentORM(): ORMType {
 	const orm = process.env.ORM || 'memory'
@@ -58,90 +53,25 @@ export function getCurrentORM(): ORMType {
 }
 
 /**
- * 建立指定類型的 Repository（自動根據 ORM 選擇實現）
+ * 取得 Database 適配器（若需要）
+ *
+ * 根據選擇的 ORM，初始化對應的 Database 實現
  *
  * 設計：
- * - 讀取環境變數 ORM 決定使用哪個實現
- * - 如果是 memory，使用 in-memory 實現
- * - 如果是 drizzle，使用 Drizzle 實現（需要 DatabaseAccess）
+ * - ORM=memory → 返回 undefined（無需資料庫）
+ * - ORM=drizzle → 返回 DrizzleDatabaseAccess（SQLite）
+ * - ORM=atlas → 未來實現
+ * - ORM=prisma → 未來實現
  *
- * @param type Repository 類型 ('user' | 'post')
- * @param databaseAccess Database 適配器（僅在使用 DB 時需要）
- * @returns Repository 實例
+ * @returns IDatabaseAccess | undefined
  *
  * @example
- * // In-memory (預設)
- * const userRepo = createRepository('user')
- *
- * // Drizzle
- * const userRepo = createRepository('user', drizzleDb)
+ * const db = getDatabaseAccess()
+ * if (db) {
+ *   // 使用資料庫
+ * }
  */
-export function createRepository<T extends RepositoryType>(
-	type: T,
-	databaseAccess?: IDatabaseAccess
-): any {
-	const orm = getCurrentORM()
-
-	// 驗證 DB-backed 實現是否有所需依賴
-	if (['drizzle', 'atlas', 'prisma'].includes(orm) && !databaseAccess) {
-		throw new Error(
-			`❌ ORM 設為 "${orm}" 但未提供 DatabaseAccess。\n` +
-				`請傳遞 databaseAccess 參數或改用 ORM=memory`
-		)
-	}
-
-	// User Repository
-	if (type === 'user') {
-		switch (orm) {
-			case 'memory':
-				return new UserRepository()
-
-			case 'drizzle':
-				return new DrizzleUserRepository(databaseAccess!)
-
-			case 'atlas':
-			case 'prisma':
-				// TODO: 未來實現
-				throw new Error(`❌ ORM "${orm}" 尚未實現`)
-
-			default:
-				return new UserRepository()
-		}
-	}
-
-	// Post Repository
-	if (type === 'post') {
-		switch (orm) {
-			case 'memory':
-				return new PostRepository()
-
-			case 'drizzle':
-				return new DrizzlePostRepository(databaseAccess!)
-
-			case 'atlas':
-			case 'prisma':
-				// TODO: 未來實現
-				throw new Error(`❌ ORM "${orm}" 尚未實現`)
-
-			default:
-				return new PostRepository()
-		}
-	}
-
-	throw new Error(`❌ 不支援的 Repository 類型: "${type}"`)
-}
-
-/**
- * 取得 Database Singleton（若需要）
- *
- * 設計：
- * - 如果使用 in-memory，返回 undefined
- * - 如果使用 DB-backed，初始化對應的適配器
- * - 整個應用只有一個 Database 實例（Singleton）
- *
- * @returns IDatabaseAccess 或 undefined
- */
-export function getDatabaseAccess(): IDatabaseAccess | undefined {
+export function getDatabaseAccess() {
 	const orm = getCurrentORM()
 
 	if (orm === 'memory') {
@@ -167,31 +97,41 @@ export function getDatabaseAccess(): IDatabaseAccess | undefined {
 }
 
 /**
- * 使用方式摘要
+ * 使用模式
  *
- * 在 Service Provider 中直接使用（無需修改）：
+ * 每個模組在自己的 registerXRepositories.ts 中定義工廠：
  *
  * ```typescript
- * export class UserServiceProvider extends ModuleServiceProvider {
- *   override register(container: IContainer): void {
- *     container.singleton('userRepository', () => {
- *       return createRepository('user', getDatabaseAccess())
- *     })
+ * // src/Modules/User/Infrastructure/Providers/registerUserRepositories.ts
+ * import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
+ * import { getRegistry } from '@/wiring/RepositoryRegistry'
+ *
+ * function createUserRepository(orm: string, db?: IDatabaseAccess): any {
+ *   switch (orm) {
+ *     case 'memory':
+ *       return new UserRepository()
+ *     case 'drizzle':
+ *       return new DrizzleUserRepository(db!)
+ *     // ...
  *   }
+ * }
+ *
+ * export function registerUserRepositories(): void {
+ *   getRegistry().register('user', createUserRepository)
  * }
  * ```
  *
- * 或者如果不需要 DB：
+ * 在 ServiceProvider 中使用 Registry：
  *
  * ```typescript
- * export class UserServiceProvider extends ModuleServiceProvider {
- *   override register(container: IContainer): void {
- *     container.singleton('userRepository', () => {
- *       const orm = getCurrentORM()
- *       const db = orm !== 'memory' ? getDatabaseAccess() : undefined
- *       return createRepository('user', db)
- *     })
- *   }
+ * // src/Modules/User/Infrastructure/Providers/UserServiceProvider.ts
+ * override register(container: IContainer): void {
+ *   container.singleton('userRepository', () => {
+ *     const registry = getRegistry()
+ *     const orm = getCurrentORM()
+ *     const db = orm !== 'memory' ? getDatabaseAccess() : undefined
+ *     return registry.create('user', orm, db)
+ *   })
  * }
  * ```
  */
