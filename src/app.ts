@@ -1,45 +1,26 @@
 /**
- * Application Bootstrap
+ * 應用建立函式 (createApp)
  *
- * 在此處完成框架耦合：
- * - 導入框架無關的 ModuleServiceProvider
- * - 使用 Gravito 適配器將其適配為框架特定的實現
- * - 其他所有層都保持框架無關
+ * 包裝 bootstrap 函式，提供給 src/index.ts 使用
+ * 負責：
+ * 1. 從配置取得連接埠號
+ * 2. 調用 bootstrap 初始化應用
+ * 3. 返回已初始化的 PlanetCore 實例
  */
 
-import { PlanetCore, defineConfig } from '@gravito/core'
-import { buildConfig } from '../config/index'
-import { registerRoutes } from './routes'
-import { createGravitoServiceProvider } from './adapters/GravitoServiceProviderAdapter'
-import { HealthServiceProvider } from './Modules/Health/Infrastructure/Providers/HealthServiceProvider'
-import { UserServiceProvider } from './Modules/User/Infrastructure/Providers/UserServiceProvider'
+import bootstrap from './bootstrap'
 
+/**
+ * 建立並初始化應用
+ *
+ * @returns {Promise<PlanetCore>} 初始化完成的 Gravito 核心實例
+ */
 export async function createApp() {
-	// Build configuration
-	const configObj = buildConfig()
+	// 從環境變數或預設值取得連接埠
+	const port = (process.env.PORT as unknown as number) || 3000
 
-	// Initialize Gravito core
-	const config = defineConfig({
-		config: configObj,
-	})
-
-	// Create core instance
-	const core = new PlanetCore(config)
-
-	// 註冊所有模組服務提供者（順序取決於依賴）
-	// 使用適配器將框架無關的 ModuleServiceProvider 適配為 Gravito 的 ServiceProvider
-
-	// Health 模組：沒有依賴，優先註冊
-	core.register(createGravitoServiceProvider(new HealthServiceProvider()))
-
-	// User 模組：依賴核心設置
-	core.register(createGravitoServiceProvider(new UserServiceProvider()))
-
-	// 啟動所有已註冊的提供者
-	await core.bootstrap()
-
-	// 註冊所有路由
-	await registerRoutes(core)
+	// 執行完整的啟動流程
+	const core = await bootstrap(port)
 
 	return core
 }

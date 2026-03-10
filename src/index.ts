@@ -1,23 +1,30 @@
 /**
- * Gravito DDD Starter Application
+ * 應用入口點 (Entry Point)
  *
- * Entry point for the Gravito DDD application
- * Initializes the framework and starts the HTTP server
+ * 負責：
+ * 1. 調用 createApp() 初始化應用
+ * 2. 啟動 HTTP 伺服器
+ * 3. 顯示啟動成功訊息和可用端點
+ * 4. 處理啟動失敗
  */
 
 import { createApp } from './app'
 
-async function bootstrap() {
-  const core = await createApp()
-  const configObj = core.config.all()
+/**
+ * 應用啟動並顯示歡迎訊息
+ */
+async function start() {
+	// 初始化應用（DDD 啟動流程）
+	const core = await createApp()
+	const configObj = core.config.all()
 
-  // Start server using liftoff
-  const server = core.liftoff(configObj.PORT as number)
+	// 啟動 HTTP 伺服器
+	const port = (configObj.PORT as number) || 3000
+	const baseUrl = `http://localhost:${port}`
+	const server = core.liftoff(port)
 
-  const port = configObj.PORT as number
-  const baseUrl = `http://localhost:${port}`
-
-  console.log(`
+	// 顯示啟動成功訊息
+	console.log(`
 ╔════════════════════════════════════════════════════════════════╗
 ║          🚀 Gravito DDD Starter - Running                      ║
 ╚════════════════════════════════════════════════════════════════╝
@@ -51,10 +58,10 @@ async function bootstrap() {
 
   2. Read the documentation:
      open docs/ARCHITECTURE.md
-     open docs/MODULE_GUIDE.md
+     open docs/MODULE_GENERATION_WITH_ADAPTERS.md
 
   3. Create your first module:
-     bun gravito module generate Product --ddd-type simple
+     bun scripts/generate-module.ts MyFeature [--redis] [--cache] [--db]
 
   4. Run tests:
      bun test
@@ -62,19 +69,22 @@ async function bootstrap() {
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 📚 Resources:
-   - Gravito Docs: https://github.com/gravito-framework/gravito
-   - DDD Guide:    https://domaindriven.org/
-   - Bun Docs:     https://bun.sh/docs
+   - Gravito Docs:         https://github.com/gravito-framework/gravito
+   - DDD Guide:            https://domaindriven.org/
+   - Framework-Agnostic:   docs/ADAPTER_INFRASTRUCTURE_GUIDE.md
+   - Module Generation:    docs/MODULE_GENERATION_WITH_ADAPTERS.md
+   - Bun Docs:             https://bun.sh/docs
 
-🐛 Having trouble? Check TROUBLESHOOTING.md for common issues.
+🐛 Having trouble? Check docs/TROUBLESHOOTING.md for common issues.
 `)
 
-  return server
+	return server
 }
 
-const server = await bootstrap().catch((error) => {
-  console.error('❌ Bootstrap failed:', error)
-  process.exit(1)
+// 執行啟動流程
+const server = await start().catch((error) => {
+	console.error('❌ Application startup failed:', error)
+	process.exit(1)
 })
 
 export default server
