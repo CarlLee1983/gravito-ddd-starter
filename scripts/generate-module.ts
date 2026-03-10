@@ -421,21 +421,19 @@ ${pascalCase}/
 			const migrationFile = `${seq}_create_${tableName}_table`
 
 			// migration 內容
-			const migration = `import { sql } from 'drizzle-orm'
-import type { AtlasOrbit } from '@gravito/atlas'
+			const migration = `import type { AtlasOrbit } from '@gravito/atlas'
+import { createTable, dropTableIfExists } from '../MigrationHelper'
 
 export async function up(db: AtlasOrbit): Promise<void> {
-	await db.connection.execute(sql\`
-    CREATE TABLE IF NOT EXISTS ${tableName} (
-      id          TEXT      NOT NULL PRIMARY KEY,
-      name        TEXT      NOT NULL,
-      created_at  DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-  \`)
+	await createTable(db, '${tableName}', (t) => {
+		t.id()
+		t.string('name').notNull()
+		t.timestamps()
+	})
 }
 
 export async function down(db: AtlasOrbit): Promise<void> {
-	await db.connection.execute(sql\`DROP TABLE IF EXISTS ${tableName}\`)
+	await dropTableIfExists(db, '${tableName}')
 }
 `
 			await writeFile(`database/migrations/${migrationFile}.ts`, migration)

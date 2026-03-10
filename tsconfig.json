@@ -30,6 +30,6 @@
       "@gravito/stasis": ["./node_modules/@gravito/stasis/dist/index.js"]
     }
   },
-  "include": ["src", "tests", "config", "types"],
+  "include": ["src", "tests", "config", "types", "database"],
   "exclude": ["node_modules", "dist"]
 }

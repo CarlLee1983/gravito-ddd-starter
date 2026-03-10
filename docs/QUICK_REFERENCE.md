@@ -64,17 +64,33 @@ bun run tinker                           # 進入互動式 REPL
 
 ### 🗄️ 資料庫操作
 
+**Migration 風格**：Laravel 風格的 SchemaBuilder（見 docs/DATABASE.md）
+
+```typescript
+// 快速例子：database/migrations/001_create_posts_table.ts
+import type { AtlasOrbit } from '@gravito/atlas'
+import { createTable, dropTableIfExists } from '../MigrationHelper'
+
+export async function up(db: AtlasOrbit): Promise<void> {
+  await createTable(db, 'posts', (t) => {
+    t.id()
+    t.string('title').notNull()
+    t.text('content')
+    t.timestamps()
+  })
+}
+
+export async function down(db: AtlasOrbit): Promise<void> {
+  await dropTableIfExists(db, 'posts')
+}
+```
+
+**Migration 指令**：
 ```bash
-# Migration（執行已建立的 migration）
 bun run migrate                  # 執行所有待執行的 migration
 bun run migrate:status           # 查看遷移狀態
 bun run migrate:rollback         # 回滾最後一批
 bun run migrate:fresh            # 清除重跑所有 migration（危險操作）
-
-# 建立新 migration（手動方式）
-# 1. touch database/migrations/NNN_description.ts
-# 2. 參考 docs/DATABASE.md 填入內容
-# 3. bun run migrate
 
 # Seeder
 bun run seed                     # 執行所有 seeder

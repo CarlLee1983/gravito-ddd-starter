@@ -6,6 +6,14 @@ declare module '@gravito/atlas' {
   /** Orbit 實例，可轉為 GravitoOrbit 使用 */
   export const OrbitAtlas: unknown
 
-  /** 資料庫連線／查詢介面（依實際 API 調整） */
-  export const DB: unknown
+  /** 查詢建構器（table 鏈式 API） */
+  interface TableQuery<T = Record<string, unknown>> {
+    insert(data: T | T[]): Promise<void>
+  }
+
+  /** 資料庫連線／查詢介面（migrations、seeders 用） */
+  export const DB: {
+    table<T = Record<string, unknown>>(name: string): TableQuery<T>
+    raw(sql: string): Promise<unknown>
+  }
 }

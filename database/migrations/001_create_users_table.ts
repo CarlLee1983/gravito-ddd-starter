@@ -1,17 +1,17 @@
-import { sql } from 'drizzle-orm'
-import type { AtlasOrbit } from '@gravito/atlas'
+// biome-ignore lint/suspicious/noExplicitAny: AtlasOrbit 型別由框架提供
+type AtlasOrbit = any
+
+import { createTable, dropTableIfExists } from '../MigrationHelper'
 
 export async function up(db: AtlasOrbit): Promise<void> {
-	await db.connection.execute(sql`
-    CREATE TABLE IF NOT EXISTS users (
-      id          TEXT      NOT NULL PRIMARY KEY,
-      name        TEXT      NOT NULL,
-      email       TEXT      NOT NULL UNIQUE,
-      created_at  DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP
-    )
-  `)
+	await createTable(db, 'users', (t) => {
+		t.id()
+		t.string('name').notNull()
+		t.string('email').notNull().unique()
+		t.timestamps()
+	})
 }
 
 export async function down(db: AtlasOrbit): Promise<void> {
-	await db.connection.execute(sql`DROP TABLE IF EXISTS users`)
+	await dropTableIfExists(db, 'users')
 }

@@ -100,27 +100,111 @@ open database/migrations/002_create_posts_table.ts  # macOS
 # 或使用其他編輯器打開編輯
 ```
 
-### Migration 檔案格式
+### Migration 檔案格式（Laravel 風格）
+
+使用 **SchemaBuilder** 和 **MigrationHelper** 提供 Laravel 風格的流暢 API：
 
 ```typescript
-import { sql } from 'drizzle-orm'
 import type { AtlasOrbit } from '@gravito/atlas'
+import { createTable, dropTableIfExists } from '../MigrationHelper'
 
 export async function up(db: AtlasOrbit): Promise<void> {
-  await db.connection.execute(sql`
-    CREATE TABLE IF NOT EXISTS posts (
-      id          TEXT      NOT NULL PRIMARY KEY,
-      title       TEXT      NOT NULL,
-      content     TEXT,
-      user_id     TEXT      NOT NULL,
-      created_at  DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      FOREIGN KEY (user_id) REFERENCES users(id)
-    )
-  `)
+  await createTable(db, 'posts', (t) => {
+    t.id()
+    t.string('title').notNull()
+    t.text('content')
+    t.string('user_id').notNull().references('id').on('users').onDelete('cascade')
+    t.timestamps()
+  })
 }
 
 export async function down(db: AtlasOrbit): Promise<void> {
-  await db.connection.execute(sql`DROP TABLE IF EXISTS posts`)
+  await dropTableIfExists(db, 'posts')
+}
+```
+
+#### 支援的欄位類型
+
+| 方法 | SQL 型別 | 說明 |
+|------|---------|------|
+| `id()` | TEXT PRIMARY KEY | 主鍵（UUID 或 nanoid） |
+| `string(name, length)` | VARCHAR(255) | 字符串（預設 255） |
+| `text(name)` | TEXT | 長文本 |
+| `integer(name)` | INTEGER | 整數 |
+| `bigInteger(name)` | BIGINT | 大整數 |
+| `float(name)` | FLOAT | 浮點數 |
+| `decimal(name, p, s)` | DECIMAL(p, s) | 十進制數 |
+| `boolean(name)` | BOOLEAN | 布林值 |
+| `date(name)` | DATE | 日期 |
+| `dateTime(name)` | DATETIME | 日期時間 |
+| `timestamp(name)` | TIMESTAMP | 時間戳 |
+| `json(name)` | JSON | JSON 欄位 |
+| `uuid(name)` | TEXT | UUID 欄位 |
+
+#### 支援的欄位修飾符
+
+```typescript
+t.string('email')
+  .notNull()           // NOT NULL
+  .unique()            // UNIQUE
+  .default('value')    // DEFAULT 'value'
+  .collate('utf8mb4')  // COLLATE utf8mb4
+```
+
+#### 外鍵約束
+
+```typescript
+t.string('user_id')
+  .notNull()
+  .references('id')      // 參考的欄位
+  .on('users')           // 參考的表
+  .onDelete('cascade')   // 刪除級聯
+  .onUpdate('cascade')   // 更新級聯
+```
+
+#### 特殊方法
+
+```typescript
+t.timestamps()      // 新增 created_at 和 updated_at（自動設為 CURRENT_TIMESTAMP）
+t.softDeletes()     // 新增 deleted_at（軟刪除）
+t.primary(['id', 'org_id'])  // 複合主鍵
+t.unique(['email', 'tenant_id'])  // 複合唯一約束
+t.index(['email'])  // 新增索引
+```
+
+#### 完整例子：複雜表結構
+
+```typescript
+import type { AtlasOrbit } from '@gravito/atlas'
+import { createTable, dropTableIfExists } from '../MigrationHelper'
+
+export async function up(db: AtlasOrbit): Promise<void> {
+  await createTable(db, 'orders', (t) => {
+    t.id()                                    // id (TEXT PRIMARY KEY)
+    t.string('order_number').notNull().unique()
+    t.string('user_id').notNull()
+    t.string('status').notNull().default('pending')
+    t.decimal('total_amount', 10, 2)         // DECIMAL(10,2)
+    t.json('metadata')                       // JSON 欄位
+    t.text('notes')                          // 長文本
+    t.dateTime('completed_at')               // 可為 null
+
+    // 外鍵參考
+    t.string('billing_address_id')
+      .references('id')
+      .on('addresses')
+      .onDelete('restrict')
+
+    // 時間戳
+    t.timestamps()
+
+    // 軟刪除
+    t.softDeletes()
+  })
+}
+
+export async function down(db: AtlasOrbit): Promise<void> {
+  await dropTableIfExists(db, 'orders')
 }
 ```
 
