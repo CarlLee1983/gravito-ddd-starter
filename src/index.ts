@@ -16,10 +16,9 @@ import { createApp } from './app'
 async function start() {
 	// 初始化應用（DDD 啟動流程）
 	const core = await createApp()
-	const configObj = core.config.all()
 
 	// 啟動 HTTP 伺服器
-	const port = (configObj.PORT as number) || 3000
+	const port = (core.config.get<number>('PORT') ?? 3000) as number
 	const baseUrl = `http://localhost:${port}`
 	const server = core.liftoff(port)
 
