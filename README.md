@@ -2,6 +2,8 @@
 
 🚀 Clean, professional Domain-Driven Design (DDD) starter template for the Gravito Framework. Built for speed, scalability, and maintainability.
 
+> 📖 **New here?** Check out [**QUICK_REFERENCE.md**](./docs/QUICK_REFERENCE.md) for common commands and workflows!
+
 ## ✨ Features
 
 - **Standard DDD Structure**: Clearly defined Domain, Application, Infrastructure, and Presentation layers.
@@ -97,16 +99,20 @@ gravito-ddd-starter/
 
 Learn the architecture and best practices:
 
-### Essential Guides
-- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Four-layer DDD architecture, design patterns, and data flow
-- **[MODULE_GUIDE.md](./docs/MODULE_GUIDE.md)** - Step-by-step guide to creating new modules with examples
-- **[MODULE_ADD_CHECKLIST.md](./docs/MODULE_ADD_CHECKLIST.md)** - 新增模組時需對應設定的檢查清單（bootstrap / wiring / routes）
-- **[TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)** - Common issues and solutions
+### 🚀 Getting Started (Start Here!)
+- **[QUICK_REFERENCE.md](./docs/QUICK_REFERENCE.md)** ⭐ - Most common commands and workflows (bookmark this!)
+- **[SETUP.md](./docs/SETUP.md)** - Step-by-step development environment configuration
 
-### Setup & Development
-- **[SETUP.md](./docs/SETUP.md)** - Development environment setup for macOS, Linux, and Windows
-- **[API_GUIDELINES.md](./docs/API_GUIDELINES.md)** - REST API design standards and conventions
-- **[TESTING.md](./docs/TESTING.md)** - Testing strategy (Unit, Integration, Feature tests)
+### 📖 Core Documentation
+- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - DDD architecture, patterns, and data flow
+- **[MODULE_GUIDE.md](./docs/MODULE_GUIDE.md)** - Creating new modules with best practices
+- **[MODULE_ADD_CHECKLIST.md](./docs/MODULE_ADD_CHECKLIST.md)** - New module setup checklist
+- **[API_GUIDELINES.md](./docs/API_GUIDELINES.md)** - REST API design standards
+
+### 🆘 Help & Reference
+- **[TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)** - Common issues and solutions
+- **[TESTING.md](./docs/TESTING.md)** - Testing strategies and examples
+- **[DEPLOYMENT.md](./docs/DEPLOYMENT.md)** - Production deployment guide
 
 ## 🛠️ Development Workflow
 
@@ -181,6 +187,14 @@ bun test --watch         # Watch mode
 | `bun run format` | Format code with Biome |
 | `bun run format:check` | Check if code is formatted |
 | `bun run check` | Run all checks (type, lint, test) |
+| `bun run verify` | Full verification with coverage report |
+
+### Setup & Maintenance
+| Script | Description |
+|--------|-------------|
+| `bun run setup` | Complete setup (install + hooks + verify) |
+| `bun run troubleshoot` | Diagnose environment and configuration |
+| `bun run setup:hooks` | Install Git hooks (pre-commit, commit-msg) |
 
 ## 🔧 Git Hooks (Optional)
 

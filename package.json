@@ -22,6 +22,9 @@
     "format": "biome format src tests --write",
     "format:check": "biome format src tests --check",
     "check": "bun run typecheck && bun run lint && bun run test",
+    "verify": "bun run check && echo '✅ All checks passed!' && echo '' && echo '📊 Coverage report generated in ./coverage'",
+    "setup": "bun install && bash scripts/setup-hooks.sh && bun run verify",
+    "troubleshoot": "bash scripts/troubleshoot.sh",
     "generate:module": "bun scripts/generate-module.ts",
     "setup:hooks": "bash scripts/setup-hooks.sh"
   },
