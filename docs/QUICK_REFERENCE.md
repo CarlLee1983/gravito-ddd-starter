@@ -48,16 +48,37 @@ bun test --filter User   # 運行包含 "User" 的測試
 ### 🎯 模組生成
 
 ```bash
-# 安裝模組生成工具
-bun add -D @gravito/pulse
+# 自定義模組生成器
+bun run make:module Product              # 簡單模組（in-memory Repository）
+bun run make:module Order --db           # 含資料庫支援的模組
+bun run make:module Post --migration     # 含 migration/seeder 的模組
+bun run make:module Session --redis --cache --db  # 多功能模組
 
-# 生成新模組
-bun gravito module generate MyModule        # 簡單模組
-bun gravito module generate MyModule --ddd-type advanced  # 進階模組
-bun gravito module generate MyModule --ddd-type simple    # 最小化模組
+# Gravito CLI Scaffold
+bun run make:controller MyController     # 生成 Controller
+bun run make:middleware MyMiddleware     # 生成 Middleware
+bun run make:command MyCommand           # 生成 Command
+bun run route:list                       # 列出所有路由
+bun run tinker                           # 進入互動式 REPL
+```
 
-# 列出現有模組
-bun gravito module list
+### 🗄️ 資料庫操作
+
+```bash
+# Migration
+bun run migrate                  # 執行所有待執行的 migration
+bun run migrate:status           # 查看遷移狀態
+bun run migrate:rollback         # 回滾最後一批
+bun run migrate:fresh            # 清除重跑所有 migration（危險操作）
+bun run make:migration <name>    # 建立新 migration 檔案
+
+# Seeder
+bun run seed                     # 執行所有 seeder
+bun run db:fresh                 # migrate:fresh + seed（一鍵重置）
+
+# 診斷與工具
+bun run db:doctor                # 診斷資料庫連線
+bun run generate:types           # 從 Model 產生 TypeScript 型別
 ```
 
 ### 📚 文檔和幫助
@@ -246,6 +267,7 @@ bun run dev 2>&1 | grep -i database
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | DDD 架構詳解 |
 | [MODULE_GUIDE.md](./MODULE_GUIDE.md) | 模組開發完整指南 |
 | [MODULE_ADD_CHECKLIST.md](./MODULE_ADD_CHECKLIST.md) | 新增模組檢查清單 |
+| [DATABASE.md](./DATABASE.md) | 資料庫操作和 Migration 指南 |
 | [TESTING.md](./TESTING.md) | 測試策略和範例 |
 | [API_GUIDELINES.md](./API_GUIDELINES.md) | API 設計規範 |
 | [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | 常見問題解決 |

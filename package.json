@@ -26,7 +26,22 @@
     "setup": "bun install && bash scripts/setup-hooks.sh && bun run verify",
     "troubleshoot": "bash scripts/troubleshoot.sh",
     "generate:module": "bun scripts/generate-module.ts",
-    "setup:hooks": "bash scripts/setup-hooks.sh"
+    "setup:hooks": "bash scripts/setup-hooks.sh",
+    "migrate": "bun orbit migrate",
+    "migrate:rollback": "bun orbit migrate:rollback",
+    "migrate:fresh": "bun orbit migrate:fresh",
+    "migrate:status": "bun orbit migrate:status",
+    "seed": "bun orbit seed",
+    "db:fresh": "bun orbit migrate:fresh && bun orbit seed",
+    "db:doctor": "bun orbit doctor",
+    "make:migration": "bun orbit make:migration",
+    "make:model": "bun orbit make:model",
+    "make:controller": "bun gravito make:controller",
+    "make:middleware": "bun gravito make:middleware",
+    "make:command": "bun gravito make:command",
+    "route:list": "bun gravito route:list",
+    "tinker": "bun gravito tinker",
+    "generate:types": "bun orbit generate:types"
   },
   "dependencies": {
     "@gravito/atlas": "^2.0.0",

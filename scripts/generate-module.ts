@@ -9,15 +9,16 @@
  * - Wiring 層負責適配器 + DI 組裝
  * - 可選基礎設施服務（Redis、Cache、Database）可自動生成適配器
  *
- * 用法: bun scripts/generate-module.ts <ModuleName> [--redis] [--cache] [--db]
+ * 用法: bun scripts/generate-module.ts <ModuleName> [--redis] [--cache] [--db] [--migration]
  * 示例:
  *   bun scripts/generate-module.ts Product
- *   bun scripts/generate-module.ts Order --redis --cache --db
+ *   bun scripts/generate-module.ts Order --db           # 含 DB-backed Repository + migration
+ *   bun scripts/generate-module.ts Post --migration     # 僅含 migration/seeder
  *   bun scripts/generate-module.ts Session --redis
  */
 
 import { argv } from 'process'
-import { mkdir, writeFile } from 'fs/promises'
+import { mkdir, writeFile, readdir } from 'fs/promises'
 import { join } from 'path'
 
 const moduleName = argv[2]
@@ -25,12 +26,13 @@ const flags = {
 	redis: argv.includes('--redis'),
 	cache: argv.includes('--cache'),
 	db: argv.includes('--db'),
+	migration: argv.includes('--migration'),
 }
 
 if (!moduleName) {
 	console.error('❌ 錯誤：請提供模組名稱')
-	console.error('用法: bun scripts/generate-module.ts <ModuleName> [--redis] [--cache] [--db]')
-	console.error('示例: bun scripts/generate-module.ts Order --redis --cache --db')
+	console.error('用法: bun scripts/generate-module.ts <ModuleName> [--redis] [--cache] [--db] [--migration]')
+	console.error('示例: bun scripts/generate-module.ts Order --db --migration')
 	process.exit(1)
 }
 
@@ -113,6 +115,47 @@ export class ${pascalCase}Repository implements I${pascalCase}Repository {
 			repository,
 		)
 		console.log(`  ✓ Infrastructure/Repositories/${pascalCase}Repository.ts`)
+
+		// 若 --db，覆寫 Repository 為 IDatabaseAccess 版本
+		if (flags.db) {
+			const dbRepository = `/**
+ * ${pascalCase}Repository
+ * ${pascalCase} 倉庫實現（Database-backed）
+ *
+ * 使用 IDatabaseAccess 與資料庫互動，支援完整的 CRUD 操作
+ */
+
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { I${pascalCase}Repository } from '../../Domain/Repositories/I${pascalCase}Repository'
+
+export class ${pascalCase}Repository implements I${pascalCase}Repository {
+	constructor(private db: IDatabaseAccess) {}
+
+	async findAll(): Promise<any[]> {
+		return this.db.table('${moduleName.toLowerCase()}s').select()
+	}
+
+	async findById(id: string): Promise<any | null> {
+		return this.db.table('${moduleName.toLowerCase()}s').where('id', id).first()
+	}
+
+	async save(entity: any): Promise<void> {
+		const exists = await this.findById(entity.id)
+		if (exists) {
+			await this.db.table('${moduleName.toLowerCase()}s').where('id', entity.id).update(entity)
+		} else {
+			await this.db.table('${moduleName.toLowerCase()}s').insert(entity)
+		}
+	}
+
+	async delete(id: string): Promise<void> {
+		await this.db.table('${moduleName.toLowerCase()}s').where('id', id).delete()
+	}
+}
+`
+			await writeFile(join(modulePath, `Infrastructure/Repositories/${pascalCase}Repository.ts`), dbRepository)
+			console.log(`  ✓ Infrastructure/Repositories/${pascalCase}Repository.ts (DB-backed)`)
+		}
 
 		// 生成 ServiceProvider（框架無關）
 		const serviceProvider = `/**
@@ -366,6 +409,54 @@ ${pascalCase}/
 		await writeFile(join(modulePath, 'README.md'), readme)
 		console.log(`  ✓ README.md`)
 
+		// 生成 Migration 和 Seeder
+		if (flags.migration || flags.db) {
+			await mkdir('database/migrations', { recursive: true })
+			await mkdir('database/seeders', { recursive: true })
+
+			// 計算序號
+			const existing = await readdir('database/migrations').catch(() => [])
+			const seq = String(existing.filter((f) => f.endsWith('.ts')).length + 1).padStart(3, '0')
+			const tableName = `${moduleName.toLowerCase()}s`
+			const migrationFile = `${seq}_create_${tableName}_table`
+
+			// migration 內容
+			const migration = `import { sql } from 'drizzle-orm'
+import type { AtlasOrbit } from '@gravito/atlas'
+
+export async function up(db: AtlasOrbit): Promise<void> {
+	await db.connection.execute(sql\`
+    CREATE TABLE IF NOT EXISTS ${tableName} (
+      id          TEXT      NOT NULL PRIMARY KEY,
+      name        TEXT      NOT NULL,
+      created_at  DATETIME  NOT NULL DEFAULT CURRENT_TIMESTAMP
+    )
+  \`)
+}
+
+export async function down(db: AtlasOrbit): Promise<void> {
+	await db.connection.execute(sql\`DROP TABLE IF EXISTS ${tableName}\`)
+}
+`
+			await writeFile(`database/migrations/${migrationFile}.ts`, migration)
+			console.log(`  ✓ database/migrations/${migrationFile}.ts`)
+
+			// seeder 內容
+			const seeder = `import { DB } from '@gravito/atlas'
+
+export default async function seed(): Promise<void> {
+	await DB.table('${tableName}').insert({
+		id: '00000000-0000-0000-0000-000000000001',
+		name: 'Sample ${pascalCase}',
+		created_at: new Date().toISOString(),
+	})
+	console.log('${pascalCase}Seeder: Seeding complete')
+}
+`
+			await writeFile(`database/seeders/${pascalCase}Seeder.ts`, seeder)
+			console.log(`  ✓ database/seeders/${pascalCase}Seeder.ts`)
+		}
+
 		// 若需要基礎設施服務，生成 Gravito 適配器
 		if (flags.redis || flags.cache || flags.db) {
 			const adapters: string[] = []
@@ -444,6 +535,12 @@ ${flags.db ? "\tconst databaseCheck = createGravitoDatabaseConnectivityCheck()" 
 		console.log(`\n📝 後續步驟：`)
 		console.log(`1. 在 src/app.ts 中使用適配器註冊 ${pascalCase}ServiceProvider`)
 		console.log(`2. 在 src/wiring/index.ts 中添加 register${pascalCase}() 函式`)
+		if (flags.migration || flags.db) {
+			console.log(`   💡 已生成 migration 和 seeder：`)
+			console.log(`      bun run migrate       → 執行遷移`)
+			console.log(`      bun run seed          → 執行 Seeder`)
+			console.log(`      bun run db:fresh      → 重置並植入資料`)
+		}
 		if (flags.redis || flags.cache || flags.db) {
 			console.log(`   💡 提示：已自動生成 src/adapters/Gravito${pascalCase}Adapter.ts`)
 			console.log(`   在 wiring 層中調用 register${pascalCase}WithGravito(core)`)
