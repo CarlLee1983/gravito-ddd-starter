@@ -6,13 +6,13 @@
 
 ### Migration 指令
 
-| 指令 | 說明 |
-|------|------|
-| `bun run migrate` | 執行所有待執行的 migration |
-| `bun run migrate:status` | 查看 migration 執行狀態 |
-| `bun run migrate:rollback` | 回滾最後一批執行的 migration |
-| `bun run migrate:fresh` | 清除所有表並重新執行所有 migration（危險操作） |
-| `bun run make:migration <name>` | 建立新的 migration 檔案 |
+| 指令 | 說明 | 狀態 |
+|------|------|------|
+| `bun run migrate` | 執行所有待執行的 migration | ✅ 可用 |
+| `bun run migrate:status` | 查看 migration 執行狀態 | ✅ 可用 |
+| `bun run migrate:rollback` | 回滾最後一批執行的 migration | ✅ 可用 |
+| `bun run migrate:fresh` | 清除所有表並重新執行所有 migration（危險操作） | ✅ 可用 |
+| `bun run make:migration <name>` | **手動建立** migration 檔案 | ℹ️ 見下方 |
 
 ### Seeder 指令
 
@@ -23,23 +23,81 @@
 
 ### 診斷與工具
 
-| 指令 | 說明 |
-|------|------|
-| `bun run db:doctor` | 診斷資料庫連線狀態 |
-| `bun run generate:types` | 從 Model 產生 TypeScript 型別 |
+| 指令 | 說明 | 狀態 |
+|------|------|------|
+| `bun run db:doctor` | 診斷資料庫連線狀態 | ℹ️ 計劃中 |
+| `bun run generate:types` | 從 Model 產生 TypeScript 型別 | ℹ️ 計劃中 |
+
+---
+
+## ⚙️ 當前可用的指令
+
+### 實施完成的指令
+
+```bash
+# Migration 執行相關
+bun run migrate              # 執行所有待執行的 migration
+bun run migrate:status       # 查看遷移狀態
+bun run migrate:rollback     # 回滾最後一批
+bun run migrate:fresh        # 清除重跑所有 migration
+
+# Seeder 執行相關
+bun run seed                 # 執行所有 seeder
+bun run db:fresh             # migrate:fresh + seed（一鍵重置）
+
+# 模組生成相關
+bun run make:module <name>   # 生成新模組（可加 --db --migration --redis --cache）
+bun run make:controller      # 生成 Controller
+bun run make:middleware      # 生成 Middleware
+bun run make:command         # 生成 Command
+bun run route:list           # 列出所有路由
+bun run tinker               # 進入互動式 REPL
+```
+
+### 手動建立 Migration（推薦）
+
+由於 `orbit make:migration` 暫不可用，請手動建立 migration 檔案：
+
+```bash
+# 1. 確定下一個序號（查看 database/migrations/ 最大編號）
+ls database/migrations/
+
+# 2. 建立新檔案（按照命名約定）
+# 例如：database/migrations/002_create_posts_table.ts
+
+# 3. 編寫 migration 內容（見下方「Migration 檔案格式」章節）
+
+# 4. 執行 migration
+bun run migrate
+```
 
 ---
 
 ## 🔄 Migration 工作流程
 
-### 建立 Migration
+### 建立 Migration（手動）
+
+由於 `orbit make:migration` 指令暫不可用，請遵循以下步驟手動建立：
 
 ```bash
-# 使用 atlas 建立新的 migration
-bun run make:migration create_posts_table
+# 1. 查看現有 migrations 的序號
+ls database/migrations/
 
-# 或手動在 database/migrations/ 建立：
-# 001_create_posts_table.ts
+# 2. 確定下一個序號（例如 002）
+
+# 3. 使用編輯器建立新檔案
+# 檔案路徑：database/migrations/002_create_posts_table.ts
+
+# 4. 將以下模板貼到新檔案
+```
+
+**快速建立命令**（macOS/Linux）：
+
+```bash
+# 建立新 migration 檔案並開啟編輯器
+touch database/migrations/002_create_posts_table.ts
+open database/migrations/002_create_posts_table.ts  # macOS
+# 或使用其他編輯器打開編輯
 ```
 
 ### Migration 檔案格式
@@ -322,8 +380,39 @@ bun run migrate
 bun run migrate:status
 ```
 
+**Q：為什麼 `orbit make:migration` 不能用？**
+
+A：@gravito/atlas v2.0.0 的 CLI 工具暫不完全可用。請使用**手動方式**建立 migration 檔案：
+
+```bash
+# 1. 確定下一個序號
+ls database/migrations/
+
+# 2. 建立新檔案（如 002_create_posts_table.ts）
+touch database/migrations/002_create_posts_table.ts
+
+# 3. 使用下方「Migration 檔案格式」的模板填入內容
+
+# 4. 執行 migration
+bun run migrate
+```
+
 **Q：如何為現有模組新增資料庫支援？**
 
-1. 建立 migration 檔案：`database/migrations/NNN_create_table_name.ts`
-2. 修改 Repository 類別，使其接收 `IDatabaseAccess` constructor 參數
-3. 執行 `bun run migrate`
+1. 手動建立 migration 檔案：`database/migrations/NNN_create_table_name.ts`
+2. 複製並修改下方「Migration 檔案格式」的模板
+3. 修改 Repository 類別，使其接收 `IDatabaseAccess` constructor 參數
+4. 執行 `bun run migrate`
+
+**Q：generate-module.ts 中的 --db 旗標會自動建立 migration 和 seeder 嗎？**
+
+A：是的！使用 `--db` 旗標時會：
+- ✅ 生成 DB-backed Repository（接收 IDatabaseAccess）
+- ✅ 自動建立 migration 檔案（在 `database/migrations/`）
+- ✅ 自動建立 seeder 檔案（在 `database/seeders/`）
+- ✅ 提供後續執行指令的提示
+
+```bash
+bun run make:module Post --db
+# 會自動建立 migration 和 seeder，無需手動建立
+```

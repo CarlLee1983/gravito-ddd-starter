@@ -65,20 +65,20 @@ bun run tinker                           # 進入互動式 REPL
 ### 🗄️ 資料庫操作
 
 ```bash
-# Migration
+# Migration（執行已建立的 migration）
 bun run migrate                  # 執行所有待執行的 migration
 bun run migrate:status           # 查看遷移狀態
 bun run migrate:rollback         # 回滾最後一批
 bun run migrate:fresh            # 清除重跑所有 migration（危險操作）
-bun run make:migration <name>    # 建立新 migration 檔案
+
+# 建立新 migration（手動方式）
+# 1. touch database/migrations/NNN_description.ts
+# 2. 參考 docs/DATABASE.md 填入內容
+# 3. bun run migrate
 
 # Seeder
 bun run seed                     # 執行所有 seeder
 bun run db:fresh                 # migrate:fresh + seed（一鍵重置）
-
-# 診斷與工具
-bun run db:doctor                # 診斷資料庫連線
-bun run generate:types           # 從 Model 產生 TypeScript 型別
 ```
 
 ### 📚 文檔和幫助
