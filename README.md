@@ -1,8 +1,16 @@
 # Gravito DDD Starter Template
 
-🚀 Clean, minimal Gravito DDD project starter with automated module generation via CLI.
+🚀 Clean, professional Domain-Driven Design (DDD) starter template for the Gravito Framework. Built for speed, scalability, and maintainability.
 
-## Quick Start
+## ✨ Features
+
+- **Standard DDD Structure**: Clearly defined Domain, Application, Infrastructure, and Presentation layers.
+- **IoC & Dependency Injection**: Powered by Gravito Core container and Service Providers.
+- **Reference Example**: Includes a fully implemented `User` module as a best-practice reference.
+- **Testing Ready**: Pre-configured integration and unit testing environment using Bun.
+- **Developer Experience**: Hot-reload, type-safety, and modern tooling out of the box.
+
+## 🚀 Quick Start
 
 ### 1. Clone and Install
 
@@ -19,173 +27,93 @@ bun run dev
 # Server running on http://localhost:3000
 ```
 
-### 3. Generate Your First Module
+### 3. Try the Reference API
+
+The template comes with a `User` module. You can test it immediately:
 
 ```bash
-# Install the CLI
-bun add -D @gravito/pulse
+# Create a user
+curl -X POST http://localhost:3000/api/users \
+  -H "Content-Type: application/json" \
+  -d '{"name": "John Doe", "email": "john@example.com"}'
 
-# Generate a module
-bun gravito module generate Payment --ddd-type advanced
-
-# ✅ Automatic:
-#    - Complete DDD layer structure
-#    - Event sourcing setup (if advanced)
-#    - Route integration
-#    - Test files
+# List users
+curl http://localhost:3000/api/users
 ```
 
-## Project Structure
+## 🏗️ Project Structure
 
 ```
-my-app/
+gravito-ddd-starter/
 ├── src/
-│   ├── Modules/              # Your DDD modules (auto-generated)
-│   │   └── [Generated]/
-│   │       ├── Domain/       # Business logic
-│   │       ├── Application/  # Use cases
-│   │       ├── Presentation/ # HTTP handlers
-│   │       └── Infrastructure/ # Implementations
-│   ├── routes.ts             # Route registry
-│   ├── bootstrap.ts          # Framework configuration
-│   └── index.ts              # Application entry
-├── config/                   # Configuration
-│   ├── app.ts
-│   ├── database.ts
-│   ├── cache.ts
-│   └── index.ts
-├── tests/                    # Test files
+│   ├── Modules/              # DDD Bounded Contexts
+│   │   └── User/             # Reference Module (Example)
+│   │       ├── Domain/       # Entities, Aggregates, Repository Interfaces
+│   │       ├── Application/  # Use Cases (Commands/Queries), DTOs
+│   │       ├── Infrastructure/# Persistence, Service Providers
+│   │       └── Presentation/ # Controllers, API Routes
+│   ├── app.ts                # Application bootstrap & DI registration
+│   ├── routes.ts             # Global route registry
+│   └── index.ts              # Entry point (Server Liftoff)
+├── config/                   # Global configuration & Orbits
+├── tests/                    # Global test files
 ├── package.json
-├── tsconfig.json
-└── biome.json
+└── tsconfig.json
 ```
 
-## Available CLI Commands
+## 🛠️ Development Workflow
 
-### Generate Modules
+### Adding a New Module
 
-```bash
-# Simple CRUD module
-bun gravito module generate User --ddd-type simple
+To create a new module (e.g., `Order`):
 
-# Event Sourcing module
-bun gravito module generate Order --ddd-type advanced
+1.  **Copy the Template**: Use the `src/Modules/User` directory as a reference.
+2.  **Implement Layers**: Follow the Domain → Application → Infrastructure → Presentation flow.
+3.  **Register Provider**: Register your new `ServiceProvider` in `src/app.ts`.
+4.  **Register Routes**: Add your module's routes to `src/routes.ts`.
 
-# CQRS Read-side module
-bun gravito module generate OrderStatistics \
-  --ddd-type cqrs-query \
-  --subscribes-to OrderCreated,OrderCompleted
-```
+### Running Tests
 
-### Available Options
-
-| Option | Values | Description |
-|--------|--------|-------------|
-| `--ddd-type` | `simple`, `advanced`, `cqrs-query` | Module type |
-| `--subscribes-to` | Event names | Events to subscribe to |
-| `--depends-on` | Module names | Module dependencies |
-| `--skip-tests` | flag | Skip test generation |
-| `--skip-route-integration` | flag | Skip route integration |
-
-## Development Workflow
+We prioritize high-quality code through rigorous testing.
 
 ```bash
-# 1. Generate modules as needed
-bun gravito module generate Payment
-bun gravito module generate Order
-bun gravito module generate WalletBalance --ddd-type cqrs-query
-
-# 2. Run tests
-bun test
-
-# 3. Start development
-bun run dev
-
-# 4. Build for production
-bun run build
-
-# 5. Run production build
-bun start
-```
-
-## Available Scripts
-
-```bash
-bun run dev              # Development server (hot-reload)
-bun run build            # Build for production
-bun run start            # Run production build
 bun test                 # Run all tests
+bun run test:user        # Run User module specific tests
 bun test --watch         # Watch mode
-bun run typecheck        # TypeScript type checking
-bun run lint             # Lint code with Biome
-bun run format           # Format code with Biome
 ```
 
-## Environment Configuration
+## 📜 Available Scripts
 
-Create `.env` from `.env.example`:
+| Script | Description |
+|--------|-------------|
+| `bun run dev` | Start development server with hot-reload |
+| `bun run build` | Build the project for production |
+| `bun run start` | Run the compiled production build |
+| `bun run test` | Execute all test suites |
+| `bun run typecheck` | Run static type checking |
+| `bun run lint` | Lint code using Biome |
+| `bun run format` | Format code using Biome |
+
+## ⚙️ Environment Configuration
+
+Copy `.env.example` to `.env` and configure:
 
 ```env
-# Application
 PORT=3000
-APP_NAME=my-app
+APP_NAME=gravito-ddd-app
 APP_ENV=development
 APP_DEBUG=true
-APP_URL=http://localhost:3000
-
-# Database (optional)
-ENABLE_DB=true
-DB_CONNECTION=sqlite
-DB_DATABASE=database/database.sqlite
-
-# Cache & Redis (optional)
-CACHE_DRIVER=memory
-REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
 ```
 
-## Next Steps
+## 📚 Documentation & Reference
 
-1. **Generate your first module**
-   ```bash
-   bun gravito module generate User --ddd-type simple
-   ```
+- [Gravito Framework Docs](https://github.com/gravito-framework/gravito)
+- [DDD Patterns Guide](https://domaindriven.org/)
 
-2. **Implement business logic** in the Domain layer
-
-3. **Run tests**
-   ```bash
-   bun test
-   ```
-
-4. **Deploy** - Build and run `bun start`
-
-## Architecture
-
-This starter uses **Domain-Driven Design (DDD)** with:
-
-- **4-Layer Architecture**: Domain → Application → Presentation → Infrastructure
-- **DDD Patterns**: Aggregates, Value Objects, Domain Services, Repositories
-- **Event Sourcing** (optional): Event-based state management
-- **CQRS** (optional): Separate read and write models
-- **TDD**: Comprehensive test generation
-
-## Documentation
-
-- [Gravito Framework](https://github.com/gravito-framework/gravito)
-- [CMG Station DDD](https://github.com/your-org/cmg-station-ddd) - Complete example
-- [DDD Guide](https://domaindriven.org/)
-
-## License
+## 📄 License
 
 MIT
 
-## Support
-
-- 📚 [Gravito Docs](https://github.com/gravito-framework/gravito)
-- 💬 [Community Discord](#) - Coming soon
-- 🐛 [Issue Tracker](#)
-
 ---
 
-**Happy coding! 🎉**
+**Built with ❤️ by the Gravito Team.**
