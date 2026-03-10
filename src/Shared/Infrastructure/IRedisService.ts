@@ -4,6 +4,7 @@
  * 底層完全不知道 Gravito/Plasma 的存在，
  * 允許日後換框架或用 InMemory 實作進行測試。
  */
+
 export interface IRedisService {
 	/**
 	 * 連線測試，回傳 PONG 或丟出例外

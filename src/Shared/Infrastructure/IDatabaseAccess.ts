@@ -1,14 +1,12 @@
 /**
- * 資料庫存取抽象（Port）
+ * 數據庫存取抽象（Port）
  *
  * 定義與具體 ORM（如 Atlas）無關的查詢介面，讓各模組 Infrastructure 層
  * 可透過依賴注入替換為 mock，Domain/Application 與實際 DB 實作解耦。
  */
 
 /**
- * 資料庫查詢建構器介面（抽象鏈式 API，支援測試替換）
- *
- * 涵蓋 Health、Auth、PSC、WBC 等模組實際使用之方法。
+ * 數據庫查詢建構器介面（抽象鏈式 API，支援測試替換）
  */
 export interface IQueryBuilder {
 	where(...args: unknown[]): IQueryBuilder
@@ -25,7 +23,7 @@ export interface IQueryBuilder {
 }
 
 /**
- * 資料庫存取介面（用於依賴注入）
+ * 數據庫存取介面（用於依賴注入）
  */
 export interface IDatabaseAccess {
 	table(name: string): IQueryBuilder

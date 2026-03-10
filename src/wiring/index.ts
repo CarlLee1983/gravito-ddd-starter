@@ -15,53 +15,22 @@
  * 3. Routes 和 Controllers 無需修改
  */
 
-import type { PlanetCore, GravitoContext } from '@gravito/core'
-import { fromGravitoContext } from '@/Shared/Presentation/IHttpContext'
-import { createGravitoModuleRouter } from '@/adapters/GravitoModuleRouter'
-import { HealthController } from '@/Modules/Health/Presentation/Controllers/HealthController'
+import type { PlanetCore } from '@gravito/core'
 import { registerUserRoutes } from '@/Modules/User/Presentation/Routes/api'
 import { UserController } from '@/Modules/User/Presentation/Controllers/UserController'
+import { registerHealthWithGravito } from '@/adapters/GravitoHealthAdapter'
+import { createGravitoModuleRouter } from '@/adapters/GravitoModuleRouter'
 
 /**
- * 註冊 Health 模組（目前綁定 Gravito 實作）
+ * 註冊 Health 模組（透過完整 Gravito 適配器）
  *
- * 處理 Health 模組所需的特殊邏輯：
- * - 需要訪問 db、redis、cache 等 Gravito 資源
- * - 使用自定義路由註冊以完全控制 context 注入
+ * 適配器負責：
+ * - 從 PlanetCore 提取 Redis/Cache 服務
+ * - 適配為框架無關的 IRedisService/ICacheService
+ * - 組裝所有依賴並註冊路由
  */
 export const registerHealth = (core: PlanetCore): void => {
-	// 從容器中獲取應用服務
-	const service = core.container.make('healthCheckService') as any
-
-	// 實例化控制器
-	const controller = new HealthController(service)
-
-	// 直接使用 Gravito 原生路由以完全控制資源注入
-	// 這是必要的，因為 Health 模組需要訪問框架資源
-
-	// GET /health
-	core.router.get('/health', (ctx: GravitoContext) => {
-		// 將 Gravito context 轉換為框架無關的 IHttpContext
-		const httpContext = fromGravitoContext(ctx)
-
-		// 注入 Gravito 特定的資源
-		const db = (core as any).db
-		const redis = (core as any).redis
-		const cache = (core as any).cache
-
-		// 將資源存儲在 context 中以供控制器訪問
-		httpContext.set('__db', db)
-		httpContext.set('__redis', redis)
-		httpContext.set('__cache', cache)
-
-		return controller.check(httpContext)
-	})
-
-	// GET /health/history
-	core.router.get('/health/history', (ctx: GravitoContext) => {
-		const httpContext = fromGravitoContext(ctx)
-		return controller.history(httpContext)
-	})
+	registerHealthWithGravito(core)
 }
 
 /**
