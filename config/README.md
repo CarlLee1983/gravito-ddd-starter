@@ -22,3 +22,5 @@ defineConfig({
 ```
 
 環境變數見專案根目錄 `.env.example`。
+
+新增模組時若需改動 Orbits 或設定，請對照 [docs/MODULE_ADD_CHECKLIST.md](../docs/MODULE_ADD_CHECKLIST.md) 的「選做設定」。

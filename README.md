@@ -100,6 +100,7 @@ Learn the architecture and best practices:
 ### Essential Guides
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Four-layer DDD architecture, design patterns, and data flow
 - **[MODULE_GUIDE.md](./docs/MODULE_GUIDE.md)** - Step-by-step guide to creating new modules with examples
+- **[MODULE_ADD_CHECKLIST.md](./docs/MODULE_ADD_CHECKLIST.md)** - 新增模組時需對應設定的檢查清單（bootstrap / wiring / routes）
 - **[TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)** - Common issues and solutions
 
 ### Setup & Development
@@ -138,8 +139,8 @@ If you prefer to create modules manually, use `src/Modules/User` as a reference:
     - Value Objects inherit from `ValueObject`
     - Application DTOs inherit from `BaseDTO`
     - Exceptions inherit from `AppException`
-3.  **Register Provider**: Register your new `ServiceProvider` in `src/app.ts`.
-4.  **Register Routes**: Add your module's routes to `src/routes.ts`.
+3.  **Register Provider**: Register your new `ServiceProvider` in `src/bootstrap.ts`（見 [MODULE_ADD_CHECKLIST.md](./docs/MODULE_ADD_CHECKLIST.md)）。
+4.  **Wiring & Routes**: 在 `src/wiring/index.ts` 新增註冊函式，並在 `src/routes.ts` 呼叫。
 
 ### Running Tests
 

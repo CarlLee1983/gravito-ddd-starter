@@ -133,20 +133,16 @@ export function registerOrderWithGravito(core: PlanetCore): void {
 
 ## 集成到應用
 
-### Step 1：在 src/app.ts 中註冊 ServiceProvider
+### Step 1：在 src/bootstrap.ts 中註冊 ServiceProvider
+
+在 Step 3（Register module service providers）中，依依賴順序加入：
 
 ```typescript
+import { createGravitoServiceProvider } from './adapters/GravitoServiceProviderAdapter'
 import { OrderServiceProvider } from './Modules/Order/Infrastructure/Providers/OrderServiceProvider'
 
-export async function createApp() {
-  // ...
-  const core = new PlanetCore(config)
-
-  // 註冊 Order ServiceProvider
-  core.register(createGravitoServiceProvider(new OrderServiceProvider()))
-
-  // ... 其他設置
-}
+// ...
+core.register(createGravitoServiceProvider(new OrderServiceProvider()))
 ```
 
 ### Step 2：在 src/wiring/index.ts 中添加註冊函式

@@ -49,17 +49,18 @@ src/Modules/<ModuleName>/
 
 ### Step 1: 註冊 ServiceProvider
 
-在 `src/app.ts` 中添加：
+在 `src/bootstrap.ts` 的 Step 3（Register module service providers）中添加，並依依賴順序排列：
 
 ```typescript
-import { ProductServiceProvider } from './Modules/Product'
+import { createGravitoServiceProvider } from './adapters/GravitoServiceProviderAdapter'
+import { ProductServiceProvider } from './Modules/Product/Infrastructure/Providers/ProductServiceProvider'
 
 // ...
 
-app.register(new ProductServiceProvider())
+core.register(createGravitoServiceProvider(new ProductServiceProvider()))
 ```
 
-### Step 2: 在 Wiring 層添加註冊函式
+### Step 2: 在接線層添加註冊函式
 
 編輯 `src/wiring/index.ts`：
 
@@ -85,7 +86,7 @@ export const registerProduct = (core: PlanetCore): void => {
 }
 ```
 
-### Step 3: 在根路由中調用
+### Step 3: 在根路由中呼叫
 
 編輯 `src/routes.ts`：
 
