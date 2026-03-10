@@ -1,36 +1,36 @@
-# DX (Developer Experience) 完整审查报告
+# DX (Developer Experience) 完整審查報告
 
-## 1️⃣  初始体验（First 5 分钟）
+## 1️⃣  初始體驗（First 5 分鐘）
 
-### ✅ 克隆与安装
+### ✅ 克隆與安裝
 ```bash
 git clone https://github.com/gravito-framework/gravito-ddd-starter my-app
 cd my-app
 bun install
 ```
 - ✅ 清晰的克隆指令
-- ✅ 快速的依赖安装
-- ❌ 缺少：安装完成后的验证步骤
+- ✅ 快速的依賴安裝
+- ❌ 缺少：安裝完成後的驗證步驟
 
-### ❌ 问题检测
-- 没有提示用户验证安装成功
-- 没有"next step"的清晰指引
+### ❌ 問題檢測
+- 沒有提示使用者驗證安裝成功
+- 沒有「next step」的清晰指引
 
 ---
 
-## 2️⃣  启动开发服务器
+## 2️⃣  啟動開發伺服器
 
-### ✅ 现状
+### ✅ 現狀
 ```bash
 bun run dev
 ```
-- ✅ 清晰的命令
-- ✅ 热重载支持
-- ✅ 欢迎信息显示
+- ✅ 清晰的指令
+- ✅ 熱重載支援
+- ✅ 歡迎資訊顯示
 
 ### ❌ 缺失
 ```bash
-# 当前输出：
+# 目前輸出：
 🚀 Gravito DDD Starter Running
 Environment: development
 Server: http://localhost:3000
@@ -40,134 +40,134 @@ Server: http://localhost:3000
          bun gravito module generate <ModuleName>
 ```
 
-**问题**：
-- 没有快速测试的 curl 命令
-- 没有 API 端点列表
-- 没有调试建议
+**問題**：
+- 沒有快速測試的 curl 指令
+- 沒有 API 端點列表
+- 沒有除錯建議
 
 ---
 
-## 3️⃣  项目结构的可理解性
+## 3️⃣  專案結構的可理解性
 
-### ✅ 优点
-- 清晰的 4 层 DDD 架构
-- Shared 层说明充分
-- User 模块作为参考
+### ✅ 優點
+- 清晰的 4 層 DDD 架構
+- Shared 層說明充分
+- User 模組作為參考
 
-### ❌ 缺点
-1. 缺少 `src/index.ts` 的说明
-2. 缺少 `src/routes.ts` 的说明
-3. 缺少 `config/` 下各文件的用途说明
-4. 缺少 `.env` 配置的说明
+### ❌ 缺點
+1. 缺少 `src/index.ts` 的說明
+2. 缺少 `src/routes.ts` 的說明
+3. 缺少 `config/` 下各檔案的用途說明
+4. 缺少 `.env` 設定的說明
 
-### 建议改进
+### 建議改進
 ```
 src/
-├── Shared/          <- [需要说明] 所有模块共享的基础
-├── Modules/         <- [需要说明] 业务模块，每个一个子目录
-├── app.ts           <- [缺少说明] DI 注册 & 服务提供者
-├── routes.ts        <- [缺少说明] 全局路由汇总
-├── bootstrap.ts     <- [缺少说明] 框架初始化
-└── index.ts         <- [缺少说明] 应用入口 (Bun.serve)
+├── Shared/          <- [需要說明] 所有模組共用的基礎
+├── Modules/         <- [需要說明] 業務模組，每個一個子目錄
+├── app.ts           <- [缺少說明] DI 註冊與服務提供者
+├── routes.ts        <- [缺少說明] 全域路由彙總
+├── bootstrap.ts     <- [缺少說明] 框架初始化
+└── index.ts         <- [缺少說明] 應用程式入口 (Bun.serve)
 ```
 
 ---
 
-## 4️⃣  文档完整性
+## 4️⃣  文件完整性
 
 ### ✅ 已有
-- README.md 基础说明
-- 项目结构说明
-- 快速开始指南
+- README.md 基礎說明
+- 專案結構說明
+- 快速開始指南
 
-### ❌ 缺失的关键文档
+### ❌ 缺失的關鍵文件
 1. **ARCHITECTURE.md**
-   - DDD 四层如何交互
-   - 数据流示意图
-   - 模块之间如何通信
+   - DDD 四層如何互動
+   - 資料流示意圖
+   - 模組之間如何通訊
 
 2. **SETUP.md**
-   - 环境变量配置详解
-   - 数据库配置步骤
-   - 常见安装问题
+   - 環境變數設定詳解
+   - 資料庫設定步驟
+   - 常見安裝問題
 
 3. **MODULE_GUIDE.md**
-   - 如何创建新模块
-   - 各层职责详解
-   - 代码示例
+   - 如何建立新模組
+   - 各層職責詳解
+   - 程式碼範例
 
 4. **API_GUIDELINES.md**
-   - 路由命名约定
-   - 请求/响应格式
-   - 错误处理标准
+   - 路由命名慣例
+   - 請求／回應格式
+   - 錯誤處理標準
 
 5. **TESTING.md**
-   - 测试策略
-   - 如何写单元测试
-   - 如何写集成测试
+   - 測試策略
+   - 如何撰寫單元測試
+   - 如何撰寫整合測試
 
 6. **DEPLOYMENT.md**
-   - 构建说明
-   - 部署步骤
-   - 环境配置
+   - 建置說明
+   - 部署步驟
+   - 環境設定
 
 ---
 
-## 5️⃣  工具与依赖
+## 5️⃣  工具與依賴
 
-### ✅ 现状
-- Bun 作为运行时
+### ✅ 現狀
+- Bun 作為執行時期
 - TypeScript 5.3
-- Biome 用于 lint/format
+- Biome 用於 lint/format
 
 ### ❌ 缺失
 1. **package.json scripts**
    - ❌ 缺少 `dev:debug`
-   - ❌ 缺少 `lint:fix` (只有 lint 和 format)
-   - ❌ 缺少 `generate:module` 快捷命令
+   - ❌ 缺少 `lint:fix`（僅有 lint 與 format）
+   - ❌ 缺少 `generate:module` 捷徑指令
    - ❌ 缺少 `test:watch`
 
-2. **开发工具**
-   - ❌ 缺少 REST 客户端集成 (Hoppscotch, Thunder Client)
-   - ❌ 缺少 Docker Compose 用于本地数据库
-   - ❌ 缺少 git hooks (pre-commit)
+2. **開發工具**
+   - ❌ 缺少 REST 用戶端整合（Hoppscotch、Thunder Client）
+   - ❌ 缺少 Docker Compose 用於本機資料庫
+   - ❌ 缺少 git hooks（pre-commit）
 
 ---
 
-## 6️⃣  错误处理与反馈
+## 6️⃣  錯誤處理與回饋
 
-### ❌ 问题
-1. 没有有用的错误消息
-2. 没有调试指南
-3. 没有常见问题（FAQ）
-4. 没有故障排查文档
+### ❌ 問題
+1. 沒有有用的錯誤訊息
+2. 沒有除錯指南
+3. 沒有常見問題（FAQ）
+4. 沒有故障排除文件
 
-### 建议改进
+### 建議改進
 ```
-创建 TROUBLESHOOTING.md:
+建立 TROUBLESHOOTING.md：
 
-Q: "Module not found" 错误
-A: 确保你在项目根目录运行 bun gravito ...
+Q: "Module not found" 錯誤
+A: 請確認在專案根目錄執行 bun gravito ...
 
-Q: 数据库连接失败
-A: 检查 .env 中的 DB_* 变量...
+Q: 資料庫連線失敗
+A: 檢查 .env 中的 DB_* 變數...
 
 Q: @gravito/pulse 找不到
-A: 运行 bun add -D @gravito/pulse 重新安装...
+A: 執行 bun add -D @gravito/pulse 重新安裝...
 ```
 
 ---
 
-## 7️⃣  API 可发现性
+## 7️⃣  API 可發現性
 
-### ❌ 当前问题
-- 启动后没有 API 端点列表
-- 没有 Swagger/OpenAPI 文档
-- 没有示例请求
-- 没有 API 调用的快速开始
+### ❌ 目前問題
+- 啟動後沒有 API 端點列表
+- 沒有 Swagger/OpenAPI 文件
+- 沒有範例請求
+- 沒有 API 呼叫的快速開始
 
-### 建议改进
-启动后显示：
+### 建議改進
+啟動後顯示：
 ```
 ╔═══════════════════════════════════════╗
 ║   🚀 Gravito DDD Starter Running      ║
@@ -204,54 +204,54 @@ A: 运行 bun add -D @gravito/pulse 重新安装...
 
 ---
 
-## 8️⃣  代码示例的清晰度
+## 8️⃣  程式碼範例的清晰度
 
 ### ✅ 已有
-- User 模块作为参考
+- User 模組作為參考
 
 ### ❌ 缺失
-1. **简单示例** (5分钟内理解)
-   - 创建实体
-   - 创建 DTO
-   - 创建控制器
+1. **簡單範例**（5 分鐘內理解）
+   - 建立實體
+   - 建立 DTO
+   - 建立控制器
 
-2. **高级示例**
+2. **進階範例**
    - 事件溯源
-   - CQRS 查询模型
-   - 复杂业务逻辑
+   - CQRS 查詢模型
+   - 複雜業務邏輯
 
-3. **集成示例**
-   - 跨模块依赖
-   - 事件发布
-   - 服务调用
+3. **整合範例**
+   - 跨模組依賴
+   - 事件發布
+   - 服務呼叫
 
 ---
 
-## 9️⃣  配置的透明度
+## 9️⃣  設定的透明度
 
-### ❌ 问题
+### ❌ 問題
 
-**`.env.example` 缺少说明**：
+**`.env.example` 缺少說明**：
 ```env
-PORT=3000                          # ❌ 不清楚这是什么
-APP_NAME=gravito-ddd-app          # ❌ 用在哪里?
-APP_ENV=development                # ❌ 可选值是什么?
-APP_DEBUG=true                      # ❌ 有什么作用?
-ENABLE_DB=true                      # ❌ 什么时候禁用?
-DB_CONNECTION=sqlite               # ❌ 有哪些选项?
+PORT=3000                          # ❌ 不清楚這是什麼
+APP_NAME=gravito-ddd-app          # ❌ 用在哪裡?
+APP_ENV=development                # ❌ 可選值是什麼?
+APP_DEBUG=true                     # ❌ 有什麼作用?
+ENABLE_DB=true                     # ❌ 什麼時候停用?
+DB_CONNECTION=sqlite               # ❌ 有哪些選項?
 ```
 
-### 建议改进
+### 建議改進
 ```env
 # Server Configuration
 PORT=3000                          # Server port (default: 3000)
 APP_NAME=gravito-ddd-app          # Application name (shown in logs)
 APP_ENV=development                # Environment: development, staging, production
-APP_DEBUG=true                      # Enable debug mode (verbose logging)
+APP_DEBUG=true                     # Enable debug mode (verbose logging)
 APP_URL=http://localhost:3000     # Full application URL
 
 # Database (Optional)
-ENABLE_DB=true                      # Set to false to disable database
+ENABLE_DB=true                     # Set to false to disable database
 DB_CONNECTION=sqlite               # sqlite, postgres, mysql, mariadb
 DB_DATABASE=database/database.sqlite
 DB_HOST=localhost
@@ -271,67 +271,66 @@ APP_KEY=                           # Base64-encoded encryption key
 
 ---
 
-## 🔟 命令行工具的友好性
+## 🔟  指令列工具的友善性
 
 ### ❌ 缺失
-启动时应该显示可用命令：
+啟動時應顯示可用指令：
 
 ```bash
 bun run <script>
-  dev              开发服务器 (热重载)
-  build            构建生产版本
-  start            运行生产构建
-  test             运行所有测试
-  test:watch       监视模式测试
-  typecheck        TypeScript 类型检查
-  lint             检查代码风格
-  format           自动格式化代码
+  dev              開發伺服器（熱重載）
+  build            建置正式環境版本
+  start            執行正式環境建置
+  test             執行所有測試
+  test:watch       監視模式測試
+  typecheck        TypeScript 型別檢查
+  lint             檢查程式碼風格
+  format           自動格式化程式碼
 
 bun gravito <command>
-  module generate <name>  生成新模块
-  module list             列出现有模块
-  --help                  显示此帮助
-  --version               显示版本
+  module generate <name>  建立新模組
+  module list             列出既有模組
+  --help                  顯示此說明
+  --version               顯示版本
 ```
 
 ---
 
-## 总结：DX 评分
+## 總結：DX 評分
 
-| 方面 | 评分 | 状态 |
+| 面向 | 評分 | 狀態 |
 |------|------|------|
-| **项目设置** | 8/10 | ✅ 好 |
-| **初始体验** | 6/10 | ⚠️  需改进 |
-| **文档完整性** | 5/10 | ❌ 缺失 |
-| **错误处理** | 3/10 | ❌ 缺失 |
-| **API 可发现性** | 4/10 | ❌ 缺失 |
-| **代码示例** | 7/10 | ✅ 可以 |
-| **配置透明度** | 4/10 | ❌ 缺失 |
-| **工具集成** | 6/10 | ⚠️  需改进 |
-| **整体 DX** | **5.4/10** | ⚠️  **需显著改进** |
+| **專案設定** | 8/10 | ✅ 佳 |
+| **初始體驗** | 6/10 | ⚠️  需改進 |
+| **文件完整性** | 5/10 | ❌ 缺失 |
+| **錯誤處理** | 3/10 | ❌ 缺失 |
+| **API 可發現性** | 4/10 | ❌ 缺失 |
+| **程式碼範例** | 7/10 | ✅ 尚可 |
+| **設定透明度** | 4/10 | ❌ 缺失 |
+| **工具整合** | 6/10 | ⚠️  需改進 |
+| **整體 DX** | **5.4/10** | ⚠️  **需顯著改進** |
 
 ---
 
-## 🎯 优先级改进清单
+## 🎯 優先順序改進清單
 
-### 🔴 P0 (必做)
-- [ ] 创建 ARCHITECTURE.md
-- [ ] 创建 MODULE_GUIDE.md
-- [ ] 改进启动欢迎信息
-- [ ] 改进 .env.example 的注释
-- [ ] 创建 TROUBLESHOOTING.md
+### 🔴 P0（必做）
+- [x] 建立 ARCHITECTURE.md
+- [x] 建立 MODULE_GUIDE.md
+- [x] 改進啟動歡迎資訊
+- [x] 改進 .env.example 的註解
+- [x] 建立 TROUBLESHOOTING.md
 
-### 🟡 P1 (重要)
-- [ ] 创建 SETUP.md
-- [ ] 创建 API_GUIDELINES.md
-- [ ] 创建 TESTING.md
-- [ ] 改进 package.json scripts
-- [ ] 添加 pre-commit hooks
+### 🟡 P1（重要）
+- [x] 建立 SETUP.md
+- [x] 建立 API_GUIDELINES.md
+- [x] 建立 TESTING.md
+- [x] 改進 package.json scripts
+- [x] 整合 pre-commit hooks 至 package.json
 
-### 🟢 P2 (可选)
-- [ ] 创建 DEPLOYMENT.md
-- [ ] 添加 Swagger/OpenAPI
-- [ ] 创建完整代码示例
-- [ ] 创建视频教程
-- [ ] 创建 Discord 社区
-
+### 🟢 P2（可選）
+- [x] 建立 DEPLOYMENT.md
+- [x] 新增 Swagger/OpenAPI
+- [x] 建立完整程式碼範例
+- [ ] 建立影片教學
+- [ ] 建立 Discord 社群
