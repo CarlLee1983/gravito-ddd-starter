@@ -23,7 +23,7 @@ bun run dev
 
 ```bash
 # Install the CLI
-bun add -D @cmg/scaffold-cli
+bun add -D @gravito/pulse
 
 # Generate a module
 bun gravito module generate Payment --ddd-type advanced

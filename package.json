@@ -2,7 +2,6 @@
   "name": "gravito-ddd-starter",
   "version": "1.0.0",
   "description": "Clean Gravito DDD starter template - Generate your own modules with the CLI",
-  "private": true,
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
@@ -14,16 +13,35 @@
     "typecheck": "bun run tsc --noEmit",
     "lint": "biome lint src tests",
     "format": "biome format src tests --write",
-    "generate:module": "echo 'Install @cmg/scaffold-cli to generate modules: bun add -D @cmg/scaffold-cli && bun gravito module generate'"
+    "generate:module": "echo 'Install @gravito/pulse to generate modules: bun add -D @gravito/pulse && bun gravito module generate'"
   },
   "dependencies": {
-    "@gravito/core": "^1.0.0",
-    "@gravito/atlas": "^1.0.0",
-    "@gravito/sentinel": "^1.0.0",
-    "@gravito/signal": "^1.0.0"
+    "@gravito/atlas": "^1.6.0",
+    "@gravito/core": "^1.6.1",
+    "@gravito/plasma": "^2.0.0",
+    "@gravito/prism": "^3.1.1",
+    "@gravito/sentinel": "^4.0.1",
+    "@gravito/signal": "^3.0.4",
+    "@gravito/stasis": "^3.1.1"
+  },
+  "overrides": {
+    "@gravito/pulse": {
+      "@gravito/core": "$@gravito/core",
+      "@gravito/scaffold": "4.0.0",
+      "@gravito/chromatic": "1.0.0"
+    },
+    "@gravito/core": {
+      "@gravito/photon": "1.0.1"
+    },
+    "@gravito/sentinel": {
+      "@gravito/core": "$@gravito/core"
+    },
+    "@gravito/stasis": {
+      "@gravito/core": "$@gravito/core"
+    }
   },
   "devDependencies": {
-    "@cmg/scaffold-cli": "^1.0.0",
+    "@gravito/pulse": "^3.4.0",
     "bun-types": "latest",
     "typescript": "^5.3.0",
     "biome": "latest"

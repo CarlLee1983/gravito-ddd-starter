@@ -32,7 +32,7 @@ Environment: ${process.env.APP_ENV || 'development'}
 Server:      http://localhost:${configObj.PORT}
 
 📚 Docs:     https://github.com/gravito-framework/gravito
-🔧 Next:     bun add -D @cmg/scaffold-cli
+🔧 Next:     bun add -D @gravito/pulse
              bun gravito module generate <ModuleName>
 `)
 }
