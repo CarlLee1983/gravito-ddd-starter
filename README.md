@@ -46,6 +46,11 @@ curl http://localhost:3000/api/users
 ```
 gravito-ddd-starter/
 ├── src/
+│   ├── Shared/               # Base classes & Interfaces (All modules inherit)
+│   │   ├── Domain/           # BaseEntity, ValueObject, AggregateRoot, DomainEvent
+│   │   ├── Application/      # BaseDTO, AppException
+│   │   ├── Infrastructure/   # Cache, Redis, Database interfaces
+│   │   └── Presentation/     # ApiResponse, Router interfaces
 │   ├── Modules/              # DDD Bounded Contexts
 │   │   └── User/             # Reference Module (Example)
 │   │       ├── Domain/       # Entities, Aggregates, Repository Interfaces
@@ -61,14 +66,64 @@ gravito-ddd-starter/
 └── tsconfig.json
 ```
 
+### 📚 Shared Layer (重要！)
+
+`src/Shared/` 包含所有模組都需要繼承的基礎類別：
+
+**Domain 層**:
+- `BaseEntity` - 實體基類 (ID、時間戳)
+- `AggregateRoot` - 聚合根基類
+- `ValueObject` - 值物件基類
+- `DomainEvent` - 領域事件基類
+- `IRepository` - Repository 介面
+
+**Application 層**:
+- `BaseDTO` - 所有 DTO 繼承此類
+- `AppException` - 應用異常基類
+
+**Infrastructure 層**:
+- `ICacheService` - 快取服務介面
+- `IRedisService` - Redis 服務介面
+- `IDatabaseAccess` - 數據庫存取介面
+
+**Presentation 層**:
+- `ApiResponse` - 統一 API 響應格式
+- `IModuleRouter` - 模組路由介面
+- `routerHelpers` - 路由輔助函數
+
+所有自動生成的模組都會自動使用這些基礎類別！
+
 ## 🛠️ Development Workflow
 
-### Adding a New Module
+### Adding a New Module (Automatic with @gravito/pulse)
 
-To create a new module (e.g., `Order`):
+The easiest way to create a new module:
+
+```bash
+# Install the CLI
+bun add -D @gravito/pulse
+
+# Generate a new module (auto-generates everything!)
+bun gravito module generate Order --ddd-type advanced
+
+# ✅ What gets generated automatically:
+#    - Complete DDD structure (Domain/Application/Presentation/Infrastructure)
+#    - All classes inherit from Shared base classes
+#    - Routes automatically integrated
+#    - Tests automatically generated
+#    - README documentation generated
+```
+
+### Manual Module Creation (Advanced)
+
+If you prefer to create modules manually, use `src/Modules/User` as a reference:
 
 1.  **Copy the Template**: Use the `src/Modules/User` directory as a reference.
-2.  **Implement Layers**: Follow the Domain → Application → Infrastructure → Presentation flow.
+2.  **Inherit from Shared**: Your classes should inherit from `Shared/` base classes:
+    - Domain Entities inherit from `BaseEntity` or `AggregateRoot`
+    - Value Objects inherit from `ValueObject`
+    - Application DTOs inherit from `BaseDTO`
+    - Exceptions inherit from `AppException`
 3.  **Register Provider**: Register your new `ServiceProvider` in `src/app.ts`.
 4.  **Register Routes**: Add your module's routes to `src/routes.ts`.
 
