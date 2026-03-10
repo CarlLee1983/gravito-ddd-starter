@@ -6,15 +6,23 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
+    "dev:debug": "NODE_OPTIONS='--inspect-brk' bun run src/index.ts",
     "build": "bun build src/index.ts --outdir dist --format esm",
     "start": "bun dist/index.js",
     "test": "bun test",
     "test:watch": "bun test --watch",
-    "test:user": "bun test src/Modules/User/tests",
-    "typecheck": "bun run tsc --noEmit",
+    "test:coverage": "bun test --coverage",
+    "test:unit": "bun test tests/Unit/",
+    "test:integration": "bun test tests/Integration/",
+    "test:feature": "bun test tests/Feature/",
+    "test:user": "bun test tests/ --filter User",
+    "typecheck": "tsc --noEmit",
     "lint": "biome lint src tests",
+    "lint:fix": "biome lint src tests --fix",
     "format": "biome format src tests --write",
-    "generate:module": "echo 'Install @gravito/pulse to generate modules: bun add -D @gravito/pulse && bun gravito module generate'"
+    "format:check": "biome format src tests --check",
+    "check": "bun run typecheck && bun run lint && bun run test",
+    "generate:module": "bun add -D @gravito/pulse && bun gravito module generate"
   },
   "dependencies": {
     "@gravito/atlas": "^2.0.0",

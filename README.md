@@ -97,9 +97,15 @@ gravito-ddd-starter/
 
 Learn the architecture and best practices:
 
+### Essential Guides
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Four-layer DDD architecture, design patterns, and data flow
 - **[MODULE_GUIDE.md](./docs/MODULE_GUIDE.md)** - Step-by-step guide to creating new modules with examples
 - **[TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)** - Common issues and solutions
+
+### Setup & Development
+- **[SETUP.md](./docs/SETUP.md)** - Development environment setup for macOS, Linux, and Windows
+- **[API_GUIDELINES.md](./docs/API_GUIDELINES.md)** - REST API design standards and conventions
+- **[TESTING.md](./docs/TESTING.md)** - Testing strategy (Unit, Integration, Feature tests)
 
 ## 🛠️ Development Workflow
 
@@ -147,15 +153,52 @@ bun test --watch         # Watch mode
 
 ## 📜 Available Scripts
 
+### Development
 | Script | Description |
 |--------|-------------|
 | `bun run dev` | Start development server with hot-reload |
+| `bun run dev:debug` | Start with debugging enabled (inspect-brk) |
 | `bun run build` | Build the project for production |
 | `bun run start` | Run the compiled production build |
-| `bun run test` | Execute all test suites |
-| `bun run typecheck` | Run static type checking |
-| `bun run lint` | Lint code using Biome |
-| `bun run format` | Format code using Biome |
+
+### Testing
+| Script | Description |
+|--------|-------------|
+| `bun run test` | Execute all tests (Unit, Integration, Feature) |
+| `bun run test:watch` | Run tests in watch mode |
+| `bun run test:coverage` | Generate test coverage report |
+| `bun run test:unit` | Run only unit tests |
+| `bun run test:integration` | Run only integration tests |
+| `bun run test:feature` | Run only feature tests |
+
+### Code Quality
+| Script | Description |
+|--------|-------------|
+| `bun run typecheck` | Run TypeScript type checking |
+| `bun run lint` | Check code style with Biome |
+| `bun run lint:fix` | Auto-fix linting issues |
+| `bun run format` | Format code with Biome |
+| `bun run format:check` | Check if code is formatted |
+| `bun run check` | Run all checks (type, lint, test) |
+
+## 🔧 Git Hooks (Optional)
+
+Set up automatic code quality checks before commits:
+
+```bash
+# Run the setup script
+bash scripts/setup-hooks.sh
+
+# This installs three hooks:
+# - pre-commit: Checks format, lint, and types
+# - prepare-commit-msg: Adds branch name to commit message
+# - commit-msg: Validates commit message format
+```
+
+**Skip hooks temporarily**:
+```bash
+HUSKY=0 git commit
+```
 
 ## ⚙️ Environment Configuration
 
