@@ -366,10 +366,88 @@ ${pascalCase}/
 		await writeFile(join(modulePath, 'README.md'), readme)
 		console.log(`  ✓ README.md`)
 
+		// 若需要基礎設施服務，生成 Gravito 適配器
+		if (flags.redis || flags.cache || flags.db) {
+			const adapters: string[] = []
+			const imports: string[] = []
+
+			if (flags.redis) {
+				adapters.push('redis?: IRedisService | null')
+				imports.push("import type { IRedisService } from '@/Shared/Infrastructure/IRedisService'")
+			}
+			if (flags.cache) {
+				adapters.push('cache?: ICacheService | null')
+				imports.push("import type { ICacheService } from '@/Shared/Infrastructure/ICacheService'")
+			}
+			if (flags.db) {
+				adapters.push('db?: IDatabaseConnectivityCheck | null')
+				imports.push("import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/IDatabaseConnectivityCheck'")
+			}
+
+			const adapterContent = `/**
+ * Gravito${pascalCase}Adapter - ${pascalCase} 模組完整適配器
+ *
+ * 責任：
+ * 1. 從 PlanetCore 取得框架服務（Redis/Cache 可能為 undefined）
+ * 2. 適配為框架無關的介面
+ * 3. 組裝 ${pascalCase}Service + ${pascalCase}Controller
+ * 4. 透過 IModuleRouter 註冊路由
+ *
+ * 這是唯一知道 Gravito 框架細節的地方。
+ * 所有業務邏輯層完全無框架耦合。
+ */
+
+import type { PlanetCore } from '@gravito/core'
+${flags.redis ? "import type { RedisClientContract } from '@gravito/plasma'" : ''}
+${flags.cache ? "import type { CacheManager } from '@gravito/stasis'" : ''}
+${imports.join('\n')}
+import { createGravitoModuleRouter } from './GravitoModuleRouter'
+${flags.redis ? "import { GravitoRedisAdapter } from './GravitoRedisAdapter'" : ''}
+${flags.cache ? "import { GravitoCacheAdapter } from './GravitoCacheAdapter'" : ''}
+${flags.db ? "import { createGravitoDatabaseConnectivityCheck } from './GravitoDatabaseAdapter'" : ''}
+import { ${pascalCase}Repository } from '@/Modules/${pascalCase}/Infrastructure/Repositories/${pascalCase}Repository'
+import { ${pascalCase}Controller } from '@/Modules/${pascalCase}/Presentation/Controllers/${pascalCase}Controller'
+import { register${pascalCase}Routes } from '@/Modules/${pascalCase}/Presentation/Routes/${moduleName}.routes'
+
+/**
+ * 註冊 ${pascalCase} 模組與 Gravito 框架
+ */
+export function register${pascalCase}WithGravito(core: PlanetCore): void {
+	// 從 PlanetCore 容器提取原始服務
+${flags.redis ? "\tconst rawRedis = core.container.make<RedisClientContract | undefined>('redis')" : ''}
+${flags.cache ? "\tconst rawCache = core.container.make<CacheManager | undefined>('cache')" : ''}
+
+	// 適配為框架無關的介面（null 表示未設定）
+${flags.redis ? "\tconst redis = rawRedis ? new GravitoRedisAdapter(rawRedis) : null" : ''}
+${flags.cache ? "\tconst cache = rawCache ? new GravitoCacheAdapter(rawCache) : null" : ''}
+${flags.db ? "\tconst databaseCheck = createGravitoDatabaseConnectivityCheck()" : ''}
+
+	// 組裝應用層
+	const repository = new ${pascalCase}Repository()
+	const controller = new ${pascalCase}Controller(repository)
+
+	// 建立框架無關的路由介面
+	const router = createGravitoModuleRouter(core)
+
+	// 透過 IModuleRouter 註冊路由
+	register${pascalCase}Routes(router, controller)
+}
+`
+			await writeFile(
+				join('src/adapters', `Gravito${pascalCase}Adapter.ts`),
+				adapterContent,
+			)
+			console.log(`  ✓ src/adapters/Gravito${pascalCase}Adapter.ts`)
+		}
+
 		console.log(`\n✅ 模組 ${pascalCase} 生成成功！`)
 		console.log(`\n📝 後續步驟：`)
 		console.log(`1. 在 src/app.ts 中使用適配器註冊 ${pascalCase}ServiceProvider`)
 		console.log(`2. 在 src/wiring/index.ts 中添加 register${pascalCase}() 函式`)
+		if (flags.redis || flags.cache || flags.db) {
+			console.log(`   💡 提示：已自動生成 src/adapters/Gravito${pascalCase}Adapter.ts`)
+			console.log(`   在 wiring 層中調用 register${pascalCase}WithGravito(core)`)
+		}
 		console.log(`3. 在 src/routes.ts 中調用 register${pascalCase}(core)`)
 		console.log(`4. 根據需要修改 Domain/、Application/ 層的實現`)
 	} catch (error) {
