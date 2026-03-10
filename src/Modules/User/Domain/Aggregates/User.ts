@@ -21,6 +21,20 @@ export class User {
     })
   }
 
+  static fromDatabase(data: {
+    id: string
+    name: string
+    email: string
+    created_at?: string | Date
+  }): User {
+    return new User({
+      id: data.id,
+      name: data.name,
+      email: data.email,
+      createdAt: data.created_at instanceof Date ? data.created_at : new Date(data.created_at || new Date()),
+    })
+  }
+
   get id(): string {
     return this.props.id
   }
