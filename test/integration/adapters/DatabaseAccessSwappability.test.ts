@@ -201,14 +201,16 @@ describe('Atlas DatabaseAccess - 可替換性驗證', () => {
 })
 
 /**
- * 待實現：Drizzle 適配器測試
- * describe('Drizzle DatabaseAccess - 可替換性驗證', () => {
- *   createDatabaseAccessSwappabilityTests(
- *     'Drizzle',
- *     () => createDrizzleDatabaseAccess()
- *   )
- * })
+ * Drizzle 適配器測試
  */
+import { createDrizzleDatabaseAccess } from '@/adapters/Drizzle'
+
+describe('Drizzle DatabaseAccess - 可替換性驗證', () => {
+  createDatabaseAccessSwappabilityTests(
+    'Drizzle',
+    () => createDrizzleDatabaseAccess()
+  )
+})
 
 /**
  * 待實現：Prisma 適配器測試
