@@ -25,9 +25,6 @@
     "forceConsistentCasingInFileNames": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@gravito/core": ["./node_modules/@gravito/core/dist/index.js"],
-      "@gravito/core/ffi": ["./node_modules/@gravito/core/dist/ffi/index.js"],
-      "@gravito/core/events": ["./node_modules/@gravito/core/dist/events/index.js"],
       "@gravito/plasma": ["./node_modules/@gravito/plasma/dist/index.js"],
       "@gravito/prism": ["./node_modules/@gravito/prism/dist/index.js"],
       "@gravito/signal": ["./node_modules/@gravito/signal/dist/index.mjs"],

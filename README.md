@@ -93,6 +93,14 @@ gravito-ddd-starter/
 
 所有自動生成的模組都會自動使用這些基礎類別！
 
+## 📚 Documentation
+
+Learn the architecture and best practices:
+
+- **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - Four-layer DDD architecture, design patterns, and data flow
+- **[MODULE_GUIDE.md](./docs/MODULE_GUIDE.md)** - Step-by-step guide to creating new modules with examples
+- **[TROUBLESHOOTING.md](./docs/TROUBLESHOOTING.md)** - Common issues and solutions
+
 ## 🛠️ Development Workflow
 
 ### Adding a New Module (Automatic with @gravito/pulse)
