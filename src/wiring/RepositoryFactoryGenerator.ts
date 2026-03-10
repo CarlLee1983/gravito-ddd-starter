@@ -94,14 +94,14 @@ export function createRepositoryFactory(factoryMap: RepositoryFactoryMap) {
 		// 調用工廠函數
 		// memory 不需要 db，其他 ORM 需要 db
 		if (orm === 'memory') {
-			return factory()
+			return (factory as () => any)()
 		} else {
 			if (!db) {
 				throw new Error(
 					`❌ ORM="${orm}" 需要 DatabaseAccess，但未提供`
 				)
 			}
-			return factory(db)
+			return (factory as (db: IDatabaseAccess) => any)(db)
 		}
 	}
 }

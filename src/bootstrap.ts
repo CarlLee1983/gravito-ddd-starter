@@ -25,6 +25,8 @@ import { registerRoutes } from './routes'
 import { initializeRegistry } from './wiring/RepositoryRegistry'
 import { registerUserRepositories } from './Modules/User/Infrastructure/Providers/registerUserRepositories'
 import { registerPostRepositories } from './Modules/Post/Infrastructure/Providers/registerPostRepositories'
+import { getCurrentORM, getDatabaseAccess } from './wiring/RepositoryFactory'
+import { FactoryMapBuilder } from './wiring/FactoryMapBuilder'
 
 export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	// Step 1: Build application configuration
@@ -34,13 +36,19 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	// 所有 Repository 工廠都會註冊到這個全局 Registry
 	initializeRegistry()
 
-	// Step 3: Register all Repository factories（每個模組註冊它的 Repository 工廠）
-	// 這個步驟集中了所有 ORM 選擇邏輯
-	// 新增模組時，在此加入 registerXRepositories() 呼叫
-	registerUserRepositories()
-	registerPostRepositories()
-	// registerOrderRepositories()  // 未來：新增 Order 模組時
-	// registerProductRepositories() // 未來：新增 Product 模組時
+	// Step 3: Register all Repository factories（通過 FactoryMapBuilder 注入 ORM 選擇）
+	// FactoryMapBuilder 是應用的核心決策點：決定每個模組使用哪個 ORM 實現
+	// 所有模組都對選擇無感知，完全由上層控制
+	const orm = getCurrentORM()
+	const db = orm !== 'memory' ? getDatabaseAccess() : undefined
+	const factoryBuilder = new FactoryMapBuilder(orm, db)
+
+	// 為每個模組注入相應的 ORM 實現映射
+	// 模組本身完全不知道自己使用的是什麼 ORM（完全透明）
+	registerUserRepositories(factoryBuilder.build('user'))
+	registerPostRepositories(factoryBuilder.build('post'))
+	// registerOrderRepositories(factoryBuilder.build('order'))   // 未來：新增 Order 模組時
+	// registerProductRepositories(factoryBuilder.build('product')) // 未來：新增 Product 模組時
 
 	// Step 4: Initialize Gravito core with configuration
 	const config = defineConfig({

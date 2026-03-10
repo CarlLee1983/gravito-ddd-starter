@@ -43,6 +43,12 @@ import { registerHealthWithGravito } from '@/adapters/GravitoHealthAdapter'
 import { createGravitoModuleRouter } from '@/adapters/GravitoModuleRouter'
 import { getCurrentORM, getDatabaseAccess } from './RepositoryFactory'
 
+// 核心導出（應用啟動時使用）
+export { FactoryMapBuilder, createFactoryMapBuilder } from './FactoryMapBuilder'
+export { getCurrentORM, getDatabaseAccess } from './RepositoryFactory'
+export { initializeRegistry, getRegistry, resetRegistry } from './RepositoryRegistry'
+export { createRepositoryFactory } from './RepositoryFactoryGenerator'
+
 /**
  * 應用啟動時的 ORM 配置摘要
  *

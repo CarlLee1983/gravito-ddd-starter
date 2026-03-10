@@ -1,39 +1,41 @@
 /**
  * User 模組 Repository 工廠註冊
  *
- * 使用 RepositoryFactoryGenerator 消除重複代碼
- * 只需定義 Repository 類的映射，工廠邏輯自動生成
+ * 架構特點：
+ * ✅ 模組對 ORM 實現完全無感知
+ * ✅ Repository 映射由上層 bootstrap 層通過 FactoryMapBuilder 注入
+ * ✅ 模組只負責註冊，不負責選擇實現
+ * ✅ Memory 實現只在開發/測試環境被注入
  *
- * 設計優勢：
- * - ✅ 無重複代碼（使用工廠生成器）
- * - ✅ 簡潔清晰
- * - ✅ 易於擴展（新增 ORM 時只改映射）
- * - ✅ 類型安全
+ * 使用流程：
+ * 1. bootstrap.ts 中：const builder = new FactoryMapBuilder(orm, db)
+ * 2. bootstrap.ts 中：registerUserRepositories(builder.build('user'))
+ * 3. 此函數負責註冊到全局 Registry
  */
 
-import { UserRepository } from '../Persistence/UserRepository'
-import { DrizzleUserRepository } from '@/adapters/Drizzle/Repositories/DrizzleUserRepository'
+import type { RepositoryFactoryMap } from '@/wiring/RepositoryFactoryGenerator'
 import { createRepositoryFactory } from '@/wiring/RepositoryFactoryGenerator'
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 
 /**
  * 註冊 User Repository 工廠到全局 Registry
  *
- * 使用 createRepositoryFactory 消除 switch/case 重複代碼
+ * 注意：Repository 映射由上層注入，模組無需關心 ORM 選擇
+ *
+ * @param factoryMap 由 FactoryMapBuilder.build('user') 提供的工廠映射
  *
  * @example
- * registerUserRepositories()
+ * // 在 bootstrap.ts 中
+ * const builder = new FactoryMapBuilder('drizzle', db)
+ * registerUserRepositories(builder.build('user'))
  */
-export function registerUserRepositories(): void {
+export function registerUserRepositories(
+	factoryMap: RepositoryFactoryMap
+): void {
 	const registry = getRegistry()
 
-	// 定義 Repository 映射（簡潔！）
-	const factory = createRepositoryFactory({
-		memory: () => new UserRepository(),
-		drizzle: (db) => new DrizzleUserRepository(db!),
-		// atlas: (db) => new AtlasUserRepository(db!),      // 未來
-		// prisma: (db) => new PrismaUserRepository(db!),    // 未來
-	})
+	// 使用 FactoryMapBuilder 提供的映射建立工廠
+	const factory = createRepositoryFactory(factoryMap)
 
 	registry.register('user', factory)
 	console.log('✅ [User] Repository 工廠已註冊')
