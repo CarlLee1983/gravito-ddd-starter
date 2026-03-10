@@ -1,0 +1,31 @@
+{
+  "name": "gravito-ddd-starter",
+  "version": "1.0.0",
+  "description": "Clean Gravito DDD starter template - Generate your own modules with the CLI",
+  "private": true,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "build": "bun build src/index.ts --outdir dist --format esm",
+    "start": "bun dist/index.js",
+    "test": "bun test",
+    "test:watch": "bun test --watch",
+    "typecheck": "bun run tsc --noEmit",
+    "lint": "biome lint src tests",
+    "format": "biome format src tests --write",
+    "generate:module": "echo 'Install @cmg/scaffold-cli to generate modules: bun add -D @cmg/scaffold-cli && bun gravito module generate'"
+  },
+  "dependencies": {
+    "@gravito/core": "^1.0.0",
+    "@gravito/atlas": "^1.0.0",
+    "@gravito/sentinel": "^1.0.0",
+    "@gravito/signal": "^1.0.0"
+  },
+  "devDependencies": {
+    "@cmg/scaffold-cli": "^1.0.0",
+    "bun-types": "latest",
+    "typescript": "^5.3.0",
+    "biome": "latest"
+  }
+}
