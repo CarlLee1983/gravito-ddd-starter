@@ -44,7 +44,7 @@ import { createGravitoModuleRouter } from '@/adapters/GravitoModuleRouter'
 import { getCurrentORM, getDatabaseAccess } from './RepositoryFactory'
 
 // 核心導出（應用啟動時使用）
-export { FactoryMapBuilder, createFactoryMapBuilder } from './FactoryMapBuilder'
+export { DatabaseAccessBuilder, createDatabaseAccess } from './DatabaseAccessBuilder'
 export { getCurrentORM, getDatabaseAccess } from './RepositoryFactory'
 export { initializeRegistry, getRegistry, resetRegistry } from './RepositoryRegistry'
 export { createRepositoryFactory } from './RepositoryFactoryGenerator'

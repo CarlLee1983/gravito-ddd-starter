@@ -25,30 +25,34 @@ import { registerRoutes } from './routes'
 import { initializeRegistry } from './wiring/RepositoryRegistry'
 import { registerUserRepositories } from './Modules/User/Infrastructure/Providers/registerUserRepositories'
 import { registerPostRepositories } from './Modules/Post/Infrastructure/Providers/registerPostRepositories'
-import { getCurrentORM, getDatabaseAccess } from './wiring/RepositoryFactory'
-import { FactoryMapBuilder } from './wiring/FactoryMapBuilder'
+import { getCurrentORM } from './wiring/RepositoryFactory'
+import { DatabaseAccessBuilder } from './wiring/DatabaseAccessBuilder'
 
 export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	// Step 1: Build application configuration
 	const configObj = buildConfig(port)
 
-	// Step 2: Initialize RepositoryRegistry（關鍵步驟：初始化 ORM 工廠註冊點）
+	// Step 2: Initialize RepositoryRegistry（關鍵步驟：初始化 Repository 註冊點）
 	// 所有 Repository 工廠都會註冊到這個全局 Registry
 	initializeRegistry()
 
-	// Step 3: Register all Repository factories（通過 FactoryMapBuilder 注入 ORM 選擇）
-	// FactoryMapBuilder 是應用的核心決策點：決定每個模組使用哪個 ORM 實現
-	// 所有模組都對選擇無感知，完全由上層控制
+	// Step 3: Register all Repository factories（通過 DatabaseAccessBuilder 注入 IDatabaseAccess）
+	// DatabaseAccessBuilder 是應用的核心決策點：決定 Repository 使用內存還是數據庫
+	//
+	// 架構重點：
+	// - 只有一個 UserRepository 和 PostRepository 類
+	// - 根據 IDatabaseAccess 決定使用內存（Map）或數據庫（db.table().where()...）
+	// - 所有模組完全對 ORM 無感知，完全透明
 	const orm = getCurrentORM()
-	const db = orm !== 'memory' ? getDatabaseAccess() : undefined
-	const factoryBuilder = new FactoryMapBuilder(orm, db)
+	const dbBuilder = new DatabaseAccessBuilder(orm)
+	const db = dbBuilder.getDatabaseAccess()
 
-	// 為每個模組注入相應的 ORM 實現映射
-	// 模組本身完全不知道自己使用的是什麼 ORM（完全透明）
-	registerUserRepositories(factoryBuilder.build('user'))
-	registerPostRepositories(factoryBuilder.build('post'))
-	// registerOrderRepositories(factoryBuilder.build('order'))   // 未來：新增 Order 模組時
-	// registerProductRepositories(factoryBuilder.build('product')) // 未來：新增 Product 模組時
+	// 為每個模組注入 IDatabaseAccess
+	// Repository 內部根據 db 是否存在自動選擇實現模式
+	registerUserRepositories(db)
+	registerPostRepositories(db)
+	// registerOrderRepositories(db)   // 未來：新增 Order 模組時
+	// registerProductRepositories(db) // 未來：新增 Product 模組時
 
 	// Step 4: Initialize Gravito core with configuration
 	const config = defineConfig({

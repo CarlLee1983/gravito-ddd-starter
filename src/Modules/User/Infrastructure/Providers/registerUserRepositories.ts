@@ -1,41 +1,49 @@
 /**
  * User 模組 Repository 工廠註冊
  *
- * 架構特點：
- * ✅ 模組對 ORM 實現完全無感知
- * ✅ Repository 映射由上層 bootstrap 層通過 FactoryMapBuilder 注入
- * ✅ 模組只負責註冊，不負責選擇實現
- * ✅ Memory 實現只在開發/測試環境被注入
+ * 架構特點（完全重構）：
+ * ✅ Repository 完全對 ORM 實現無感知
+ * ✅ IDatabaseAccess 由上層 bootstrap 層通過 DatabaseAccessBuilder 注入
+ * ✅ UserRepository 根據 IDatabaseAccess 是否存在自動選擇內存或數據庫模式
+ * ✅ 無需為每個 ORM 創建不同的 Repository 類
  *
  * 使用流程：
- * 1. bootstrap.ts 中：const builder = new FactoryMapBuilder(orm, db)
- * 2. bootstrap.ts 中：registerUserRepositories(builder.build('user'))
- * 3. 此函數負責註冊到全局 Registry
+ * 1. bootstrap.ts 中：const orm = getCurrentORM()
+ * 2. bootstrap.ts 中：const db = new DatabaseAccessBuilder(orm).getDatabaseAccess()
+ * 3. bootstrap.ts 中：registerUserRepositories(db)
+ * 4. 此函數接收 IDatabaseAccess，創建 UserRepository 實例
  */
 
-import type { RepositoryFactoryMap } from '@/wiring/RepositoryFactoryGenerator'
-import { createRepositoryFactory } from '@/wiring/RepositoryFactoryGenerator'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import { UserRepository } from '../Persistence/UserRepository'
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 
 /**
  * 註冊 User Repository 工廠到全局 Registry
  *
- * 注意：Repository 映射由上層注入，模組無需關心 ORM 選擇
+ * 簡潔設計：
+ * - 接收上層決定的 IDatabaseAccess（可能是 undefined 或具體實現）
+ * - 建立 UserRepository 實例並註冊到 Registry
+ * - UserRepository 內部根據 IDatabaseAccess 決定實現方式
  *
- * @param factoryMap 由 FactoryMapBuilder.build('user') 提供的工廠映射
+ * @param db 由 DatabaseAccessBuilder 提供的 IDatabaseAccess
+ *          - undefined：使用內存實現
+ *          - IDatabaseAccess：使用數據庫實現
  *
  * @example
  * // 在 bootstrap.ts 中
- * const builder = new FactoryMapBuilder('drizzle', db)
- * registerUserRepositories(builder.build('user'))
+ * const orm = getCurrentORM()
+ * const db = new DatabaseAccessBuilder(orm).getDatabaseAccess()
+ * registerUserRepositories(db)
  */
-export function registerUserRepositories(
-	factoryMap: RepositoryFactoryMap
-): void {
+export function registerUserRepositories(db: IDatabaseAccess | undefined): void {
 	const registry = getRegistry()
 
-	// 使用 FactoryMapBuilder 提供的映射建立工廠
-	const factory = createRepositoryFactory(factoryMap)
+	// 建立 UserRepository 工廠
+	// 重要：這是唯一的 UserRepository，不管使用什麼 ORM
+	const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
+		return new UserRepository(db)
+	}
 
 	registry.register('user', factory)
 	console.log('✅ [User] Repository 工廠已註冊')

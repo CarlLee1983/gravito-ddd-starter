@@ -1,15 +1,18 @@
 /**
- * Post 資料倉儲實現 (Atlas ORM)
+ * Post 資料倉儲實現 (ORM 無關)
  *
  * @internal - 此實現是基礎設施層細節，應通過 IPostRepository 使用
  *
- * 實現了 IPostRepository 介面，隱藏所有 ORM 細節。
- * 使用 IDatabaseAccess 進行所有資料庫操作，確保 ORM 無關性。
+ * 設計：
+ * - 接收可選的 IDatabaseAccess，若提供則使用資料庫，否則使用內存
+ * - 實現了 IPostRepository 介面，隱藏所有 ORM 細節
+ * - 使用 IDatabaseAccess 進行所有資料庫操作，確保 ORM 無關性
  *
- * @design
- * - 構造函數只依賴 IDatabaseAccess（公開介面）
- * - 提供 toDomain() 和 toRow() 轉換方法隱藏資料層細節
- * - 所有資料庫操作使用 IDatabaseAccess，不使用原生 ORM API
+ * 架構優勢：
+ * ✅ 只有一個 Repository 實現（無 DrizzlePostRepository 等）
+ * ✅ 透過 IDatabaseAccess 支援任何 ORM
+ * ✅ 內存和數據庫模式共用同一個代碼
+ * ✅ 完全對 ORM 選擇透明
  *
  * @see docs/REPOSITORY_ABSTRACTION_TEMPLATE.md - Repository 最佳實踐
  */
@@ -26,10 +29,19 @@ interface Post {
 }
 
 export class PostRepository implements IPostRepository {
+	// 內存存儲（當 IDatabaseAccess 不提供時使用）
+	private memoryPosts: Map<string, Post> = new Map()
+	// 數據庫存儲（可選）
+	private db: IDatabaseAccess | undefined
+
 	/**
-	 * 構造函數只依賴 IDatabaseAccess（ORM 無關介面）
+	 * @param db 可選的數據庫存取接口
+	 *           - 若提供：使用真實數據庫（Drizzle/Prisma/Atlas）
+	 *           - 若不提供：使用內存存儲（開發/測試）
 	 */
-	constructor(private db: IDatabaseAccess) {}
+	constructor(db?: IDatabaseAccess) {
+		this.db = db
+	}
 
 	// ============================================
 	// 基礎 CRUD 操作（實現 IRepository<Post>）
@@ -41,13 +53,19 @@ export class PostRepository implements IPostRepository {
 	 * @param entity - Post 實體
 	 */
 	async save(entity: any): Promise<void> {
-		const row = this.toRow(entity)
-		const exists = await this.findById(entity.id)
+		if (this.db) {
+			// 數據庫模式
+			const row = this.toRow(entity)
+			const exists = await this.findById(entity.id)
 
-		if (exists) {
-			await this.db.table('posts').where('id', '=', entity.id).update(row)
+			if (exists) {
+				await this.db.table('posts').where('id', '=', entity.id).update(row)
+			} else {
+				await this.db.table('posts').insert(row)
+			}
 		} else {
-			await this.db.table('posts').insert(row)
+			// 內存模式
+			this.memoryPosts.set(entity.id, entity)
 		}
 	}
 
@@ -58,9 +76,14 @@ export class PostRepository implements IPostRepository {
 	 * @returns Post 實體或 null
 	 */
 	async findById(id: string): Promise<any | null> {
-		const row = await this.db.table('posts').where('id', '=', id).first()
-
-		return row ? this.toDomain(row) : null
+		if (this.db) {
+			// 數據庫模式
+			const row = await this.db.table('posts').where('id', '=', id).first()
+			return row ? this.toDomain(row) : null
+		} else {
+			// 內存模式
+			return this.memoryPosts.get(id) || null
+		}
 	}
 
 	/**
@@ -69,7 +92,13 @@ export class PostRepository implements IPostRepository {
 	 * @param id - Post ID
 	 */
 	async delete(id: string): Promise<void> {
-		await this.db.table('posts').where('id', '=', id).delete()
+		if (this.db) {
+			// 數據庫模式
+			await this.db.table('posts').where('id', '=', id).delete()
+		} else {
+			// 內存模式
+			this.memoryPosts.delete(id)
+		}
 	}
 
 	/**
@@ -79,27 +108,48 @@ export class PostRepository implements IPostRepository {
 	 * @returns Post 實體陣列
 	 */
 	async findAll(params?: { limit?: number; offset?: number }): Promise<any[]> {
-		let query = this.db.table('posts')
+		if (this.db) {
+			// 數據庫模式
+			let query = this.db.table('posts')
 
-		if (params?.offset) {
-			query = query.offset(params.offset)
-		}
-		if (params?.limit) {
-			query = query.limit(params.limit)
-		}
+			if (params?.offset) {
+				query = query.offset(params.offset)
+			}
+			if (params?.limit) {
+				query = query.limit(params.limit)
+			}
 
-		const rows = await query.select()
-		return rows.map((row) => this.toDomain(row))
+			const rows = await query.select()
+			return rows.map((row) => this.toDomain(row))
+		} else {
+			// 內存模式
+			let posts = Array.from(this.memoryPosts.values())
+
+			// 應用分頁
+			if (params?.offset) {
+				posts = posts.slice(params.offset)
+			}
+			if (params?.limit) {
+				posts = posts.slice(0, params.limit)
+			}
+
+			return posts
+		}
 	}
 
 	/**
 	 * 計算 Post 總數
 	 *
-	 * @param _params - 過濾條件（當前未使用）
 	 * @returns Post 總數
 	 */
-	async count(_params?: { [key: string]: any }): Promise<number> {
-		return this.db.table('posts').count()
+	async count(): Promise<number> {
+		if (this.db) {
+			// 數據庫模式
+			return this.db.table('posts').count()
+		} else {
+			// 內存模式
+			return this.memoryPosts.size
+		}
 	}
 
 	// ============================================
