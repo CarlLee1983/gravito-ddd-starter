@@ -18,7 +18,7 @@ import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/IDataba
 import { createGravitoModuleRouter } from './GravitoModuleRouter'
 
 
-import { createGravitoDatabaseConnectivityCheck } from './GravitoDatabaseAdapter'
+import { createGravitoDatabaseConnectivityCheck } from './Atlas'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { PostController } from '@/Modules/Post/Presentation/Controllers/PostController'
 import { registerPostRoutes } from '@/Modules/Post/Presentation/Routes/Post.routes'
