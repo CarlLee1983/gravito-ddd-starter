@@ -6,6 +6,7 @@
  */
 
 import type { PlanetCore } from '@gravito/core'
+import { registerHealthRoutes } from './Modules/Health/Presentation/Routes/health.routes'
 import { registerUserRoutes } from './Modules/User/Presentation/Routes/api'
 
 /**
@@ -14,26 +15,25 @@ import { registerUserRoutes } from './Modules/User/Presentation/Routes/api'
  * @param core - Gravito core instance
  */
 export async function registerRoutes(core: PlanetCore) {
-  // Health check endpoint
-  core.router.get('/health', async (ctx) => {
-    return ctx.json({
-      success: true,
-      status: 'healthy',
-      timestamp: new Date().toISOString(),
-    })
-  })
-
   // API root
   core.router.get('/api', async (ctx) => {
     return ctx.json({
       success: true,
       message: 'Welcome to Gravito DDD API',
       version: '1.0.0',
-      hint: 'Module generated: User',
+      endpoints: {
+        health: '/health',
+        healthHistory: '/health/history',
+        users: '/api/users'
+      }
     })
   })
 
-  // Register User module routes
+  // Register module routes
+  // Health module (system health checks)
+  await registerHealthRoutes(core)
+
+  // User module (example DDD module)
   await registerUserRoutes(core)
 
   console.log('✅ Routes registered')
