@@ -1,5 +1,6 @@
 /**
  * User Controller
+ * 控制器接收依賴注入，不直接創建依賴
  */
 
 import type { GravitoContext, PlanetCore } from '@gravito/core'
@@ -7,23 +8,33 @@ import type { CreateUserHandler } from '../../Application/Commands/CreateUser/Cr
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 
 export class UserController {
+  constructor(
+    private repository: IUserRepository,
+    private createUserHandler: CreateUserHandler
+  ) {}
+
   /**
    * GET /api/users
    */
   async index(ctx: GravitoContext) {
-    const core = ctx.get('core') as PlanetCore
-    const userRepository = core.container.make('userRepository') as IUserRepository
-    const users = await userRepository.list()
+    try {
+      const users = await this.repository.list()
 
-    return ctx.json({
-      success: true,
-      data: users.map((u: any) => ({
-        id: u.id,
-        name: u.name,
-        email: u.email,
-        createdAt: u.createdAt.toISOString(),
-      }))
-    })
+      return ctx.json({
+        success: true,
+        data: users.map((u: any) => ({
+          id: u.id,
+          name: u.name,
+          email: u.email,
+          createdAt: u.createdAt.toISOString(),
+        }))
+      })
+    } catch (error: any) {
+      return ctx.json({
+        success: false,
+        message: error.message || 'Failed to list users'
+      }, 500)
+    }
   }
 
   /**
@@ -32,10 +43,16 @@ export class UserController {
   async store(ctx: GravitoContext) {
     try {
       const body = await ctx.req.json<{ name: string; email: string }>()
-      const core = ctx.get('core') as PlanetCore
-      const createUserHandler = core.container.make('createUserHandler') as CreateUserHandler
 
-      const user = await createUserHandler.handle({
+      // 驗證輸入
+      if (!body.name || !body.email) {
+        return ctx.json({
+          success: false,
+          message: 'Missing required fields: name, email'
+        }, 400)
+      }
+
+      const user = await this.createUserHandler.handle({
         name: body.name,
         email: body.email,
       })
@@ -48,7 +65,7 @@ export class UserController {
     } catch (error: any) {
       return ctx.json({
         success: false,
-        message: error.message,
+        message: error.message || 'Failed to create user'
       }, 400)
     }
   }
@@ -57,26 +74,39 @@ export class UserController {
    * GET /api/users/:id
    */
   async show(ctx: GravitoContext) {
-    const id = ctx.req.param('id')
-    const core = ctx.get('core') as PlanetCore
-    const userRepository = core.container.make('userRepository') as IUserRepository
-    const user = await userRepository.findById(id!)
+    try {
+      const id = ctx.req.param('id')
 
-    if (!user) {
+      if (!id) {
+        return ctx.json({
+          success: false,
+          message: 'User ID is required'
+        }, 400)
+      }
+
+      const user = await this.repository.findById(id)
+
+      if (!user) {
+        return ctx.json({
+          success: false,
+          message: 'User not found'
+        }, 404)
+      }
+
+      return ctx.json({
+        success: true,
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          createdAt: user.createdAt.toISOString(),
+        }
+      })
+    } catch (error: any) {
       return ctx.json({
         success: false,
-        message: 'User not found',
-      }, 404)
+        message: error.message || 'Failed to get user'
+      }, 500)
     }
-
-    return ctx.json({
-      success: true,
-      data: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        createdAt: user.createdAt.toISOString(),
-      }
-    })
   }
 }
