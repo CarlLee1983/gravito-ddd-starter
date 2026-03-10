@@ -22,7 +22,7 @@
     "format": "biome format src tests --write",
     "format:check": "biome format src tests --check",
     "check": "bun run typecheck && bun run lint && bun run test",
-    "generate:module": "bun add -D @gravito/pulse && bun gravito module generate",
+    "generate:module": "bun scripts/generate-module.ts",
     "setup:hooks": "bash scripts/setup-hooks.sh"
   },
   "dependencies": {
