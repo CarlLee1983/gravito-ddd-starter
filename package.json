@@ -10,40 +10,30 @@
     "start": "bun dist/index.js",
     "test": "bun test",
     "test:watch": "bun test --watch",
+    "test:user": "bun test src/Modules/User/tests",
     "typecheck": "bun run tsc --noEmit",
     "lint": "biome lint src tests",
     "format": "biome format src tests --write",
     "generate:module": "echo 'Install @gravito/pulse to generate modules: bun add -D @gravito/pulse && bun gravito module generate'"
   },
   "dependencies": {
-    "@gravito/atlas": "^1.6.0",
-    "@gravito/core": "^1.6.1",
+    "@gravito/atlas": "^2.0.0",
+    "@gravito/core": "^2.0.0",
     "@gravito/plasma": "^2.0.0",
     "@gravito/prism": "^3.1.1",
     "@gravito/sentinel": "^4.0.1",
-    "@gravito/signal": "^3.0.4",
-    "@gravito/stasis": "^3.1.1"
+    "@gravito/signal": "^3.1.0",
+    "@gravito/stasis": "^3.2.0"
   },
   "overrides": {
-    "@gravito/pulse": {
-      "@gravito/core": "$@gravito/core",
-      "@gravito/scaffold": "4.0.0",
-      "@gravito/chromatic": "1.0.0"
-    },
-    "@gravito/core": {
-      "@gravito/photon": "1.0.1"
-    },
-    "@gravito/sentinel": {
-      "@gravito/core": "$@gravito/core"
-    },
-    "@gravito/stasis": {
-      "@gravito/core": "$@gravito/core"
-    }
+    "@gravito/photon": "1.0.1",
+    "@gravito/scaffold": "4.1.0",
+    "@gravito/chromatic": "1.0.0"
   },
   "devDependencies": {
     "@gravito/pulse": "^3.4.0",
+    "biome": "latest",
     "bun-types": "latest",
-    "typescript": "^5.3.0",
-    "biome": "latest"
+    "typescript": "^5.3.0"
   }
 }

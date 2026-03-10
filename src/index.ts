@@ -5,23 +5,14 @@
  * Initializes the framework and starts the HTTP server
  */
 
-import { PlanetCore, defineConfig } from '@gravito/core'
-import { buildConfig } from '../config/index'
-import { registerRoutes } from './routes'
+import { createApp } from './app'
 
 async function bootstrap() {
-  // Build configuration
-  const configObj = buildConfig()
+  const core = await createApp()
+  const configObj = core.config.all()
 
-  // Initialize Gravito core
-  const config = defineConfig(configObj)
-  const core = new PlanetCore(config)
-
-  // Register all routes
-  await registerRoutes(core)
-
-  // Start server
-  await core.listen()
+  // Start server using liftoff
+  const server = core.liftoff(configObj.PORT as number)
 
   console.log(`
 ╔════════════════════════════════════════════╗
@@ -32,12 +23,15 @@ Environment: ${process.env.APP_ENV || 'development'}
 Server:      http://localhost:${configObj.PORT}
 
 📚 Docs:     https://github.com/gravito-framework/gravito
-🔧 Next:     bun add -D @gravito/pulse
-             bun gravito module generate <ModuleName>
+🔧 Next:     Module generated: User
 `)
+
+  return server
 }
 
-bootstrap().catch((error) => {
+const server = await bootstrap().catch((error) => {
   console.error('❌ Bootstrap failed:', error)
   process.exit(1)
 })
+
+export default server

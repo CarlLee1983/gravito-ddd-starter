@@ -5,13 +5,13 @@
     "": {
       "name": "gravito-ddd-starter",
       "dependencies": {
-        "@gravito/atlas": "^1.6.0",
-        "@gravito/core": "^1.6.1",
+        "@gravito/atlas": "^2.0.0",
+        "@gravito/core": "^2.0.0",
         "@gravito/plasma": "^2.0.0",
         "@gravito/prism": "^3.1.1",
         "@gravito/sentinel": "^4.0.1",
-        "@gravito/signal": "^3.0.4",
-        "@gravito/stasis": "^3.1.1",
+        "@gravito/signal": "^3.1.0",
+        "@gravito/stasis": "^3.2.0",
       },
       "devDependencies": {
         "@gravito/pulse": "^3.4.0",
@@ -23,9 +23,8 @@
   },
   "overrides": {
     "@gravito/chromatic": "1.0.0",
-    "@gravito/core": "1.6.1",
     "@gravito/photon": "1.0.1",
-    "@gravito/scaffold": "4.0.0",
+    "@gravito/scaffold": "4.1.0",
   },
   "packages": {
     "@asteasolutions/zod-to-openapi": ["@asteasolutions/zod-to-openapi@8.4.3", "", { "dependencies": { "openapi3-ts": "^4.1.2" }, "peerDependencies": { "zod": "^4.0.0" } }, "sha512-lwfMTN7kDbFDwMniYZUebiGGHxVGBw9ZSI4IBYjm6Ey22Kd5z/fsQb2k+Okr8WMbCCC553vi/ZM9utl5/XcvuQ=="],
@@ -90,11 +89,11 @@
 
     "@clack/prompts": ["@clack/prompts@0.7.0", "", { "dependencies": { "@clack/core": "^0.3.3", "picocolors": "^1.0.0", "sisteransi": "^1.0.5" } }, "sha512-0MhX9/B4iL6Re04jPrttDm+BsP8y6mS7byuv0BvXgdXhbV5PdlsHt55dvNsuBCPZ7xq1oTAOOuotR9NFbQyMSA=="],
 
-    "@gravito/atlas": ["@gravito/atlas@1.6.0", "", { "dependencies": { "@opentelemetry/api": "^1.9.0", "@opentelemetry/semantic-conventions": "^1.39.0", "lru-cache": "^11.0.2" }, "peerDependencies": { "better-sqlite3": "^11.0.0", "ioredis": "^5.8.2", "mongodb": "^6.0.0", "mysql2": "^3.9.0", "pg": "^8.11.0" }, "optionalPeers": ["better-sqlite3", "ioredis", "mongodb", "mysql2", "pg"], "bin": { "orbit": "src/cli.ts" } }, "sha512-qJmViiNIfHC3BxpmsmXg39B6SrhZISOu71NP7vDpDHlaX7i2uX+yWH2MZxeQQ70TiXrb+prEW2z+wWLNl8wTQQ=="],
+    "@gravito/atlas": ["@gravito/atlas@2.0.0", "", { "dependencies": { "@opentelemetry/api": "^1.9.0", "@opentelemetry/semantic-conventions": "^1.39.0", "lru-cache": "^11.0.2" }, "peerDependencies": { "better-sqlite3": "^11.0.0", "ioredis": "^5.8.2", "mongodb": "^6.0.0", "mysql2": "^3.9.0", "pg": "^8.11.0" }, "optionalPeers": ["better-sqlite3", "ioredis", "mongodb", "mysql2", "pg"], "bin": { "orbit": "src/cli.ts" } }, "sha512-RjbAt7pmwsSmC+DT58wM9mbDEnOgudHyUTVAZKnKJR1fTEAvJ78wT2PT275z2uMWZLnCwSecYTShgnIQWdwxjQ=="],
 
     "@gravito/chromatic": ["@gravito/chromatic@1.0.0", "", {}, "sha512-5FPXxhnZEOe44QXR30mBTZ65H3c2uP2OmMnSTyMAl1toiL+a04pJGNCg/ukfhKDQeSAlF8jsqFW25aPQjgmprA=="],
 
-    "@gravito/core": ["@gravito/core@1.6.1", "", { "dependencies": { "@gravito/photon": "^1.0.1", "zod": "^4.3.6" }, "peerDependencies": { "@opentelemetry/api": "^1.9.0", "@opentelemetry/exporter-jaeger": "^1.30.0", "@opentelemetry/exporter-metrics-otlp-http": "^0.57.0", "@opentelemetry/exporter-prometheus": "^0.57.0", "@opentelemetry/exporter-trace-otlp-http": "^0.57.0", "@opentelemetry/resources": "^1.30.0", "@opentelemetry/sdk-metrics": "^1.30.0", "@opentelemetry/sdk-trace-base": "^1.30.0", "@opentelemetry/sdk-trace-node": "^1.30.0" }, "optionalPeers": ["@opentelemetry/exporter-jaeger", "@opentelemetry/exporter-metrics-otlp-http", "@opentelemetry/exporter-prometheus", "@opentelemetry/exporter-trace-otlp-http", "@opentelemetry/resources", "@opentelemetry/sdk-metrics", "@opentelemetry/sdk-trace-base", "@opentelemetry/sdk-trace-node"] }, "sha512-Ra2h/3ZoRrs04oW32EVYVPhrTbY61rtwhWyBTLIT3YixqOWGiF1fEphnPUNSaOkQClPKD8ES08d2+eFzsEVA1w=="],
+    "@gravito/core": ["@gravito/core@2.0.0", "", { "dependencies": { "zod": "^4.3.6" } }, "sha512-PiXFnZi2IsxKzIFlDLxOupC48mKKS+mN/G2ggGraaOzYaJVKQG3hwkH9f6fH4khVkyuAiPzbCttr1itilrtiog=="],
 
     "@gravito/photon": ["@gravito/photon@1.0.1", "", { "dependencies": { "@hono/zod-openapi": "^1.2.0", "cborg": "^4.3.2", "hono": "^4.11.0", "zod": "^4.3.6" }, "peerDependencies": { "@opentelemetry/api": "^1.0.0" } }, "sha512-GEORohU0G+1ZP0J1XXOOD5juDMDpGLhqqvVcnkXt8e+vtWg0fA58L1CbAHA2phhT/83dc0W6d/ziC1/EfFxNUw=="],
 
@@ -104,7 +103,7 @@
 
     "@gravito/pulse": ["@gravito/pulse@3.4.0", "", { "dependencies": { "@clack/prompts": "^0.7.0", "@gravito/chromatic": "workspace:*", "@gravito/scaffold": "workspace:*", "cac": "^6.7.14", "giget": "^1.2.5", "node-fetch-native": "^1.6.7" }, "peerDependencies": { "@gravito/core": "^2.0.0" }, "bin": { "gravito": "bin/gravito.mjs" } }, "sha512-6FC/BrLfSYg3jVPUPXHXPYHKUcoVEiOIXiQIz1Jw/Nx/Xhpp37J3X2G2C3MD/BPnQGFjH5sWKRmMFfd/TyyFrQ=="],
 
-    "@gravito/scaffold": ["@gravito/scaffold@4.0.0", "", { "dependencies": { "handlebars": "^4.7.8" }, "peerDependencies": { "@gravito/core": "^1.6.1" } }, "sha512-crC47694Uk3p5y/GBNdUQ6zlm3/ZRDTEfpx2NGFmDH+YivD+r902nIQEJJqtKsb0KDuQH7NZ2wAGeBGdT1NcmA=="],
+    "@gravito/scaffold": ["@gravito/scaffold@4.1.0", "", { "dependencies": { "handlebars": "^4.7.8" }, "peerDependencies": { "@gravito/core": "^2.0.0" } }, "sha512-pTFpgQxmR9G59CmaNCrtgENYl9hndVmMwIGytLldGMy67pdulqoPGTiMcvsdVlrxZiGho9y7VcKqccqDdrNQLw=="],
 
     "@gravito/sentinel": ["@gravito/sentinel@4.0.1", "", { "peerDependencies": { "@gravito/core": "^1.6.1", "@gravito/photon": "^1.0.1" } }, "sha512-MPIwCd1nFCADfsu+vxLqNctzPcEheISRXvuBVMdXp8evhas7aonedu5ljjrQXUcllGgMpcn0aQDanzQLECldow=="],
 

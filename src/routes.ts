@@ -6,6 +6,7 @@
  */
 
 import type { PlanetCore } from '@gravito/core'
+import { registerUserRoutes } from './Modules/User/Presentation/Routes/api'
 
 /**
  * Register all application routes
@@ -28,14 +29,12 @@ export async function registerRoutes(core: PlanetCore) {
       success: true,
       message: 'Welcome to Gravito DDD API',
       version: '1.0.0',
-      hint: 'Use the CLI to generate new modules: bun gravito module generate <name>',
+      hint: 'Module generated: User',
     })
   })
 
-  // TODO: Register module routes here
-  // Example:
-  // import { registerPaymentRoutes } from './Modules/Payment'
-  // registerPaymentRoutes(core)
+  // Register User module routes
+  await registerUserRoutes(core)
 
   console.log('✅ Routes registered')
 }
