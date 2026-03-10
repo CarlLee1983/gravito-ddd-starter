@@ -7,9 +7,13 @@
  * - Controllers 接收 IHttpContext（無 GravitoContext 耦合）
  * - ServiceProvider 只負責領域服務依賴（繼承 ModuleServiceProvider）
  * - Wiring 層負責適配器 + DI 組裝
+ * - 可選基礎設施服務（Redis、Cache、Database）可自動生成適配器
  *
- * 用法: bun scripts/generate-module.ts <ModuleName>
- * 示例: bun scripts/generate-module.ts Product
+ * 用法: bun scripts/generate-module.ts <ModuleName> [--redis] [--cache] [--db]
+ * 示例:
+ *   bun scripts/generate-module.ts Product
+ *   bun scripts/generate-module.ts Order --redis --cache --db
+ *   bun scripts/generate-module.ts Session --redis
  */
 
 import { argv } from 'process'
@@ -17,10 +21,16 @@ import { mkdir, writeFile } from 'fs/promises'
 import { join } from 'path'
 
 const moduleName = argv[2]
+const flags = {
+	redis: argv.includes('--redis'),
+	cache: argv.includes('--cache'),
+	db: argv.includes('--db'),
+}
 
 if (!moduleName) {
 	console.error('❌ 錯誤：請提供模組名稱')
-	console.error('用法: bun scripts/generate-module.ts <ModuleName>')
+	console.error('用法: bun scripts/generate-module.ts <ModuleName> [--redis] [--cache] [--db]')
+	console.error('示例: bun scripts/generate-module.ts Order --redis --cache --db')
 	process.exit(1)
 }
 
