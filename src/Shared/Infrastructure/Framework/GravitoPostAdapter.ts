@@ -14,7 +14,7 @@
 import type { PlanetCore } from '@gravito/core'
 
 import { createGravitoModuleRouter } from './GravitoModuleRouter'
-import { createAtlasDatabaseAccess } from './Atlas'
+import { createAtlasDatabaseAccess } from '../Database/Adapters/Atlas'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { PostController } from '@/Modules/Post/Presentation/Controllers/PostController'
 import { registerPostRoutes } from '@/Modules/Post/Presentation/Routes/Post.routes'

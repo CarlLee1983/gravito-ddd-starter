@@ -79,12 +79,12 @@ export function getDatabaseAccess() {
 	}
 
 	if (orm === 'drizzle') {
-		const { createDrizzleDatabaseAccess } = require('@/adapters/Drizzle')
+		const { createDrizzleDatabaseAccess } = require('@/Shared/Infrastructure/Database/Adapters/Drizzle')
 		return createDrizzleDatabaseAccess()
 	}
 
 	if (orm === 'atlas') {
-		const { createAtlasDatabaseAccess } = require('@/adapters/Atlas')
+		const { createAtlasDatabaseAccess } = require('@/Shared/Infrastructure/Database/Adapters/Atlas')
 		return createAtlasDatabaseAccess()
 	}
 

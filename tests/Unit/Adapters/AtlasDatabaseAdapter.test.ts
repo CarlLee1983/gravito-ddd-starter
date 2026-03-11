@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'bun:test'
-import { AtlasQueryBuilder } from '@/adapters/Atlas/AtlasQueryBuilder'
+import { AtlasQueryBuilder } from '@/Shared/Infrastructure/Database/Adapters/Atlas/AtlasQueryBuilder'
 import type { IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
 
 describe('AtlasQueryBuilder', () => {

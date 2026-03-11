@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/MemoryDatabaseAccess'
+import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 import { UserRepository } from '../Infrastructure/Persistence/UserRepository'
 import { User } from '../Domain/Aggregates/User'
 

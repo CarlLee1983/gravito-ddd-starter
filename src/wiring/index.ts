@@ -39,8 +39,8 @@
 import type { PlanetCore } from '@gravito/core'
 import { registerUserRoutes } from '@/Modules/User/Presentation/Routes/api'
 import { UserController } from '@/Modules/User/Presentation/Controllers/UserController'
-import { registerHealthWithGravito } from '@/adapters/GravitoHealthAdapter'
-import { createGravitoModuleRouter } from '@/adapters/GravitoModuleRouter'
+import { registerHealthWithGravito } from '@/Shared/Infrastructure/Framework/GravitoHealthAdapter'
+import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Framework/GravitoModuleRouter'
 import { getCurrentORM, getDatabaseAccess } from './RepositoryFactory'
 
 // 核心導出（應用啟動時使用）

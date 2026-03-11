@@ -17,7 +17,7 @@
 
 import { PlanetCore, defineConfig } from '@gravito/core'
 import { buildConfig } from '../config/index'
-import { createGravitoServiceProvider } from './adapters/GravitoServiceProviderAdapter'
+import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Framework/GravitoServiceProviderAdapter'
 import { HealthServiceProvider } from './Modules/Health/Infrastructure/Providers/HealthServiceProvider'
 import { UserServiceProvider } from './Modules/User/Infrastructure/Providers/UserServiceProvider'
 import { PostServiceProvider } from './Modules/Post/Infrastructure/Providers/PostServiceProvider'

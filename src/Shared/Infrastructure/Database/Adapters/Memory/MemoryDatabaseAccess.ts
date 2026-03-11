@@ -7,7 +7,7 @@
  * @internal - 基礎設施預設實現，由上層決定是否使用
  */
 
-import type { IDatabaseAccess, IQueryBuilder } from './IDatabaseAccess'
+import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
 
 type WhereCondition = { column: string; operator: string; value: unknown }
 

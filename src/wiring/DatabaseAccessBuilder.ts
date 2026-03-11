@@ -32,7 +32,7 @@
  */
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
-import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/MemoryDatabaseAccess'
+import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 import type { ORMType } from './RepositoryFactory'
 import { getDatabaseAccess } from './RepositoryFactory'
 
