@@ -14,7 +14,7 @@
  * Post 模組（使用方，依賴 IAuthorService Port）
  */
 
-import type { IAuthorService, AuthorDTO } from '../../Application/Ports/IAuthorService'
+import type { IAuthorService, AuthorDTO } from '../../Domain/Ports/IAuthorService'
 import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
 
 /**
