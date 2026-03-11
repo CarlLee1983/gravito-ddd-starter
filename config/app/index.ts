@@ -11,12 +11,14 @@ import appConfig from './app'
 import cacheConfig from './cache'
 import databaseConfig from './database'
 import redisConfig from './redis'
+import { storageConfig } from './storage'
 
 export { default as app } from './app'
 export { default as cache } from './cache'
 export { default as database } from './database'
 export { default as redis } from './redis'
 export { getOrbits } from './orbits'
+export { storageConfig as storage } from './storage'
 
 export type { AppConfig } from './types'
 export type { OrbitRegistrationOptions } from './orbits'
@@ -37,6 +39,7 @@ export function buildConfig(portOverride?: number) {
 		...(useDatabase && { database: databaseConfig }),
 		cache: cacheConfig,
 		redis: redisConfig,
+		storage: storageConfig,
 	}
 }
 

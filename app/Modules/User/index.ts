@@ -1,0 +1,47 @@
+/**
+ * @file index.ts
+ * @description User 模組公開 API 導出與裝配定義
+ */
+
+import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+import { UserServiceProvider } from './Infrastructure/Providers/UserServiceProvider'
+import { registerUserRepositories } from './Infrastructure/Providers/registerUserRepositories'
+import { registerUser } from '@/wiring/index'
+
+// Domain - Aggregates
+export { User } from './Domain/Aggregates/User'
+
+// Domain - ValueObjects
+export { Email } from './Domain/ValueObjects/Email'
+export { UserName } from './Domain/ValueObjects/UserName'
+
+// Domain - Events
+export { UserCreated } from './Domain/Events/UserCreated'
+
+// Domain - Repositories
+export type { IUserRepository } from './Domain/Repositories/IUserRepository'
+
+// Application - Services
+export { CreateUserService } from './Application/Services/CreateUserService'
+
+// Application - DTOs
+export { UserDTO, type UserJSONData } from './Application/DTOs/UserDTO'
+
+// Infrastructure
+export { UserRepository } from './Infrastructure/Persistence/UserRepository'
+export { UserServiceProvider } from './Infrastructure/Providers/UserServiceProvider'
+
+// Presentation
+export { UserController } from './Presentation/Controllers/UserController'
+export { registerUserRoutes } from './Presentation/Routes/api'
+
+/**
+ * 裝配器專用的模組定義物件
+ * 使模組可被自動掃描裝配 (Auto-Wiring)
+ */
+export const UserModule: IModuleDefinition = {
+	name: 'User',
+	provider: UserServiceProvider,
+	registerRepositories: registerUserRepositories,
+	registerRoutes: registerUser
+}

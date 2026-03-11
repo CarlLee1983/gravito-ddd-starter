@@ -26,7 +26,9 @@
     "forceConsistentCasingInFileNames": true,
     "types": ["bun-types"],
     "paths": {
-      "@/*": ["./src/*"],
+      "@/*": ["./app/*"],
+      "start/*": ["./start/*"],
+      "providers/*": ["./providers/*"],
       "~/*": ["./resources/js/*"],
       "@gravito/atlas": ["./node_modules/@gravito/atlas"],
       "@gravito/core": ["./node_modules/@gravito/core"],
@@ -37,6 +39,6 @@
       "@gravito/stasis": ["./node_modules/@gravito/stasis"]
     }
   },
-  "include": ["src", "tests", "config", "types", "database", "resources"],
+  "include": ["app", "bin", "providers", "start", "tests", "config", "types", "database", "resources"],
   "exclude": ["node_modules", "dist"]
 }
