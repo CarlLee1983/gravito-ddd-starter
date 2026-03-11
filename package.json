@@ -44,7 +44,7 @@
     "generate:types": "bun orbit generate:types"
   },
   "dependencies": {
-    "@gravito/atlas": "^2.0.0",
+    "@gravito/atlas": "^2.3.0",
     "@gravito/core": "^2.0.0",
     "@gravito/plasma": "^2.0.0",
     "@gravito/prism": "^3.1.1",
@@ -55,6 +55,8 @@
     "drizzle-orm": "^0.45.1"
   },
   "overrides": {
+    "@gravito/atlas": "$@gravito/atlas",
+    "@gravito/core": "$@gravito/core",
     "@gravito/photon": "1.0.1",
     "@gravito/scaffold": "4.1.0",
     "@gravito/chromatic": "1.0.0"
@@ -64,6 +66,6 @@
     "biome": "latest",
     "bun-types": "latest",
     "drizzle-kit": "^0.31.9",
-    "typescript": "^5.3.0"
+    "typescript": "^5.9.3"
   }
 }
