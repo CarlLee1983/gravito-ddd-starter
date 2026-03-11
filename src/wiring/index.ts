@@ -46,7 +46,14 @@ export const registerUser = (core: PlanetCore): void => {
 	const router = createGravitoModuleRouter(core)
 
 	// 從容器中獲取服務 (已由 UserServiceProvider 註冊)
-	const repository = core.container.make('userRepository') as any
+	let repository: any
+	try {
+		repository = core.container.make('userRepository')
+	} catch {
+		// User Repository 未註冊時忽略路由註冊
+		console.warn('⚠️ User Repository not found in container, skipping User routes')
+		return
+	}
 
 	// 實例化控制器並註冊路由
 	const controller = new UserController(repository)
