@@ -1,15 +1,16 @@
 /**
- * Post Module
- * 公開 API 導出
+ * @file index.ts
+ * @description Post 模組的公開入口點
+ * @module src/Modules/Post
  */
 
-// Domain
+// Domain Layer
 export type { IPostRepository } from './Domain/Repositories/IPostRepository'
 
-// Presentation
+// Presentation Layer
 export { registerPostRoutes } from './Presentation/Routes/Post.routes'
 export { PostController } from './Presentation/Controllers/PostController'
 
-// Infrastructure
+// Infrastructure Layer
 export { PostRepository } from './Infrastructure/Repositories/PostRepository'
 export { PostServiceProvider } from './Infrastructure/Providers/PostServiceProvider'

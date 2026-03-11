@@ -1,3 +1,12 @@
+/**
+ * @file GravitoHealthAdapter.ts
+ * @description Health 模組完整框架適配器
+ *
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：負責將 Health 模組掛載到 Gravito 框架。
+ * - 職責：作為核心系統與 Gravito 特定服務（如 Redis, Cache）的對接點，組裝健康檢查相關的服務與控制器。
+ */
+
 import type { PlanetCore } from '@gravito/core'
 import type { RedisClientContract } from '@gravito/plasma'
 import type { CacheManager } from '@gravito/stasis'
@@ -10,16 +19,18 @@ import { HealthController } from '@/Modules/Health/Presentation/Controllers/Heal
 import { MemoryHealthCheckRepository } from '@/Modules/Health/Infrastructure/Repositories/MemoryHealthCheckRepository'
 
 /**
- * Gravito Health 模組完整適配器
+ * 註冊 Health 模組與 Gravito 框架的整合
  *
  * 責任：
  * 1. 從 PlanetCore 取得 Redis/Cache（可能為 undefined）
- * 2. 適配為 IRedisService/ICacheService
+ * 2. 適配為框架無關的 IRedisService/ICacheService
  * 3. 組裝 PerformHealthCheckService + HealthController
  * 4. 透過 IModuleRouter 註冊路由
  *
  * 這是唯一知道 Gravito 如何組織服務的地方。
  * 所有底層模組完全無框架耦合。
+ *
+ * @param core - Gravito 核心 PlanetCore 實例
  *
  * @example
  * registerHealthWithGravito(core)

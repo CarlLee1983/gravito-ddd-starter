@@ -1,9 +1,7 @@
 /**
- * Post 模組 Repository 工廠註冊
- *
- * 架構特點：
- * ✅ IDatabaseAccess 由上層 bootstrap 透過 DatabaseAccessBuilder 注入（無 DB 時為 MemoryDatabaseAccess）
- * ✅ PostRepository 僅依賴 IDatabaseAccess，無底層 if (db) 分支
+ * @file registerPostRepositories.ts
+ * @description 向全局倉儲註冊中心 (RepositoryRegistry) 註冊 Post 倉儲工廠
+ * @module src/Modules/Post/Infrastructure/Providers
  */
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
@@ -12,8 +10,12 @@ import { getRegistry } from '@/wiring/RepositoryRegistry'
 
 /**
  * 註冊 Post Repository 工廠到全局 Registry
+ * 
+ * 在 DDD 架構中屬於「基礎設施層 (Infrastructure Layer)」。
+ * 此函數將建立 PostRepository 實例的邏輯封裝在工廠函數中並進行註冊。
  *
- * @param db 由 DatabaseAccessBuilder.getDatabaseAccess() 提供（必為非 undefined，memory 時為 MemoryDatabaseAccess）
+ * @param db - 資料庫存取介面實例 (port)，由 DatabaseAccessBuilder 提供
+ * @returns void
  */
 export function registerPostRepositories(db: IDatabaseAccess): void {
 	const registry = getRegistry()

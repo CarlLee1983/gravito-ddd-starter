@@ -1,39 +1,13 @@
 /**
- * Repository Factory Generator - 消除重複的工廠函數
+ * @file RepositoryFactoryGenerator.ts
+ * @description Repository 工廠生成器 - 消除重複的工廠建構邏輯
  *
- * 問題：
- * ```typescript
- * // registerUserRepositories.ts
- * function createUserRepository(orm: string, db?: IDatabaseAccess): any {
- *   switch (orm) {
- *     case 'memory': return new UserRepository()
- *     case 'drizzle': return new DrizzleUserRepository(db!)
- *   }
- * }
- *
- * // registerPostRepositories.ts
- * function createPostRepository(orm: string, db?: IDatabaseAccess): any {
- *   switch (orm) {
- *     case 'memory': return new PostRepository()
- *     case 'drizzle': return new DrizzlePostRepository(db!)
- *   }
- * }
- * // 80% 重複代碼！
- * ```
+ * 在 DDD 架構中的角色：
+ * - 接線層 (Wiring Layer)：提供通用的工具函數，用於標準化各模組的倉儲建立流程。
+ * - 職責：消除各模組中重複的 ORM 選擇 switch/case 代碼，實現配置驅動的工廠註冊。
  *
  * 解決方案：
- * 使用 createRepositoryFactory 生成器，傳入 Repository 類的映射
- *
- * ```typescript
- * const userFactory = createRepositoryFactory({
- *   memory: () => new UserRepository(),
- *   drizzle: (db) => new DrizzleUserRepository(db!),
- *   atlas: (db) => new AtlasUserRepository(db!),
- *   prisma: (db) => new PrismaUserRepository(db!),
- * })
- *
- * registry.register('user', userFactory)
- * ```
+ * 使用 createRepositoryFactory 生成器，傳入 Repository 類的映射。
  *
  * 優勢：
  * ✅ 消除所有重複代碼
@@ -45,31 +19,34 @@
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 
 /**
- * Repository 工廠映射類型
- * 為每個 ORM 提供一個工廠函數
+ * Repository 工廠映射類型定義
+ * 為每個支援的 ORM 提供一個建立實例的工廠函數
  *
  * @example
  * {
  *   memory: () => new UserRepository(),
  *   drizzle: (db) => new DrizzleUserRepository(db!),
  *   atlas: (db) => new AtlasUserRepository(db!),
- *   prisma: (db) => new PrismaUserRepository(db!),
  * }
  */
 export type RepositoryFactoryMap = {
+	/** 記憶體模式下的工廠 */
 	memory?: () => any
+	/** Drizzle ORM 下的工廠 */
 	drizzle?: (db: IDatabaseAccess) => any
+	/** Atlas ORM 下 the 工廠 */
 	atlas?: (db: IDatabaseAccess) => any
+	/** Prisma ORM 下 the 工廠 */
 	prisma?: (db: IDatabaseAccess) => any
 }
 
 /**
  * 生成通用的 Repository 工廠函數
  *
- * 消除重複的工廠代碼，使用配置驅動的方式生成工廠
+ * 使用配置驅動的方式生成符合 RepositoryFactory 介面的函數，減少重複代碼。
  *
- * @param factoryMap Repository 工廠的映射
- * @returns 通用的工廠函數
+ * @param factoryMap - 定義了不同 ORM 建立邏輯的映射物件
+ * @returns 符合標準工廠介面的函數
  *
  * @example
  * const userFactory = createRepositoryFactory({
@@ -81,7 +58,7 @@ export type RepositoryFactoryMap = {
  */
 export function createRepositoryFactory(factoryMap: RepositoryFactoryMap) {
 	return (orm: string, db: IDatabaseAccess | undefined): any => {
-		// 根據 ORM 類型選擇工廠
+		// 根據 ORM 類型選擇對應的工廠函數
 		const factory = factoryMap[orm as keyof RepositoryFactoryMap]
 
 		if (!factory) {
@@ -92,7 +69,7 @@ export function createRepositoryFactory(factoryMap: RepositoryFactoryMap) {
 		}
 
 		// 調用工廠函數
-		// memory 不需要 db，其他 ORM 需要 db
+		// memory 不需要 db，其他 ORM 必須提供 db 實例
 		if (orm === 'memory') {
 			return (factory as () => any)()
 		} else {
@@ -107,15 +84,16 @@ export function createRepositoryFactory(factoryMap: RepositoryFactoryMap) {
 }
 
 /**
- * 批量註冊 Repository 工廠
+ * 批量註冊多個模組的 Repository 工廠
  *
- * 進一步簡化：一次性註冊多個模組的工廠
+ * 更進一步簡化啟動流程，一次性註冊多個模組的映射配置。
+ *
+ * @param repositoryMaps - 鍵為模組類型，值為該模組的工廠映射
  *
  * @example
  * registerRepositoriesInBatch({
  *   user: userFactoryMap,
  *   post: postFactoryMap,
- *   order: orderFactoryMap,
  * })
  */
 export function registerRepositoriesInBatch(

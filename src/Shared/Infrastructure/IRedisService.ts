@@ -1,37 +1,55 @@
 /**
  * Redis 服務介面（Port）
  *
- * 底層完全不知道 Gravito/Plasma 的存在，
- * 允許日後換框架或用 InMemory 實作進行測試。
+ * @module IRedisService
+ * @description
+ * 定義 Redis 存取的抽象介面。
+ * 允許日後更換 Redis 驅動或使用 InMemory 實作進行測試。
+ *
+ * **DDD 角色**
+ * - 基礎建設：Infrastructure Port (Redis)
+ * - 職責：提供統一的 Redis 操作介面。
  */
 
 export interface IRedisService {
 	/**
-	 * 連線測試，回傳 PONG 或丟出例外
+	 * 連線測試
+	 *
+	 * @returns {Promise<string>} 回傳 'PONG' 或拋出例外
 	 */
 	ping(): Promise<string>
 
 	/**
-	 * 取得字串值，key 不存在時回傳 null
+	 * 取得字串值
+	 *
+	 * @param {string} key - Redis key
+	 * @returns {Promise<string | null>} key 不存在時回傳 null
 	 */
 	get(key: string): Promise<string | null>
 
 	/**
-	 * 設定字串值，可選到期秒數
+	 * 設定字串值
 	 *
-	 * @param key - Redis key
-	 * @param value - 字串值
-	 * @param expiresInSeconds - 選擇性的到期時間（秒）
+	 * @param {string} key - Redis key
+	 * @param {string} value - 字串值
+	 * @param {number} [expiresInSeconds] - 可選的到期時間（秒）
+	 * @returns {Promise<void>}
 	 */
 	set(key: string, value: string, expiresInSeconds?: number): Promise<void>
 
 	/**
 	 * 刪除 key
+	 *
+	 * @param {string} key - 要刪除的 key
+	 * @returns {Promise<void>}
 	 */
 	del(key: string): Promise<void>
 
 	/**
 	 * 檢查 key 是否存在
+	 *
+	 * @param {string} key - Redis key
+	 * @returns {Promise<boolean>} 是否存在
 	 */
 	exists(key: string): Promise<boolean>
 }

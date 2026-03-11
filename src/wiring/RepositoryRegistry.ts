@@ -1,5 +1,10 @@
 /**
- * Repository Registry - 分布式的 Repository 工廠註冊
+ * @file RepositoryRegistry.ts
+ * @description Repository 註冊表 - 分布式的 Repository 工廠註冊中心
+ *
+ * 在 DDD 架構中的角色：
+ * - 接線層 (Wiring Layer)：連接領域契約與基礎設施實現的關鍵組件。
+ * - 職責：管理所有模組的 Repository 工廠，支援 ORM 的動態切換與解耦。
  *
  * 設計原則：
  * - 每個模組自己註冊其 Repository 工廠
@@ -22,8 +27,12 @@
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 
 /**
- * Repository Factory 函數類型
+ * Repository 工廠函數類型
  * 每個模組為其 Repository 提供一個工廠函數
+ *
+ * @param orm - 當前使用的 ORM 類型名稱
+ * @param databaseAccess - 資料庫存取適配器 (可選)
+ * @returns 任何類型的 Repository 實例
  */
 export type RepositoryFactory = (
 	orm: string,
@@ -31,7 +40,7 @@ export type RepositoryFactory = (
 ) => any
 
 /**
- * Repository Registry - 集中管理所有 Repository 工廠
+ * Repository Registry 類別 - 集中管理所有模組的 Repository 工廠
  *
  * 好處：
  * - ✅ 每個模組在自己的檔案中註冊工廠
@@ -40,13 +49,14 @@ export type RepositoryFactory = (
  * - ✅ 易於測試和模擬
  */
 export class RepositoryRegistry {
+	/** 儲存已註冊工廠的映射表 */
 	private factories = new Map<string, RepositoryFactory>()
 
 	/**
 	 * 註冊一個 Repository 工廠
 	 *
-	 * @param type Repository 類型（'user'、'post'、'order'...）
-	 * @param factory 工廠函數
+	 * @param type - Repository 類型（例如 'user'、'post'、'order' 等）
+	 * @param factory - 工廠函數，定義如何根據 ORM 建立該類型的實例
 	 *
 	 * @example
 	 * registry.register('user', (orm, db) => {
@@ -62,14 +72,14 @@ export class RepositoryRegistry {
 	}
 
 	/**
-	 * 建立指定類型的 Repository
+	 * 根據類型與當前 ORM 建立 Repository 實例
 	 *
-	 * @param type Repository 類型
-	 * @param orm 當前 ORM 選擇
-	 * @param databaseAccess Database 適配器（可選）
-	 * @returns Repository 實例
+	 * @param type - Repository 類型
+	 * @param orm - 當前選擇的 ORM 名稱
+	 * @param databaseAccess - 資料庫適配器實例（可選）
+	 * @returns 已建立的 Repository 實例
 	 *
-	 * @throws 如果 Repository 類型未註冊
+	 * @throws 如果指定的 Repository 類型尚未註冊
 	 */
 	create(type: string, orm: string, databaseAccess: IDatabaseAccess | undefined): any {
 		const factory = this.factories.get(type)
@@ -85,14 +95,19 @@ export class RepositoryRegistry {
 	}
 
 	/**
-	 * 列出所有已註冊的 Repository 類型
+	 * 取得所有目前已註冊的 Repository 類型名稱
+	 *
+	 * @returns 類型名稱陣列
 	 */
 	listRegistered(): string[] {
 		return Array.from(this.factories.keys())
 	}
 
 	/**
-	 * 檢查某個 Repository 類型是否已註冊
+	 * 檢查特定的 Repository 類型是否已經註冊
+	 *
+	 * @param type - 類型名稱
+	 * @returns 是否存在
 	 */
 	has(type: string): boolean {
 		return this.factories.has(type)
@@ -100,19 +115,20 @@ export class RepositoryRegistry {
 }
 
 /**
- * 全局 Registry 單例
+ * 全局 Registry 單例引用
  * 應用啟動時被初始化
  */
 let globalRegistry: RepositoryRegistry | null = null
 
 /**
- * 初始化全局 Registry
- * 應在 bootstrap() 時調用，在註冊所有 ServiceProvider 之前
+ * 初始化全局註冊表 (Registry)
+ * 應在 bootstrap() 時調用，確保在註冊所有 ServiceProvider 之前完成
+ *
+ * @returns 初始化後的 RepositoryRegistry 實例
  *
  * @example
  * const registry = initializeRegistry()
  * registry.register('user', userRepositoryFactory)
- * registry.register('post', postRepositoryFactory)
  */
 export function initializeRegistry(): RepositoryRegistry {
 	if (!globalRegistry) {
@@ -122,7 +138,10 @@ export function initializeRegistry(): RepositoryRegistry {
 }
 
 /**
- * 取得全局 Registry
+ * 取得當前全局註冊表實例
+ *
+ * @returns 全局註冊表實例
+ * @throws 如果尚未呼叫 initializeRegistry() 進行初始化
  */
 export function getRegistry(): RepositoryRegistry {
 	if (!globalRegistry) {
@@ -135,7 +154,7 @@ export function getRegistry(): RepositoryRegistry {
 }
 
 /**
- * 重設 Registry（主要用於測試）
+ * 重設註冊表單例（主要用於單元測試隔離）
  */
 export function resetRegistry(): void {
 	globalRegistry = null

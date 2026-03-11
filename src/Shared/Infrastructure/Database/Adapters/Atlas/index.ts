@@ -1,25 +1,26 @@
 /**
- * Atlas ORM 適配器
+ * @file index.ts
+ * @description Atlas ORM 適配器進入點
  *
- * 此模組提供 Gravito Atlas ORM 的適配實現，隱藏具體 ORM 細節，
- * 暴露為 IDatabaseAccess 等公開介面。
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：封裝 Gravito Atlas ORM 的適配實現。
+ * - 職責：隱藏具體 ORM 的底層細節，將其適配為系統定義的 IDatabaseAccess 介面，支援領域與持久化技術的解耦。
  *
- * @public - 匯出公開的工廠函數
+ * @public - 匯出公開的工廠函數與相關型別
  * @internal - 實現細節對外隱藏
  *
  * **使用方式**：
  * ```typescript
- * import { createAtlasDatabaseAccess } from '@/adapters/Atlas'
+ * import { createAtlasDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Atlas'
  *
  * const db = createAtlasDatabaseAccess()
  * const users = await db.table('users').select()
  * ```
  *
  * **當切換到其他 ORM 時（如 Drizzle）：**
- * 1. 建立 `src/adapters/Drizzle/` 資料夾
- * 2. 實現相同的公開介面
- * 3. 在 `src/wiring/` 中改變導入路徑
- * 4. 完成！所有業務層代碼無需改動
+ * 1. 建立 `src/Shared/Infrastructure/Database/Adapters/Drizzle/` 資料夾。
+ * 2. 實現相同的公開介面 (IDatabaseAccess)。
+ * 3. 在接線層 (`src/wiring/`) 中切換適配器建立邏輯。
  */
 
 export { createAtlasDatabaseAccess, createGravitoDatabaseConnectivityCheck } from './GravitoDatabaseAdapter'

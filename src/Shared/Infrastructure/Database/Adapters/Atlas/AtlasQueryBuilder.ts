@@ -1,8 +1,10 @@
 /**
- * Atlas QueryBuilder 實現
+ * @file AtlasQueryBuilder.ts
+ * @description Atlas 查詢建構器實作
  *
- * 實現 IQueryBuilder 介面，將 Gravito Atlas ORM 的 API 適配為公開介面
- * 隱藏所有 Atlas 特定的 API 細節，提供統一的查詢 API。
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：實作 IQueryBuilder 介面，將 Gravito Atlas ORM 的 API 適配為系統統一的查詢介面。
+ * - 職責：隱藏所有 Atlas 特定的查詢細節，確保領域與應用層不直接依賴於特定的 ORM 語法。
  *
  * @internal 此實現是基礎設施層細節
  */
@@ -12,6 +14,7 @@ import type { IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
 /**
  * 懶加載 Atlas DB 實例
  * @internal
+ * @returns Gravito Atlas DB 實例
  */
 function getDB(): any {
 	// biome-ignore lint/style/noCommaOperator: Required for dynamic import
@@ -19,25 +22,33 @@ function getDB(): any {
 }
 
 /**
- * Atlas QueryBuilder 實現
+ * Atlas 查詢建構器實作類別
  *
- * 將 Atlas 的查詢 API 轉換為標準的 IQueryBuilder 介面
+ * 將 Atlas 的流式查詢 API 轉換為標準的 IQueryBuilder 契約。
  */
 export class AtlasQueryBuilder implements IQueryBuilder {
+	/** 儲存累積的查詢條件 */
 	private whereConditions: Array<{ column: string; operator: string; value: unknown }> = []
+	/** 排序配置 */
 	private orderByConfig: { column: string; direction: 'ASC' | 'DESC' } | null = null
+	/** 限制筆數 */
 	private limitValue: number | null = null
+	/** 位移筆數 */
 	private offsetValue: number | null = null
 
+	/**
+	 * 建構子
+	 * @param tableName - 目標資料表名稱
+	 */
 	constructor(private tableName: string) {}
 
 	/**
-	 * 添加 WHERE 條件
+	 * 添加 WHERE 查詢條件
 	 *
-	 * @param column 欄位名稱
-	 * @param operator 比較運算子（=, !=, >, <, >=, <=, like, in）
-	 * @param value 比較值
-	 * @returns 此 QueryBuilder 實例（用於鏈式調用）
+	 * @param column - 欄位名稱
+	 * @param operator - 比較運算子（如 =, !=, >, <, >=, <=, like, in）
+	 * @param value - 比較數值
+	 * @returns 回傳此實例以支援鏈式調用
 	 */
 	where(column: string, operator: string, value: unknown): IQueryBuilder {
 		this.whereConditions.push({ column, operator, value })
@@ -45,26 +56,26 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 取得單筆記錄
+	 * 取得符合條件的第一筆記錄
 	 *
-	 * @returns 第一筆符合條件的記錄，或 null
+	 * @returns 回傳第一筆記錄物件，若找不到則回傳 null
 	 */
 	async first(): Promise<Record<string, unknown> | null> {
 		try {
 			let query = (getDB() as any).table(this.tableName)
 
-			// 應用 WHERE 條件
+			// 應用累積的 WHERE 條件
 			for (const cond of this.whereConditions) {
 				query = this.applyWhere(query, cond)
 			}
 
-			// 應用排序
+			// 應用排序規則
 			if (this.orderByConfig) {
 				const dir = this.orderByConfig.direction === 'ASC' ? 'asc' : 'desc'
 				query = query.orderBy(this.orderByConfig.column, dir)
 			}
 
-			// 限制為 1 筆記錄
+			// 強制限制為 1 筆記錄
 			query = query.limit(1)
 
 			const results = await query
@@ -77,15 +88,15 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 取得多筆記錄
+	 * 取得符合條件的所有多筆記錄
 	 *
-	 * @returns 符合條件的所有記錄
+	 * @returns 記錄物件陣列
 	 */
 	async select(): Promise<Record<string, unknown>[]> {
 		try {
 			let query = (getDB() as any).table(this.tableName)
 
-			// 應用 WHERE 條件
+			// 應用所有 WHERE 條件
 			for (const cond of this.whereConditions) {
 				query = this.applyWhere(query, cond)
 			}
@@ -96,12 +107,12 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 				query = query.orderBy(this.orderByConfig.column, dir)
 			}
 
-			// 應用 OFFSET
+			// 應用 OFFSET 位移
 			if (this.offsetValue) {
 				query = query.offset(this.offsetValue)
 			}
 
-			// 應用 LIMIT
+			// 應用 LIMIT 限制筆數
 			if (this.limitValue) {
 				query = query.limit(this.limitValue)
 			}
@@ -114,9 +125,10 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 插入新記錄
+	 * 插入一筆新記錄
 	 *
-	 * @param data 要插入的資料
+	 * @param data - 要插入的資料物件
+	 * @returns 非同步作業
 	 */
 	async insert(data: Record<string, unknown>): Promise<void> {
 		try {
@@ -128,9 +140,10 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 更新記錄
+	 * 更新符合條件的記錄
 	 *
-	 * @param data 更新的資料
+	 * @param data - 要更新的欄位與數值
+	 * @returns 非同步作業
 	 */
 	async update(data: Record<string, unknown>): Promise<void> {
 		try {
@@ -149,7 +162,9 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 刪除記錄
+	 * 刪除符合條件的記錄
+	 *
+	 * @returns 非同步作業
 	 */
 	async delete(): Promise<void> {
 		try {
@@ -168,10 +183,10 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 限制返回的記錄數
+	 * 限制回傳的記錄數量
 	 *
-	 * @param value 最多返回的記錄數
-	 * @returns 此 QueryBuilder 實例
+	 * @param value - 最大記錄筆數
+	 * @returns 回傳此實例以支援鏈式調用
 	 */
 	limit(value: number): IQueryBuilder {
 		this.limitValue = value
@@ -179,10 +194,10 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 分頁偏移
+	 * 跳過指定數量的記錄（分頁偏移）
 	 *
-	 * @param value 跳過的記錄數
-	 * @returns 此 QueryBuilder 實例
+	 * @param value - 跳過的筆數
+	 * @returns 回傳此實例以支援鏈式調用
 	 */
 	offset(value: number): IQueryBuilder {
 		this.offsetValue = value
@@ -190,11 +205,11 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 排序
+	 * 設定資料排序規則
 	 *
-	 * @param column 排序欄位
-	 * @param direction 排序方向（ASC 或 DESC）
-	 * @returns 此 QueryBuilder 實例
+	 * @param column - 排序欄位
+	 * @param direction - 排序方向（ASC 或 DESC，預設為 ASC）
+	 * @returns 回傳此實例以支援鏈式調用
 	 */
 	orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): IQueryBuilder {
 		const normalizedDirection = direction.toUpperCase() as 'ASC' | 'DESC'
@@ -203,9 +218,9 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 計算符合條件的記錄數
+	 * 計算符合條件的記錄總筆數
 	 *
-	 * @returns 記錄總數
+	 * @returns 符合條件的總筆數
 	 */
 	async count(): Promise<number> {
 		try {
@@ -216,7 +231,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 				query = this.applyWhere(query, cond)
 			}
 
-			// Atlas 使用 count() 方法直接返回數字
+			// Atlas 使用 count() 方法直接回傳數字
 			const count = await query.count()
 			return count || 0
 		} catch (error) {
@@ -226,11 +241,11 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 範圍查詢
+	 * 建立範圍查詢條件（常用於時間範圍）
 	 *
-	 * @param column 欄位名稱
-	 * @param range 範圍 [開始, 結束]
-	 * @returns 此 QueryBuilder 實例
+	 * @param column - 欄位名稱
+	 * @param range - [開始值, 結束值] 陣列
+	 * @returns 回傳此實例以支援鏈式調用
 	 */
 	whereBetween(column: string, range: [Date, Date]): IQueryBuilder {
 		this.whereConditions.push({ column, operator: 'between', value: range })
@@ -238,7 +253,10 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 應用單個 WHERE 條件到查詢物件
+	 * 內部輔助方法：將抽象的 WHERE 條件轉換為 Atlas 特定的查詢方法
+	 * @param query - Atlas 原始查詢物件
+	 * @param cond - 內部條件物件
+	 * @returns 轉換後的查詢物件
 	 * @private
 	 */
 	private applyWhere(query: any, cond: { column: string; operator: string; value: unknown }): any {

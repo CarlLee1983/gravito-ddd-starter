@@ -1,11 +1,10 @@
 /**
- * GravitoPostAdapter - Post 模組完整適配器
+ * @file GravitoPostAdapter.ts
+ * @description Post 模組完整框架適配器
  *
- * 責任：
- * 1. 從 PlanetCore 取得框架服務（Redis/Cache 可能為 undefined）
- * 2. 適配為框架無關的介面
- * 3. 組裝 PostService + PostController
- * 4. 透過 IModuleRouter 註冊路由
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：負責將 Post 模組掛載到具體的 Web 框架。
+ * - 職責：作為 Post 模組與 Gravito 框架的唯一接觸點，處理依賴組裝、ACL 配置與路由註冊。
  *
  * 這是唯一知道 Gravito 框架細節的地方。
  * 所有業務邏輯層完全無框架耦合。
@@ -22,31 +21,33 @@ import { UserToPostAdapter } from '@/Modules/Post/Infrastructure/Adapters/UserTo
 import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
 
 /**
- * 註冊 Post 模組與 Gravito 框架
+ * 註冊 Post 模組與 Gravito 框架的整合
  *
- * DDD + ACL 實踐：
- * 1. 為 Post 創建 Repository（存取 Post 資料）
- * 2. 為 User 創建 Repository（供 ACL 使用）
- * 3. 通過 UserToPostAdapter 實現 IAuthorService Port
- * 4. 注入 Controller，讓 Application 層只依賴 Port
+ * 採用 DDD + ACL (Anti-Corruption Layer) 實踐：
+ * 1. 為 Post 建立專用的 Repository。
+ * 2. 為 User 建立專用的 Repository（供 ACL 轉接使用）。
+ * 3. 透過 UserToPostAdapter 實作 IAuthorService Port，隔離不同領域。
+ * 4. 注入 Controller，確保應用層與表現層解耦。
+ *
+ * @param core - Gravito 核心實例
  */
 export function registerPostWithGravito(core: PlanetCore): void {
-	// 建立資料庫訪問實例（使用 Atlas adapter）
+	// 建立資料庫訪問實例（目前固定使用 Atlas adapter，未來可根據配置動態決定）
 	const db = createAtlasDatabaseAccess()
 
-	// 組裝應用層：Repository
+	// 組裝基礎設施層：各模組專屬 Repository
 	const postRepository = new PostRepository(db)
 	const userRepository = new UserRepository(db)
 
-	// 組裝 ACL：User → Post 適配器（實現 IAuthorService Port）
+	// 組裝 ACL 層：將 User 領域適配為 Post 領域所需的作者服務（實作 IAuthorService Port）
 	const authorService = new UserToPostAdapter(userRepository)
 
-	// 組裝 Controller（依賴 Repository + AuthorService Port）
+	// 組裝表現層：Controller（依賴 Repository 與作者服務 Port）
 	const controller = new PostController(postRepository, authorService)
 
 	// 建立框架無關的路由介面
 	const router = createGravitoModuleRouter(core)
 
-	// 透過 IModuleRouter 註冊路由
+	// 透過統一的模組路由介面註冊所有端點
 	registerPostRoutes(router, controller)
 }

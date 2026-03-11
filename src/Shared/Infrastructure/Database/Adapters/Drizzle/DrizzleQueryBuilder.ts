@@ -1,7 +1,10 @@
 /**
- * Drizzle QueryBuilder 實現
+ * @file DrizzleQueryBuilder.ts
+ * @description Drizzle 查詢建構器實作
  *
- * 實現 IQueryBuilder 介面，將 Drizzle ORM 的 API 適配為公開介面
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：實作 IQueryBuilder 介面，將 Drizzle ORM 的 API 適配為系統統一的查詢介面。
+ * - 職責：封裝 Drizzle 的條件構建邏輯，確保應用層能以技術無關的方式執行資料過濾、分頁與排序。
  *
  * @internal 此實現是基礎設施層細節
  */
@@ -11,16 +14,26 @@ import { and, eq, ne, gt, lt, gte, lte, like, inArray, between, asc, desc, count
 import { getDrizzleInstance } from './config'
 
 /**
- * Drizzle QueryBuilder 實現
+ * Drizzle 查詢建構器實作類別
  *
- * 將 Drizzle 的查詢 API 轉換為標準的 IQueryBuilder 介面
+ * 將 Drizzle ORM 的 SQL 式查詢 API 轉換為標準的 IQueryBuilder 契約。
  */
 export class DrizzleQueryBuilder implements IQueryBuilder {
+  /** 儲存 Drizzle 條件表達式陣列 */
   private whereConditions: any[] = []
+  /** 排序配置 */
   private orderByConfig: { column: string; direction: 'ASC' | 'DESC' } | null = null
+  /** 限制筆數 */
   private limitValue: number | null = null
+  /** 位移筆數 */
   private offsetValue: number | null = null
 
+  /**
+   * 建構子
+   * @param db - Drizzle 資料庫實例
+   * @param tableName - 資料表名稱
+   * @param tableSchema - Drizzle 資料表 Schema 定義
+   */
   constructor(
     private db: ReturnType<typeof getDrizzleInstance>,
     private tableName: string,
@@ -28,12 +41,13 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   ) {}
 
   /**
-   * 添加 WHERE 條件
+   * 添加 WHERE 查詢條件
    *
-   * @param column 欄位名稱
-   * @param operator 比較運算子（=, !=, >, <, >=, <=, like, in）
-   * @param value 比較值
-   * @returns 此 QueryBuilder 實例（用於鏈式調用）
+   * @param column - 欄位名稱 (須存在於 schema 中)
+   * @param operator - 比較運算子
+   * @param value - 比較值
+   * @returns 回傳此實例以支援鏈式調用
+   * @throws 當欄位名稱在表中不存在時拋出錯誤
    */
   where(column: string, operator: string, value: unknown): IQueryBuilder {
     const col = this.tableSchema[column]
@@ -76,9 +90,9 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 取得單筆記錄
+   * 取得符合條件的第一筆記錄
    *
-   * @returns 第一筆符合條件的記錄，或 null
+   * @returns 回傳第一筆記錄物件，若找不到則回傳 null
    */
   async first(): Promise<Record<string, unknown> | null> {
     try {
@@ -100,9 +114,9 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 取得多筆記錄
+   * 取得符合條件的所有多筆記錄
    *
-   * @returns 符合條件的所有記錄
+   * @returns 記錄物件陣列
    */
   async select(): Promise<Record<string, unknown>[]> {
     try {
@@ -135,9 +149,10 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 插入新記錄
+   * 插入一筆新記錄
    *
-   * @param data 要插入的資料
+   * @param data - 要插入的資料物件
+   * @returns 非同步作業
    */
   async insert(data: Record<string, unknown>): Promise<void> {
     try {
@@ -149,9 +164,10 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 更新記錄
+   * 更新符合條件的記錄
    *
-   * @param data 更新的資料
+   * @param data - 要更新的欄位與數值
+   * @returns 非同步作業
    */
   async update(data: Record<string, unknown>): Promise<void> {
     try {
@@ -169,7 +185,9 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 刪除記錄
+   * 刪除符合條件的記錄
+   *
+   * @returns 非同步作業
    */
   async delete(): Promise<void> {
     try {
@@ -187,10 +205,10 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 限制返回的記錄數
+   * 限制回傳的記錄數量
    *
-   * @param value 最多返回的記錄數
-   * @returns 此 QueryBuilder 實例
+   * @param value - 最大記錄筆數
+   * @returns 回傳此實例以支援鏈式調用
    */
   limit(value: number): IQueryBuilder {
     this.limitValue = value
@@ -198,10 +216,10 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 分頁偏移
+   * 跳過指定數量的記錄（分頁偏移）
    *
-   * @param value 跳過的記錄數
-   * @returns 此 QueryBuilder 實例
+   * @param value - 跳過的筆數
+   * @returns 回傳此實例以支援鏈式調用
    */
   offset(value: number): IQueryBuilder {
     this.offsetValue = value
@@ -209,11 +227,11 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 排序
+   * 設定資料排序規則
    *
-   * @param column 排序欄位
-   * @param direction 排序方向（ASC 或 DESC）
-   * @returns 此 QueryBuilder 實例
+   * @param column - 排序欄位
+   * @param direction - 排序方向 (ASC 或 DESC)
+   * @returns 回傳此實例以支援鏈式調用
    */
   orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): IQueryBuilder {
     const normalizedDirection = direction.toUpperCase() as 'ASC' | 'DESC'
@@ -222,9 +240,9 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 計算符合條件的記錄數
+   * 計算符合條件的記錄總筆數
    *
-   * @returns 記錄總數
+   * @returns 符合條件的總筆數 (預設使用 id 進行 count)
    */
   async count(): Promise<number> {
     try {
@@ -248,11 +266,11 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 範圍查詢
+   * 建立範圍查詢條件 (如時間區間)
    *
-   * @param column 欄位名稱
-   * @param range 範圍 [開始, 結束]
-   * @returns 此 QueryBuilder 實例
+   * @param column - 欄位名稱
+   * @param range - [開始, 結束]
+   * @returns 回傳此實例以支援鏈式調用
    */
   whereBetween(column: string, range: [Date, Date]): IQueryBuilder {
     const col = this.tableSchema[column]

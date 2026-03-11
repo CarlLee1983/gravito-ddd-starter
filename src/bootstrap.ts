@@ -1,7 +1,12 @@
 /**
- * DDD 應用啟動流程 (Bootstrap)
+ * @file bootstrap.ts
+ * @description DDD 應用啟動流程 (Bootstrap)
  *
- * 責任：
+ * 在 DDD 架構中的角色：
+ * - 啟動層 (Bootstrap Layer)：應用程式的進入點與組裝中心。
+ * - 職責：負責初始化全域配置、註冊倉儲工廠、配置依賴注入容器、註冊模組服務提供者，以及啟動 HTTP 服務的所有前置準備。
+ *
+ * 責任細節：
  * 1. 載入並建立配置 (buildConfig)
  * 2. 初始化 RepositoryRegistry（ORM 工廠註冊點）
  * 3. 註冊所有 Repository 工廠（每個模組一個）
@@ -10,9 +15,6 @@
  * 6. 啟動所有已註冊的提供者
  * 7. 註冊全域路由
  * 8. 註冊全域錯誤處理器
- *
- * @param {number} [port=3000] 預設連接埠
- * @returns {Promise<PlanetCore>} 初始化完成的核心實例
  */
 
 import { PlanetCore, defineConfig } from '@gravito/core'
@@ -28,6 +30,12 @@ import { registerPostRepositories } from './Modules/Post/Infrastructure/Provider
 import { getCurrentORM } from './wiring/RepositoryFactory'
 import { DatabaseAccessBuilder } from './wiring/DatabaseAccessBuilder'
 
+/**
+ * 啟動應用程式核心流程
+ *
+ * @param port - 預設連接埠號碼 (預設為 3000)
+ * @returns 回傳初始化完成並準備就緒的 PlanetCore 實例
+ */
 export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	// Step 1: Build application configuration
 	const configObj = buildConfig(port)
@@ -86,7 +94,7 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 }
 
 /**
- * Export bootstrap function as default for direct imports
+ * 預設導出啟動函式
  * @example
  * import bootstrap from './bootstrap'
  * const core = await bootstrap(3000)

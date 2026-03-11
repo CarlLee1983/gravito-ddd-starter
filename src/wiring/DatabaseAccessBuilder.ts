@@ -1,34 +1,20 @@
 /**
- * Database Access Builder - 為 Repository 提供適當的 IDatabaseAccess
+ * @file DatabaseAccessBuilder.ts
+ * @description Database Access Builder - 為倉儲提供適用的資料庫存取實作
  *
- * 核心理念（與 FactoryMapBuilder 的根本差異）：
- * ❌ 不再：每個 ORM 對應不同的 Repository 類（UserRepository vs DrizzleUserRepository）
- * ✅ 改為：只有一個 Repository 類，根據 IDatabaseAccess 決定內存或數據庫實現
+ * 在 DDD 架構中的角色：
+ * - 接線層 (Wiring Layer)：負責基礎設施組件的組裝與配置。
+ * - 職責：根據當前環境選擇的 ORM 類型，為 Repository 注入正確的 IDatabaseAccess 實現（如 Memory、Drizzle 等）。
  *
- * 職責：
- * 根據 ORM 類型決定為 Repository 注入什麼 IDatabaseAccess 實現
- *
- * 架構特點：
- * ✅ 只有一個 Repository 實現（無 DrizzleUserRepository、PrismaPostRepository 等）
- * ✅ Repository 透過 IDatabaseAccess 使用 ORM，完全無感知具體 ORM
- * ✅ 所有 ORM 選擇決策在此集中，bootstrap 層控制
- * ✅ 新增 ORM 時只需在此加入新的適配器初始化
- * ✅ 完全遵循依賴注入原則
+ * 核心理念：
+ * ✅ 倉儲層只有一個 Repository 類，根據注入的 IDatabaseAccess 決定內存或數據庫行為。
+ * ✅ Repository 透過介面與 ORM 溝通，完全無感知底層具體技術。
+ * ✅ 所有技術決策集中在接線層，符合依賴倒置原則。
  *
  * 設計優勢：
- * - 零重複：Repository 代碼只有一份
- * - 透明性：Repository 不知道使用了什麼 ORM
- * - 靈活性：輕易切換 ORM（只改環境變數）
- * - 可測性：易於注入 mock IDatabaseAccess 進行測試
- *
- * @example
- * // bootstrap.ts - 非常簡潔！
- * const orm = getCurrentORM()
- * const builder = new DatabaseAccessBuilder(orm)
- * const db = builder.getDatabaseAccess()
- *
- * registerUserRepositories(db)
- * registerPostRepositories(db)
+ * - 零重複：倉儲代碼只有一份。
+ * - 透明性：業務邏輯與數據庫技術解耦。
+ * - 靈活性：環境變數即可切換全域持久化方案。
  */
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
@@ -37,28 +23,24 @@ import type { ORMType } from './RepositoryFactory'
 import { getDatabaseAccess } from './RepositoryFactory'
 
 /**
- * Database Access Builder
+ * Database Access Builder 類別
  *
- * 根據 ORM 類型決定為 Repository 注入什麼 IDatabaseAccess
- *
- * 設計：
- * - Memory 模式：返回 MemoryDatabaseAccess（上層預設，Repository 無需分支）
- * - Drizzle/Prisma/Atlas：初始化並返回對應的 IDatabaseAccess 實現
+ * 封裝了 IDatabaseAccess 的建立邏輯。
  */
 export class DatabaseAccessBuilder {
+	/** 當前配置的 ORM 類型 */
 	private orm: ORMType
+	/** 已建立的資料庫存取實例 */
 	private dbInstance: IDatabaseAccess
 
 	/**
 	 * 初始化 DatabaseAccessBuilder
 	 *
-	 * @param orm 選擇的 ORM 類型
+	 * @param orm - 選擇的 ORM 類型 (如 'memory', 'drizzle' 等)
 	 *
 	 * 行為：
-	 * - 若 orm='memory'：注入 MemoryDatabaseAccess（內存表，同上層預設）
-	 * - 若 orm='drizzle'：初始化 Drizzle DatabaseAccess
-	 * - 若 orm='prisma'：初始化 Prisma DatabaseAccess
-	 * - 若 orm='atlas'：初始化 Atlas DatabaseAccess
+	 * - 若 orm='memory'：建立 MemoryDatabaseAccess 實例。
+	 * - 若為其他類型：透過工廠獲取對應的資料庫適配器。
 	 */
 	constructor(orm: ORMType) {
 		this.orm = orm
@@ -67,29 +49,27 @@ export class DatabaseAccessBuilder {
 	}
 
 	/**
-	 * 取得應該注入給 Repository 的 IDatabaseAccess
+	 * 取得應該注入給各個模組 Repository 的 IDatabaseAccess 實例
 	 *
-	 * 行為：
-	 * - Memory 模式：返回 MemoryDatabaseAccess
-	 * - 其他 ORM：返回對應的 IDatabaseAccess 實現
-	 *
-	 * Repository 僅依賴 IDatabaseAccess，不再在底層做 if (db) 分支。
-	 *
-	 * @returns IDatabaseAccess（必為非 undefined）
+	 * @returns 已初始化的 IDatabaseAccess 實作 (必不為空)
 	 */
 	getDatabaseAccess(): IDatabaseAccess {
 		return this.dbInstance
 	}
 
 	/**
-	 * 取得當前選擇的 ORM 類型
+	 * 取得當前使用的 ORM 類型名稱
+	 *
+	 * @returns ORM 類型字串
 	 */
 	getORM(): ORMType {
 		return this.orm
 	}
 
 	/**
-	 * 列出支援的 ORM
+	 * 取得系統目前支援的所有 ORM 類型列表
+	 *
+	 * @returns 支援的 ORM 類型陣列
 	 */
 	static listSupportedORMs(): ORMType[] {
 		return ['memory', 'drizzle', 'atlas', 'prisma']
@@ -97,7 +77,10 @@ export class DatabaseAccessBuilder {
 }
 
 /**
- * 便利方法：快速構建 DatabaseAccessBuilder 並取得 IDatabaseAccess
+ * 便利工廠函數：快速建立資料庫存取適配器
+ *
+ * @param orm - 指定的 ORM 類型
+ * @returns 回傳符合 IDatabaseAccess 介面的實作實例
  *
  * @example
  * const db = createDatabaseAccess('drizzle')

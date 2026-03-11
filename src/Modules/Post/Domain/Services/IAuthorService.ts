@@ -1,24 +1,27 @@
 /**
- * Post 模組定義的作者服務介面
- *
- * 設計重點（DDD 規範）：
- * - 位置：Domain/Services/（Domain 層定義的服務介面）
- * - 所有權：Post 模組自己定義（使用方定義，不被迫用供應方的介面）
- * - 語言：Post 的語言（AuthorDTO），不暴露 User 的細節
- * - 沒有外部依賴：只定義 Post 真正需要的欄位
- *
- * DDD 模式：
- * - Domain Service Interface：Domain 層定義的依賴抽象（我需要什麼）
- * - Infrastructure Adapter：Infrastructure 層實現此介面（如何實現）
+ * @file IAuthorService.ts
+ * @description 定義 Post 模組與作者資訊互動的領域服務介面 (Port)
+ * @module src/Modules/Post/Domain/Services
  */
 
 import type { AuthorDTO } from '@/Shared/Application/DTOs/AuthorDTO'
 
+/**
+ * IAuthorService 介面
+ * 
+ * 在 DDD 架構中作為「領域服務 (Domain Service)」的介面。
+ * 
+ * 職責：
+ * 1. 提供查詢作者詳細資訊的合約。
+ * 2. 作為模組間溝通的 Port，由 Post 模組定義其所需資料。
+ * 3. 實作通常位於基礎設施層的防腐層 (ACL) 適配器中。
+ */
 export interface IAuthorService {
   /**
-   * 根據作者 ID 查詢作者資訊
+   * 根據作者唯一識別符尋找作者資訊
+   * 
    * @param authorId - 作者唯一識別符
-   * @returns 作者資訊，若不存在則返回 null
+   * @returns Promise 包含作者資訊 DTO 或 null (若找不到)
    */
   findAuthor(authorId: string): Promise<AuthorDTO | null>
 }

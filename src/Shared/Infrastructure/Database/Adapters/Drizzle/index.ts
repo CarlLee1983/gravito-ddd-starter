@@ -1,25 +1,21 @@
 /**
- * Drizzle ORM 適配器公開 API
+ * @file index.ts
+ * @description Drizzle ORM 適配器進入點
  *
- * 此模組提供 Drizzle ORM 的適配實現，隱藏具體 ORM 細節
- * 暴露為 IDatabaseAccess 等公開介面
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：封裝 Drizzle ORM 的適配實現。
+ * - 職責：公開符合系統介面定義的 Drizzle 適配器與連線檢查工具，支援持久化技術的熱抽換。
  *
- * @public - 匯出公開的工廠函數
+ * @public - 匯出公開的工廠函數與相關型別
  * @internal - 實現細節對外隱藏
  *
  * **使用方式**：
  * ```typescript
- * import { createDrizzleDatabaseAccess } from '@/adapters/Drizzle'
+ * import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
  *
  * const db = createDrizzleDatabaseAccess()
  * const users = await db.table('users').select()
  * ```
- *
- * **切換到其他 ORM 時**：
- * 1. 建立新的適配器（如 `src/adapters/Prisma/`）
- * 2. 實現相同的公開介面
- * 3. 在 `src/wiring/` 中改變導入路徑
- * 4. 完成！所有業務層代碼無需改動
  */
 
 export { createDrizzleDatabaseAccess } from './DrizzleDatabaseAdapter'

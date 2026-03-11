@@ -1,9 +1,10 @@
 /**
- * Repository Factory - 優化的工具函式集（簡潔版）
+ * @file RepositoryFactory.ts
+ * @description Repository 工廠工具集 - 提供 ORM 選擇與資料庫存取初始化
  *
- * 職責（精簡）：
- * - 提供 ORM 選擇的工具函式
- * - 不涉及具體的 Repository 建立邏輯
+ * 在 DDD 架構中的角色：
+ * - 接線層 (Wiring Layer)：負責基礎設施的環境自適應配置。
+ * - 職責：讀取環境配置以決定全域 ORM 策略，並負責建立對應的資料庫存取實例。
  *
  * 核心函式：
  * 1. getCurrentORM() - 讀取環境變數決定 ORM
@@ -17,24 +18,19 @@
  * ✅ 各模組在 registerXRepositories.ts 中獨立定義工廠
  * ✅ 新增模組時無需修改此檔案
  * ✅ 遵循單一責任原則
- *
- * @example
- * // ORM=memory bun run dev  → 所有模組使用 in-memory Repository
- * // ORM=drizzle bun run dev → 所有模組使用 Drizzle Repository
  */
 
 /**
- * 支援的 ORM 類型
+ * 系統支援的 ORM 類型定義
  */
 export type ORMType = 'memory' | 'drizzle' | 'atlas' | 'prisma'
 
 /**
- * 從環境變數讀取 ORM 設定
+ * 從環境變數讀取並驗證當前 ORM 設定
  *
- * 這是應用的核心 ORM 選擇點
- * 所有模組都根據此值選擇對應的 Repository 實現
+ * 這是應用的核心 ORM 選擇點，所有模組都根據此值選擇對應的 Repository 實現。
  *
- * @returns 當前選擇的 ORM 類型
+ * @returns 當前選擇的 ORM 類型 ('memory', 'drizzle', 'atlas', 'prisma')
  *
  * @example
  * const orm = getCurrentORM()  // 'memory' | 'drizzle' | ...
@@ -53,23 +49,20 @@ export function getCurrentORM(): ORMType {
 }
 
 /**
- * 取得 Database 適配器（若需要）
+ * 取得資料庫存取適配器 (Database Access Adapter)
  *
- * 根據選擇的 ORM，初始化對應的 Database 實現
+ * 根據當前選擇的 ORM 類型，動態載入並初始化對應的基礎設施實作。
  *
  * 設計：
- * - ORM=memory → 返回 undefined（無需資料庫）
- * - ORM=drizzle → 返回 DrizzleDatabaseAccess（SQLite）
- * - ORM=atlas → 未來實現
- * - ORM=prisma → 未來實現
+ * - ORM=memory → 返回 undefined（由 DatabaseAccessBuilder 處理內存實作）
+ * - ORM=drizzle → 返回 DrizzleDatabaseAccess
+ * - ORM=atlas → 返回 AtlasDatabaseAccess
  *
- * @returns IDatabaseAccess | undefined
+ * @returns IDatabaseAccess 實作實例或 undefined (當使用 memory 模式時)
+ * @throws 當指定的 ORM 尚未實作適配器時拋出錯誤
  *
  * @example
  * const db = getDatabaseAccess()
- * if (db) {
- *   // 使用資料庫
- * }
  */
 export function getDatabaseAccess() {
 	const orm = getCurrentORM()

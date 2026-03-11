@@ -1,31 +1,29 @@
 /**
- * Post 資料倉儲介面
- *
- * @public - Domain 層定義的公開介面，所有層都可使用
- *
- * 定義了應用層與資料層的契約。
- * Application 層只知道這個介面，不知道底層是 Atlas、Drizzle 還是其他 ORM。
- *
- * **分層設計**
- * - 定義位置：Domain 層（此檔案）
- * - 實現位置：Infrastructure 層（PostRepository）
- * - 消費者：Application 層 Service、Controller
- *
- * **依賴反轉**
- * Application → IPostRepository (介面) ← Infrastructure (實現)
- *
- * @see docs/REPOSITORY_ABSTRACTION_TEMPLATE.md - Repository 最佳實踐
+ * @file IPostRepository.ts
+ * @description 定義 Post 模組的資料倉儲介面 (Repository Interface)
+ * @module src/Modules/Post/Domain/Repositories
  */
 
 import type { IRepository } from '@/Shared/Domain/IRepository'
 
-// 應該使用 Post Entity，暫時使用 any（待改進）
+/**
+ * IPostRepository 介面
+ * 
+ * 在 DDD 架構中屬於「領域層 (Domain Layer)」。
+ * 定義了對 Post 聚合根進行持久化操作的契約。
+ * 
+ * 依照依賴反轉原則 (DIP)：
+ * - 領域層定義介面 (Port)。
+ * - 基礎設施層實現該介面 (Adapter)。
+ * 
+ * 這使得領域邏輯可以獨立於具體的資料庫技術 (如 Atlas, Drizzle, Memory 等)。
+ */
 export interface IPostRepository extends IRepository<any> {
-	// 基礎 CRUD 操作由 IRepository<Post> 提供：
-	// - save(entity: Post): Promise<void>
-	// - findById(id: string): Promise<Post | null>
+	// 基礎 CRUD 操作由 IRepository 提供：
+	// - save(entity: any): Promise<void>
+	// - findById(id: string): Promise<any | null>
 	// - delete(id: string): Promise<void>
-	// - findAll(params?): Promise<Post[]>
+	// - findAll(params?): Promise<any[]>
 	// - count(params?): Promise<number>
 
 	// 業務相關方法可在此添加

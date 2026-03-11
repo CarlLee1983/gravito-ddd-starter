@@ -1,5 +1,10 @@
 /**
- * 用戶資料倉儲實現 (ORM 無關)
+ * @file UserRepository.ts
+ * @description 用戶資料倉儲實現 (ORM 無關)
+ *
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：實作領域層定義的 Repository 介面。
+ * - 職責：處理 User 實體與底層持久化存儲之間的轉換與操作。
  *
  * @internal - 此實現是基礎設施層細節，應通過 IUserRepository 使用
  *
@@ -20,7 +25,14 @@ import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { User } from '../../Domain/Aggregates/User'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 
+/**
+ * 用戶倉儲類別，封裝所有用戶相關的資料存取邏輯
+ */
 export class UserRepository implements IUserRepository {
+	/**
+	 * 建構子
+	 * @param db - 資料庫存取介面實例
+	 */
 	constructor(private readonly db: IDatabaseAccess) {}
 
 	// ============================================
@@ -30,7 +42,8 @@ export class UserRepository implements IUserRepository {
 	/**
 	 * 保存用戶（新增或更新）
 	 *
-	 * @param user - User 實體
+	 * @param user - User 領域實體
+	 * @returns 非同步作業
 	 */
 	async save(user: User): Promise<void> {
 		const row = this.toRow(user)
@@ -45,8 +58,8 @@ export class UserRepository implements IUserRepository {
 	/**
 	 * 根據 ID 查詢用戶
 	 *
-	 * @param id - 用戶 ID
-	 * @returns User 實體或 null
+	 * @param id - 用戶唯一識別碼
+	 * @returns 回傳 User 實體，若找不到則回傳 null
 	 */
 	async findById(id: string): Promise<User | null> {
 		const row = await this.db.table('users').where('id', '=', id).first()
@@ -56,7 +69,8 @@ export class UserRepository implements IUserRepository {
 	/**
 	 * 刪除用戶
 	 *
-	 * @param id - 用戶 ID
+	 * @param id - 用戶唯一識別碼
+	 * @returns 非同步作業
 	 */
 	async delete(id: string): Promise<void> {
 		await this.db.table('users').where('id', '=', id).delete()
@@ -65,8 +79,8 @@ export class UserRepository implements IUserRepository {
 	/**
 	 * 查詢所有用戶（支援分頁）
 	 *
-	 * @param params - 查詢參數 { limit, offset }
-	 * @returns User 實體陣列
+	 * @param params - 查詢參數，包含限制數量 (limit) 與位移量 (offset)
+	 * @returns 回傳符合條件的 User 實體陣列
 	 */
 	async findAll(params?: { limit?: number; offset?: number }): Promise<User[]> {
 		let query = this.db.table('users')
@@ -77,9 +91,9 @@ export class UserRepository implements IUserRepository {
 	}
 
 	/**
-	 * 計算用戶總數
+	 * 計算系統中用戶的總數
 	 *
-	 * @returns 用戶總數
+	 * @returns 回傳用戶總數
 	 */
 	async count(): Promise<number> {
 		return this.db.table('users').count()
@@ -90,10 +104,10 @@ export class UserRepository implements IUserRepository {
 	// ============================================
 
 	/**
-	 * 按 Email 查詢用戶
+	 * 按電子郵件查詢用戶
 	 *
-	 * @param email - 用戶 email
-	 * @returns User 實體或 null
+	 * @param email - 用戶電子郵件
+	 * @returns 回傳 User 實體，若找不到則回傳 null
 	 */
 	async findByEmail(email: string): Promise<User | null> {
 		const row = await this.db.table('users').where('email', '=', email).first()
@@ -103,6 +117,7 @@ export class UserRepository implements IUserRepository {
 	/**
 	 * 列出所有用戶（已棄用，使用 findAll() 代替）
 	 * @deprecated 使用 findAll() 代替
+	 * @returns 回傳所有 User 實體陣列
 	 */
 	async list(): Promise<User[]> {
 		return this.findAll()
@@ -113,8 +128,10 @@ export class UserRepository implements IUserRepository {
 	// ============================================
 
 	/**
-	 * 將資料庫記錄轉換為 Domain 實體
+	 * 將資料庫記錄 (Persistence Object) 轉換為領域實體 (Domain Entity)
 	 *
+	 * @param row - 資料庫回傳的原始資料
+	 * @returns 轉換後的領域實體
 	 * @private
 	 */
 	private toDomain(row: any): User {
@@ -127,8 +144,10 @@ export class UserRepository implements IUserRepository {
 	}
 
 	/**
-	 * 將 Domain 實體轉換為資料庫記錄
+	 * 將領域實體 (Domain Entity) 轉換為資料庫記錄 (Persistence Object)
 	 *
+	 * @param user - User 領域實體
+	 * @returns 資料庫對應的純物件記錄
 	 * @private
 	 */
 	private toRow(user: User): Record<string, unknown> {

@@ -1,17 +1,7 @@
 /**
- * ACL：User 模組 → Post 模組的防腐層
- *
- * 設計重點：
- * - 位置：Post 模組的 Infrastructure/Adapters/（使用方的 Infrastructure 層）
- * - 職責：轉換 User 模組的資料為 Post 模組能理解的格式
- * - 隔離：Post 的 Application 層只看到 IAuthorService，不知道 User 的存在
- *
- * 建築狀況：
- * User 模組（供應方）
- *     ↓
- *  ACL 防腐層（此類：轉換介面）
- *     ↓
- * Post 模組（使用方，依賴 IAuthorService Port）
+ * @file UserToPostAdapter.ts
+ * @description User 模組與 Post 模組之間的防腐層 (ACL) 適配器
+ * @module src/Modules/Post/Infrastructure/Adapters
  */
 
 import type { AuthorDTO } from '@/Shared/Application/DTOs/AuthorDTO'
@@ -19,16 +9,32 @@ import type { IAuthorService } from '../../Domain/Services/IAuthorService'
 import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
 
 /**
- * 實現 Post 定義的 IAuthorService Port
- *
- * 用途：
- * - 從 User 模組的倉庫取得用戶資訊
- * - 轉換為 Post 模組期望的 AuthorDTO 格式
- * - 防止 User 模組的細節滲透進 Post 模組
+ * UserToPostAdapter 類別
+ * 
+ * 在 DDD 架構中作為「防腐層 (Anti-Corruption Layer, ACL)」的一部分。
+ * 實現了 Post 領域層定義的 IAuthorService 介面 (Port)。
+ * 
+ * 職責：
+ * 1. 調用 User 模組的倉儲取得資料。
+ * 2. 將 User 模組的領域模型轉換為 Post 模組所使用的 AuthorDTO。
+ * 3. 隔離兩個模組之間的變化，防止 User 模組的細節污染 Post 模組。
  */
 export class UserToPostAdapter implements IAuthorService {
+  /**
+   * 建立 UserToPostAdapter 實例
+   * 
+   * @param userRepository - User 模組的使用者倉儲介面
+   */
   constructor(private readonly userRepository: IUserRepository) {}
 
+  /**
+   * 根據作者 ID 尋找作者資訊
+   * 
+   * 將 User 領域物件翻譯為 Post 領域所需的 AuthorDTO 格式。
+   * 
+   * @param authorId - 作者唯一識別符
+   * @returns Promise 包含作者資訊 DTO 或 null (若找不到)
+   */
   async findAuthor(authorId: string): Promise<AuthorDTO | null> {
     // 從 User 模組的倉庫取得用戶
     const user = await this.userRepository.findById(authorId)

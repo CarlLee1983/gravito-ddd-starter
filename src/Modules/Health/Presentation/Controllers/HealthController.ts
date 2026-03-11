@@ -1,23 +1,33 @@
 /**
- * HealthController
- * 健康檢查控制器 (HTTP 處理)
- *
- * 設計原則：
- * - 依賴通過構造函數注入（不訪問容器）
- * - 使用 IHttpContext 而不是 GravitoContext（框架無關）
- * - 純淨的業務邏輯實現
- * - 需要框架資源（db、redis、cache）時，通過 context 訪問
+ * @file HealthController.ts
+ * @description 處理系統健康檢查相關的 HTTP 請求
+ * @module src/Modules/Health/Presentation/Controllers
  */
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
 import type { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
 
+/**
+ * HealthController 類別
+ * 
+ * 在 DDD 架構中屬於「表現層 (Presentation Layer)」。
+ * 負責接收外部檢查請求，從 HTTP 上下文中提取基礎設施組件 (如 DB)，並調用應用服務執行檢查。
+ */
 export class HealthController {
+	/**
+	 * 建立 HealthController 實例
+	 * 
+	 * @param service - 執行健康檢查的應用服務實例
+	 */
 	constructor(private service: PerformHealthCheckService) {}
 
 	/**
-	 * GET /health
-	 * 執行健康檢查並返回結果
+	 * 執行系統健康檢查
+	 * 
+	 * 此方法會從 context 中獲取 Wiring 層注入的原始資源 (db, redis, cache)。
+	 * 
+	 * @param ctx - HTTP 上下文介面
+	 * @returns Promise 包含健康檢查結果的 HTTP 響應
 	 */
 	async check(ctx: IHttpContext): Promise<Response> {
 		try {
@@ -56,8 +66,10 @@ export class HealthController {
 	}
 
 	/**
-	 * GET /health/history
-	 * 獲取健康檢查歷史
+	 * 獲取健康檢查歷史記錄
+	 * 
+	 * @param ctx - HTTP 上下文介面
+	 * @returns Promise 包含歷史記錄列表的 HTTP 響應
 	 */
 	async history(ctx: IHttpContext): Promise<Response> {
 		try {

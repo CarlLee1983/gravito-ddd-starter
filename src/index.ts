@@ -1,20 +1,27 @@
 /**
- * 應用入口點 (Entry Point)
+ * @file index.ts
+ * @description 系統入口點 (System Entry Point)
  *
- * 負責：
+ * 在 DDD 架構中的角色：
+ * - 啟動層 (Bootstrap Layer)：整個應用的硬體與作業系統接觸面。
+ * - 職責：啟動初始化流程，掛載 HTTP 伺服器，並提供系統啟動時的視覺化反饋。
+ *
+ * 核心功能：
  * 1. 調用 createApp() 初始化應用
  * 2. 啟動 HTTP 伺服器
  * 3. 顯示啟動成功訊息和可用端點
- * 4. 處理啟動失敗
+ * 4. 處理啟動失敗的例外
  */
 
 import { createApp } from './app'
 
 /**
- * 應用啟動並顯示歡迎訊息
+ * 啟動應用程式服務並顯示歡迎資訊
+ *
+ * @returns 啟動後的伺服器實例
  */
 async function start() {
-	// 初始化應用（DDD 啟動流程）
+	// 初始化應用（觸發完整的 DDD 啟動流程）
 	const core = await createApp()
 
 	// 啟動 HTTP 伺服器
@@ -22,7 +29,7 @@ async function start() {
 	const baseUrl = `http://localhost:${port}`
 	const server = core.liftoff(port)
 
-	// 顯示啟動成功訊息
+	// 顯示啟動成功訊息與系統狀態報告
 	console.log(`
 ╔════════════════════════════════════════════════════════════════╗
 ║          🚀 Gravito DDD Starter - Running                      ║
@@ -80,7 +87,7 @@ async function start() {
 	return server
 }
 
-// 執行啟動流程
+// 執行全局啟動流程
 const server = await start().catch((error) => {
 	console.error('❌ Application startup failed:', error)
 	process.exit(1)

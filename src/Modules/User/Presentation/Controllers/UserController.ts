@@ -1,8 +1,13 @@
 /**
- * User Controller
- * 控制器接收依賴注入，不直接創建依賴
+ * @file UserController.ts
+ * @description 用戶模組控制器
+ *
+ * 在 DDD 架構中的角色：
+ * - 表現層 (Presentation Layer)：處理外部 HTTP 請求並回傳回應。
+ * - 職責：解析請求參數、呼叫領域服務或倉儲、並將結果轉換為 API 格式。
  *
  * 設計原則：
+ * - 控制器接收依賴注入，不直接創建依賴
  * - 所有依賴通過構造函數注入
  * - 使用 IHttpContext 而不是 GravitoContext（框架無關）
  * - 不訪問任何容器或框架對象
@@ -12,11 +17,22 @@ import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 import { User } from '../../Domain/Aggregates/User'
 
+/**
+ * 用戶控制器類別
+ */
 export class UserController {
+	/**
+	 * 建構子
+	 * @param repository - 用戶倉儲介面實例
+	 */
 	constructor(private repository: IUserRepository) {}
 
 	/**
 	 * GET /api/users
+	 * 列出所有用戶
+	 *
+	 * @param ctx - HTTP 上下文
+	 * @returns JSON 回應
 	 */
 	async index(ctx: IHttpContext): Promise<Response> {
 		try {
@@ -44,6 +60,10 @@ export class UserController {
 
 	/**
 	 * POST /api/users
+	 * 建立新用戶
+	 *
+	 * @param ctx - HTTP 上下文
+	 * @returns JSON 回應 (201 Created)
 	 */
 	async store(ctx: IHttpContext): Promise<Response> {
 		try {
@@ -103,6 +123,10 @@ export class UserController {
 
 	/**
 	 * GET /api/users/:id
+	 * 獲取特定用戶詳情
+	 *
+	 * @param ctx - HTTP 上下文
+	 * @returns JSON 回應
 	 */
 	async show(ctx: IHttpContext): Promise<Response> {
 		try {

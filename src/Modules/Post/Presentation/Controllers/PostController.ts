@@ -1,14 +1,7 @@
 /**
- * PostController
- *
- * 設計原則：
- * - 依賴通過構造函數注入
- * - 使用 IHttpContext 而不是 GravitoContext（框架無關）
- * - 不訪問任何容器或框架對象
- *
- * ACL 應用範例：
- * - 依賴 IAuthorService Port（Post 定義）
- * - 不知道 User 模組的具體實現
+ * @file PostController.ts
+ * @description 處理 Post 模組相關的 HTTP 請求
+ * @module src/Modules/Post/Presentation/Controllers
  */
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
@@ -16,9 +9,27 @@ import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
 import type { IAuthorService } from '../../Domain/Services/IAuthorService'
 import type { PostWithAuthorDTO } from '../../Application/DTOs/PostWithAuthorDTO'
 
+/**
+ * PostController 類別
+ * 
+ * 在 DDD 架構中屬於「表現層 (Presentation Layer)」。
+ * 負責接收外部請求 (透過 IHttpContext)，調用領域層或基礎設施層的服務，並返回適當的 HTTP 響應。
+ */
 export class PostController {
+	/**
+	 * 建立 PostController 實例
+	 * 
+	 * @param repository - 文章倉儲介面
+	 * @param authorService - 作者領域服務介面 (ACL Port)
+	 */
 	constructor(private repository: IPostRepository, private authorService: IAuthorService) {}
 
+	/**
+	 * 取得所有文章列表
+	 * 
+	 * @param ctx - HTTP 上下文介面
+	 * @returns Promise 包含 HTTP 響應對象
+	 */
 	async index(ctx: IHttpContext): Promise<Response> {
 		try {
 			const items = await this.repository.findAll()
@@ -37,6 +48,14 @@ export class PostController {
 		}
 	}
 
+	/**
+	 * 根據 ID 取得單一文章及其作者資訊
+	 * 
+	 * 此方法演示了如何透過 IAuthorService (ACL) 獲取來自 User 模組的資料。
+	 * 
+	 * @param ctx - HTTP 上下文介面
+	 * @returns Promise 包含文章與作者複合資料的 HTTP 響應
+	 */
 	async show(ctx: IHttpContext): Promise<Response> {
 		try {
 			const id = ctx.params.id
@@ -70,7 +89,7 @@ export class PostController {
 				title: post.title,
 				content: post.content,
 				authorId: post.userId,
-				createdAt: post.createdAt.toISOString(),
+				createdAt: post.createdAt instanceof Date ? post.createdAt.toISOString() : new Date(post.createdAt).toISOString(),
 				author,
 			}
 
@@ -89,6 +108,12 @@ export class PostController {
 		}
 	}
 
+	/**
+	 * 建立新文章
+	 * 
+	 * @param ctx - HTTP 上下文介面
+	 * @returns Promise 包含建立結果的 HTTP 響應
+	 */
 	async store(ctx: IHttpContext): Promise<Response> {
 		try {
 			const body = await ctx.getJsonBody<any>()

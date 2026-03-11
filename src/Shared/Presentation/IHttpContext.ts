@@ -1,54 +1,106 @@
 /**
  * IHttpContext - HTTP 上下文介面（框架無關）
  *
- * 控制器依賴此介面而非具體框架實作（GravitoContext），
- * 允許未來換框架或用 pure mock 單元測試。
+ * @module IHttpContext
+ * @description
+ * 控制器依賴此介面而非具體框架實作（GravitoContext）。
+ * 允許未來更換框架或進行純 Mock 單元測試。
+ *
+ * **DDD 角色**
+ * - 展示層：Presentation Port (Context)
+ * - 職責：標準化 HTTP 請求與回應的操作介面。
  */
 
 import type { GravitoContext } from '@gravito/core'
 
+/**
+ * HTTP 上下文介面
+ */
 export interface IHttpContext {
-	/** 取得請求文字內容 */
+	/**
+	 * 取得請求文字內容
+	 *
+	 * @returns {Promise<string>} 請求 Body 文字
+	 */
 	getBodyText(): Promise<string>
 
-	/** 取得請求 JSON 內容 */
+	/**
+	 * 取得請求 JSON 內容
+	 *
+	 * @template T - 回傳資料類型
+	 * @returns {Promise<T>} 請求 Body JSON 物件
+	 */
 	getJsonBody<T>(): Promise<T>
 
-	/** 取得請求 header 值 */
+	/**
+	 * 取得請求標頭值
+	 *
+	 * @param {string} name - Header 名稱
+	 * @returns {string | undefined} Header 值
+	 */
 	getHeader(name: string): string | undefined
 
-	/** 路由參數 */
+	/** 路由路徑參數 */
 	params: Record<string, string | undefined>
 
-	/** 查詢參數 ?key=value */
+	/** 查詢參數 (?key=value) */
 	query: Record<string, string | undefined>
 
-	/** 請求 headers */
+	/** 請求標頭集合 */
 	headers: Record<string, string | undefined>
 
-	/** 回傳 JSON 回應 */
+	/**
+	 * 回傳 JSON 回應
+	 *
+	 * @template T - 資料類型
+	 * @param {T} data - 要回傳的資料
+	 * @param {number} [statusCode] - HTTP 狀態碼
+	 * @returns {Response} HTTP 回應物件
+	 */
 	json<T>(data: T, statusCode?: number): Response
 
-	/** 回傳文字回應 */
+	/**
+	 * 回傳文字回應
+	 *
+	 * @param {string} content - 要回傳的文字
+	 * @param {number} [statusCode] - HTTP 狀態碼
+	 * @returns {Response} HTTP 回應物件
+	 */
 	text(content: string, statusCode?: number): Response
 
-	/** 回傳重導回應（預設 302） */
+	/**
+	 * 回傳重新導向回應
+	 *
+	 * @param {string} url - 導向網址
+	 * @param {number} [statusCode=302] - HTTP 狀態碼
+	 * @returns {Response} HTTP 回應物件
+	 */
 	redirect(url: string, statusCode?: number): Response
 
-	/** 從 context 取得值（如 jwtPayload） */
+	/**
+	 * 從 Context 取得暫存值
+	 *
+	 * @template T - 資料類型
+	 * @param {string} key - 鍵值名稱
+	 * @returns {T | undefined} 儲存的值
+	 */
 	get<T>(key: string): T | undefined
 
-	/** 在 context 設定值 */
+	/**
+	 * 在 Context 設定暫存值
+	 *
+	 * @param {string} key - 鍵值名稱
+	 * @param {unknown} value - 要儲存的值
+	 * @returns {void}
+	 */
 	set(key: string, value: unknown): void
 }
 
 /**
- * 工廠函式：將 GravitoContext 適配為 IHttpContext
+ * 適配器函式：將 GravitoContext 適配為 IHttpContext
  *
- * @example
- * core.router.post("/users", (ctx) =>
- *   controller.create(fromGravitoContext(ctx))
- * )
+ * @param {GravitoContext} ctx - Gravito 原始上下文
+ * @returns {IHttpContext} 框架無關的上下文實作
  */
 export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
 	// 解析查詢參數

@@ -1,8 +1,10 @@
 /**
- * Drizzle 連線檢查實現
+ * @file DrizzleConnectivityCheck.ts
+ * @description Drizzle 資料庫連線檢查實作
  *
- * 實現 IDatabaseConnectivityCheck 介面
- * 用於健康檢查和連線驗證
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：實作 IDatabaseConnectivityCheck 介面。
+ * - 職責：提供一個輕量化的機制來驗證 Drizzle 與底層資料庫的連線狀態，通常用於系統健康檢查 (Health Check)。
  *
  * @internal 此實現是基礎設施層細節
  */
@@ -11,21 +13,22 @@ import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/IDataba
 import { getDrizzleInstance } from './config'
 
 /**
- * 建立 Drizzle 連線檢查實例
+ * 建立 Drizzle 連線檢查實例的工廠函數
  *
- * 此實例可用於驗證資料庫連線是否正常
+ * 此實例可用於驗證資料庫連線是否正常。
  *
- * @returns 實現 IDatabaseConnectivityCheck 介面的實例
+ * @returns 實作 IDatabaseConnectivityCheck 介面的物件
  *
  * @example
  * const check = createDrizzleConnectivityCheck()
  * const isConnected = await check.ping()
- * if (!isConnected) {
- *   console.error('Database connection failed')
- * }
  */
 export function createDrizzleConnectivityCheck(): IDatabaseConnectivityCheck {
   return {
+    /**
+     * 執行簡單查詢以驗證連線
+     * @returns 是否連線成功
+     */
     async ping(): Promise<boolean> {
       try {
         const db = getDrizzleInstance()

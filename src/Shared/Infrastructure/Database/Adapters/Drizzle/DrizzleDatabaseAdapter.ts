@@ -1,8 +1,10 @@
 /**
- * Drizzle DatabaseAccess 適配器
+ * @file DrizzleDatabaseAdapter.ts
+ * @description Drizzle 資料庫適配器實作
  *
- * 實現 IDatabaseAccess 介面，將 Drizzle ORM 適配為公開介面
- * 隱藏所有 Drizzle 特定的 API 細節
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：提供 IDatabaseAccess 介面的 Drizzle ORM 實作。
+ * - 職責：將 Drizzle 特定的操作適配為全域統一的資料庫存取介面，隱藏持久化技術細節。
  *
  * @internal 此實現是基礎設施層細節
  */
@@ -13,21 +15,21 @@ import { DrizzleQueryBuilder } from './DrizzleQueryBuilder'
 import * as schema from './schema'
 
 /**
- * Drizzle DatabaseAccess 實現
+ * Drizzle DatabaseAccess 實作類別
  *
- * 提供 ORM 無關的資料庫訪問介面
+ * 提供符合領域需求的資料庫存取介面，支援跨 ORM 的抽換。
  */
 class DrizzleDatabaseAccess implements IDatabaseAccess {
   /**
-   * 取得表的查詢建構器
-   *
-   * @param name 表名稱
-   * @returns QueryBuilder 實例，用於構建查詢
-   *
-   * @example
-   * const users = await db.table('users').select()
-   * const user = await db.table('users').where('id', '=', userId).first()
-   */
+	 * 取得指定資料表的查詢建構器實例
+	 *
+	 * @param name - 資料表名稱 (須對應 schema 定義中的鍵名)
+	 * @returns 回傳一個 Drizzle 特化的 QueryBuilder 實例
+	 * @throws 當指定的表名在 schema 中不存在時拋出錯誤
+	 *
+	 * @example
+	 * const users = await db.table('users').select()
+	 */
   table(name: string): IQueryBuilder {
     const db = getDrizzleInstance()
     const tableSchema = (schema as any)[name]
@@ -41,25 +43,14 @@ class DrizzleDatabaseAccess implements IDatabaseAccess {
 }
 
 /**
- * 建立 Drizzle DatabaseAccess 實例
+ * 建立 Drizzle DatabaseAccess 適配器的工廠函數
  *
- * 此工廠函數是唯一建立 Drizzle 適配器的方式
- * 應用層通過此函數注入 IDatabaseAccess
+ * 用於在接線層中注入符合 IDatabaseAccess 契約的持久化實作。
  *
- * @returns 實現 IDatabaseAccess 介面的實例
+ * @returns 實作 IDatabaseAccess 介面的實例
  *
  * @example
- * // 在 Wiring 層中使用
  * const db = createDrizzleDatabaseAccess()
- * container.singleton('database', () => db)
- *
- * // Repository 中使用
- * class UserRepository {
- *   constructor(private db: IDatabaseAccess) {}
- *   async findById(id: string) {
- *     return this.db.table('users').where('id', '=', id).first()
- *   }
- * }
  */
 export function createDrizzleDatabaseAccess(): IDatabaseAccess {
   return new DrizzleDatabaseAccess()

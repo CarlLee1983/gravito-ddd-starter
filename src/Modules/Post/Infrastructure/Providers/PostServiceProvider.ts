@@ -1,28 +1,27 @@
 /**
- * PostServiceProvider
- * 配置 Post 模組的領域服務依賴
- *
- * 設計原則：
- * - 繼承框架無關的 ModuleServiceProvider
- * - 不依賴 @gravito/core（框架解耦）
- * - 只負責註冊領域和應用層依賴
- * - Presentation 層的依賴由 Wiring 層組裝
- *
- * ORM 抽換機制（已簡化）：
- * - Repository 由 RepositoryRegistry 提供
- * - 與 UserServiceProvider 完全相同的模式
- * - 無需重複 ORM 選擇邏輯
+ * @file PostServiceProvider.ts
+ * @description 配置 Post 模組的領域服務與基礎設施依賴
+ * @module src/Modules/Post/Infrastructure/Providers
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
 
+/**
+ * PostServiceProvider 類別
+ * 
+ * 在 DDD 架構中屬於「基礎設施層 (Infrastructure Layer)」。
+ * 作為一個依賴提供者 (ServiceProvider)，負責向應用容器 (DI Container) 註冊 Post 模組所需的所有依賴項。
+ */
 export class PostServiceProvider extends ModuleServiceProvider {
 	/**
-	 * 註冊所有領域依賴
-	 *
-	 * 與 User 模組完全相同的流程，只改變 Repository 類型
+	 * 註冊模組的所有領域與應用依賴
+	 * 
+	 * 從 RepositoryRegistry 中取得適當的 Repository 實例，並將其作為單例註冊。
+	 * 
+	 * @param container - DI 容器實例
+	 * @returns void
 	 */
 	override register(container: IContainer): void {
 		// 從 Registry 取得 Repository
@@ -41,7 +40,10 @@ export class PostServiceProvider extends ModuleServiceProvider {
 	}
 
 	/**
-	 * 啟動時執行初始化邏輯
+	 * 啟動時執行模組初始化邏輯
+	 * 
+	 * @param _context - 啟動上下文 (目前未使用)
+	 * @returns void
 	 */
 	override boot(_context: any): void {
 		const orm = getCurrentORM()

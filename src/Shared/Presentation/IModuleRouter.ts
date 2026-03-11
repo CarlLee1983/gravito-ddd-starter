@@ -1,18 +1,16 @@
 import type { IHttpContext } from './IHttpContext'
 
-/** 最終請求處理函式，回傳 HTTP Response */
+/**
+ * 最終請求處理函式類型
+ */
 export type RouteHandler = (ctx: IHttpContext) => Promise<Response>
 
 /**
- * 中間件函式 — 洋蔥模型（Onion Model）
- * 呼叫 next() 繼續管線，或直接回傳 Response 短路
+ * 中間件函式類型 — 洋蔥模型（Onion Model）
  *
- * @example
- * const authGuard: Middleware = async (ctx, next) => {
- *   const token = ctx.getHeader('Authorization')
- *   if (!token) return ctx.json({ error: 'Unauthorized' }, 401)
- *   return next()
- * }
+ * @param {IHttpContext} ctx - HTTP 上下文
+ * @param {function(): Promise<Response>} next - 呼叫下一個中間件或處理器
+ * @returns {Promise<Response>} HTTP 回應
  */
 export type Middleware = (
 	ctx: IHttpContext,
@@ -22,66 +20,85 @@ export type Middleware = (
 /**
  * 框架無關的模組路由介面
  *
- * 設計原則：
- * 1. 完整 HTTP 方法支援
- * 2. 每個方法支援可選 middleware 陣列（洋蔥模型）
- * 3. 路由群組 (group) 支援前綴
- * 4. 不依賴任何框架，可在任何 Adapter 中實作
+ * @module IModuleRouter
+ * @description
+ * 定義模組路由註冊的標準介面。
+ * 讓各模組 Presentation 層註冊路由時與具體框架解耦。
  *
- * @example 基本使用
- * router.get('/users', listUsers)
- * router.post('/users', createUser)
+ * **設計原則**
+ * 1. 完整 HTTP 方法支援。
+ * 2. 每個方法支援可選中間件陣列（洋蔥模型）。
+ * 3. 路由群組 (group) 支援路徑前綴。
  *
- * @example 帶中間件
- * router.get('/users/me', [authGuard], getProfile)
- * router.delete('/users/:id', [authGuard, adminGuard], deleteUser)
- *
- * @example 路由群組
- * router.group('/api/v1', (r) => {
- *   r.get('/users', listUsers)
- *   r.post('/users', createUser)
- * })
+ * **DDD 角色**
+ * - 展示層：Presentation Port (Router)
+ * - 職責：解耦路由註冊邏輯。
  */
 export interface IModuleRouter {
-	// === GET ===
+	/**
+	 * GET 請求註冊
+	 * @param {string} path - 路由路徑
+	 * @param {RouteHandler | Middleware[]} middlewaresOrHandler - 中間件陣列或處理器
+	 * @param {RouteHandler} [handler] - 處理器（若提供中間件陣列）
+	 */
 	get(path: string, handler: RouteHandler): void
 	get(path: string, middlewares: Middleware[], handler: RouteHandler): void
 
-	// === POST ===
+	/**
+	 * POST 請求註冊
+	 * @param {string} path - 路由路徑
+	 * @param {RouteHandler | Middleware[]} middlewaresOrHandler - 中間件陣列或處理器
+	 * @param {RouteHandler} [handler] - 處理器（若提供中間件陣列）
+	 */
 	post(path: string, handler: RouteHandler): void
 	post(path: string, middlewares: Middleware[], handler: RouteHandler): void
 
-	// === PUT ===
+	/**
+	 * PUT 請求註冊
+	 * @param {string} path - 路由路徑
+	 * @param {RouteHandler | Middleware[]} middlewaresOrHandler - 中間件陣列或處理器
+	 * @param {RouteHandler} [handler] - 處理器（若提供中間件陣列）
+	 */
 	put(path: string, handler: RouteHandler): void
 	put(path: string, middlewares: Middleware[], handler: RouteHandler): void
 
-	// === PATCH ===
+	/**
+	 * PATCH 請求註冊
+	 * @param {string} path - 路由路徑
+	 * @param {RouteHandler | Middleware[]} middlewaresOrHandler - 中間件陣列或處理器
+	 * @param {RouteHandler} [handler] - 處理器（若提供中間件陣列）
+	 */
 	patch(path: string, handler: RouteHandler): void
 	patch(path: string, middlewares: Middleware[], handler: RouteHandler): void
 
-	// === DELETE ===
+	/**
+	 * DELETE 請求註冊
+	 * @param {string} path - 路由路徑
+	 * @param {RouteHandler | Middleware[]} middlewaresOrHandler - 中間件陣列或處理器
+	 * @param {RouteHandler} [handler] - 處理器（若提供中間件陣列）
+	 */
 	delete(path: string, handler: RouteHandler): void
 	delete(path: string, middlewares: Middleware[], handler: RouteHandler): void
 
-	// === HEAD（通常用於檢查資源存在，不回傳 body）===
+	/**
+	 * HEAD 請求註冊
+	 * @param {string} path - 路由路徑
+	 * @param {RouteHandler} handler - 處理器
+	 */
 	head(path: string, handler: RouteHandler): void
 
-	// === OPTIONS（CORS preflight 處理）===
+	/**
+	 * OPTIONS 請求註冊
+	 * @param {string} path - 路由路徑
+	 * @param {RouteHandler} handler - 處理器
+	 */
 	options(path: string, handler: RouteHandler): void
 
 	/**
 	 * 路由群組 — 套用路徑前綴
-	 * @param prefix - 路徑前綴（如 '/api/v1'）
-	 * @param fn - 在此群組中定義路由的函式
 	 *
-	 * @example
-	 * router.group('/users', (r) => {
-	 *   r.get('/', listUsers)          // GET /users/
-	 *   r.post('/', createUser)        // POST /users/
-	 *   r.get('/:id', getUser)         // GET /users/:id
-	 *   r.put('/:id', updateUser)      // PUT /users/:id
-	 *   r.delete('/:id', deleteUser)   // DELETE /users/:id
-	 * })
+	 * @param {string} prefix - 路徑前綴（如 '/api/v1'）
+	 * @param {function(IModuleRouter): void} fn - 在此群組中定義路由的函式
 	 */
 	group(prefix: string, fn: (router: IModuleRouter) => void): void
 }

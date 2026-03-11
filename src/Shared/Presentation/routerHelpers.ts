@@ -1,7 +1,16 @@
 import type { Middleware, RouteHandler } from './IModuleRouter'
 
 /**
- * 合併多個 middleware 為單一 middleware
+ * 路由與中間件輔助工具
+ *
+ * @module routerHelpers
+ */
+
+/**
+ * 合併多個中間件為單一中間件
+ *
+ * @param {...Middleware[]} middlewares - 要合併的中間件列表
+ * @returns {Middleware} 合併後的中間件
  *
  * @example
  * const secured = compose(rateLimiter, jwtGuard, auditLog)
@@ -25,8 +34,10 @@ export function compose(...middlewares: Middleware[]): Middleware {
 }
 
 /**
- * 將 middleware 包裝為 RouteHandler 裝飾器
- * 方便建立 handler 的 "protected" 版本
+ * 將中間件包裝為 RouteHandler 裝飾器
+ *
+ * @param {...Middleware[]} middlewares - 要套用的中間件
+ * @returns {function(RouteHandler): RouteHandler} 裝飾器函式
  *
  * @example
  * const protectedHandler = withGuard(jwtGuard)(getProfile)

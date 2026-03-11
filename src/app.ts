@@ -1,19 +1,23 @@
 /**
- * 應用建立函式 (createApp)
+ * @file app.ts
+ * @description 應用程式工廠 (Application Factory)
  *
- * 包裝 bootstrap 函式，提供給 src/index.ts 使用
- * 負責：
- * 1. 從配置取得連接埠號
- * 2. 調用 bootstrap 初始化應用
- * 3. 返回已初始化的 PlanetCore 實例
+ * 在 DDD 架構中的角色：
+ * - 啟動層 (Bootstrap Layer)：封裝應用的建立與啟動邏輯。
+ * - 職責：作為啟動流程的封裝層，負責環境參數整合並呼叫核心啟動程序 (bootstrap)。
  */
 
 import bootstrap from './bootstrap'
 
 /**
- * 建立並初始化應用
+ * 建立並初始化 Gravito 應用程式
  *
- * @returns {Promise<PlanetCore>} 初始化完成的 Gravito 核心實例
+ * 負責：
+ * 1. 從配置取得連接埠號
+ * 2. 調用 bootstrap 初始化應用
+ * 3. 返回已初始化的 PlanetCore 實例
+ *
+ * @returns 回傳初始化完成的 Gravito 核心實例 (PlanetCore)
  */
 export async function createApp() {
 	// 從環境變數或預設值取得連接埠
