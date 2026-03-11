@@ -12,20 +12,22 @@
  */
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 import { UserRepository } from '../Persistence/UserRepository'
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 
 /**
  * 註冊 User Repository 工廠到全局註冊表 (Registry)
  *
- * @param db - 資料庫存取介面，由 DatabaseAccessBuilder.getDatabaseAccess() 提供（必為非 undefined，使用 memory 時為 MemoryDatabaseAccess）
+ * @param db - 資料庫存取介面
+ * @param eventDispatcher - 領域事件分發器
  */
-export function registerUserRepositories(db: IDatabaseAccess): void {
+export function registerUserRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher): void {
 	const registry = getRegistry()
 	const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
-		return new UserRepository(db)
+		return new UserRepository(db, eventDispatcher)
 	}
 
 	registry.register('user', factory)
-	console.log('✅ [User] Repository 工廠已註冊')
+	console.log('✅ [User] Repository 工廠已註冊 (含 EventDispatcher)')
 }

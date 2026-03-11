@@ -7,6 +7,8 @@
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
+import { UserCreatedHandler } from '../../Application/Handlers/UserCreatedHandler'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 
 /**
  * PostServiceProvider 類別
@@ -32,21 +34,29 @@ export class PostServiceProvider extends ModuleServiceProvider {
 			return registry.create('post', orm, db)
 		})
 
-		// TODO: 如需 Application Service 時，在此註冊
-		// container.bind('createPostHandler', (c: IContainer) => {
-		//   const repository = c.make('postRepository')
-		//   return new CreatePostHandler(repository)
-		// })
+		// 註冊事件處理器
+		container.singleton('userCreatedHandler', () => new UserCreatedHandler())
 	}
 
 	/**
-	 * 啟動時執行模組初始化邏輯
+	 * 啟動時執行模組初始化邏輯與事件訂閱
 	 * 
-	 * @param _context - 啟動上下文 (目前未使用)
+	 * @param core - 啟動上下文 (Gravito 核心實例)
 	 * @returns void
 	 */
-	override boot(_context: any): void {
+	override boot(core: any): void {
 		const orm = getCurrentORM()
 		console.log(`✨ [Post] Module loaded (ORM: ${orm})`)
+
+		// ✨ 訂閱 User 模組發出的事件 (達成跨模組非同步通訊)
+		try {
+			const dispatcher = core.container.make('eventDispatcher') as IEventDispatcher
+			const handler = core.container.make('userCreatedHandler') as UserCreatedHandler
+
+			dispatcher.subscribe('UserCreated', (event) => handler.handle(event))
+			console.log('🔗 [Post] Subscribed to UserCreated events')
+		} catch (error) {
+			console.warn('⚠️ [Post] Could not subscribe to UserCreated events: eventDispatcher not found')
+		}
 	}
 }

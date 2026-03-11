@@ -10,6 +10,7 @@
 import type { PlanetCore } from '@gravito/core'
 import type { IDatabaseAccess } from '../IDatabaseAccess'
 import type { ModuleServiceProvider } from '../IServiceProvider'
+import type { IEventDispatcher } from '../IEventDispatcher'
 
 /**
  * 模組定義介面
@@ -27,8 +28,9 @@ export interface IModuleDefinition {
 	 * 若模組有持久化需求，在此註冊 Repository 工廠
 	 *
 	 * @param db - 已選定的資料庫適配器 (Atlas/Drizzle/Memory)
+	 * @param eventDispatcher - 選填的領域事件分發器
 	 */
-	registerRepositories?: (db: IDatabaseAccess) => void
+	registerRepositories?: (db: IDatabaseAccess, eventDispatcher?: IEventDispatcher) => void
 
 	/**
 	 * 路由與表現層註冊函式 (選填)

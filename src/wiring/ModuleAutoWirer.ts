@@ -52,13 +52,23 @@ export class ModuleAutoWirer {
 
 				// 3. 執行三步裝配流程：
 
-				// 第一步：註冊 Repository 工廠 (Infrastructure Layer)
-				if (moduleDef.registerRepositories) {
-					moduleDef.registerRepositories(db)
-				}
+				// 第一步：註冊 Service Provider 到 DI 容器 (先註冊才能在之後解析)
+				const provider = new moduleDef.provider()
+				core.register(createGravitoServiceProvider(provider))
 
-				// 第二步：註冊 Service Provider 到 DI 容器 (Application/Domain Layer)
-				core.register(createGravitoServiceProvider(new moduleDef.provider()))
+				// 第二步：註冊 Repository 工廠 (Infrastructure Layer)
+				if (moduleDef.registerRepositories) {
+					// 嘗試從容器中獲取 eventDispatcher (若已註冊)
+					let eventDispatcher: any = undefined
+					try {
+						eventDispatcher = core.container.make('eventDispatcher')
+					} catch {
+						// 忽略未註冊的情況
+					}
+					
+					// 注入 db 與 eventDispatcher
+					moduleDef.registerRepositories(db, eventDispatcher)
+				}
 
 				// 第三步：裝配 Presentation 層 (Controllers & Routes)
 				if (moduleDef.registerRoutes) {

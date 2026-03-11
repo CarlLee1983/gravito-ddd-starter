@@ -21,12 +21,14 @@ export interface UserProps {
   createdAt: Date
 }
 
-import { BaseEntity } from '@/Shared/Domain/BaseEntity'
+import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
+import { UserCreated } from '../Events/UserCreated'
+import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
 
 /**
  * 用戶領域實體類別
  */
-export class User extends BaseEntity {
+export class User extends AggregateRoot {
   /**
    * 私有建構子，強制使用靜態工廠方法建立實體
    * @param props - 用戶屬性
@@ -34,6 +36,13 @@ export class User extends BaseEntity {
    */
   private constructor(private props: UserProps) {
     super(props.id)
+  }
+
+  /**
+   * 實作 AggregateRoot 的抽象方法：定義事件如何影響狀態 (在一般 DDD 中可留空，或用於 Event Sourcing)
+   */
+  applyEvent(_event: DomainEvent): void {
+    // 這裡可以在狀態重建時執行邏輯
   }
 
   /**
@@ -45,12 +54,17 @@ export class User extends BaseEntity {
    * @returns 新的 User 實體
    */
   static create(id: string, name: string, email: string): User {
-    return new User({
+    const user = new User({
       id,
       name,
       email,
       createdAt: new Date(),
     })
+
+    // ✨ 發布領域事件
+    user.raiseEvent(new UserCreated(id, name, email))
+
+    return user
   }
 
   /**

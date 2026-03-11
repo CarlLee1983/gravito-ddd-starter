@@ -22,6 +22,7 @@
  */
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 import { User } from '../../Domain/Aggregates/User'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 
@@ -32,8 +33,12 @@ export class UserRepository implements IUserRepository {
 	/**
 	 * 建構子
 	 * @param db - 資料庫存取介面實例
+	 * @param eventDispatcher - 領域事件分發器實例
 	 */
-	constructor(private readonly db: IDatabaseAccess) {}
+	constructor(
+		private readonly db: IDatabaseAccess,
+		private readonly eventDispatcher?: IEventDispatcher
+	) {}
 
 	// ============================================
 	// 基礎 CRUD 操作（實現 IRepository<User>）
@@ -48,10 +53,17 @@ export class UserRepository implements IUserRepository {
 	async save(user: User): Promise<void> {
 		const row = this.toRow(user)
 		const existing = await this.db.table('users').where('id', '=', user.id).first()
+		
 		if (existing) {
 			await this.db.table('users').where('id', '=', user.id).update(row)
 		} else {
 			await this.db.table('users').insert(row)
+		}
+
+		// ✨ 若注入了分發器，則分發積壓的領域事件
+		if (this.eventDispatcher) {
+			await this.eventDispatcher.dispatch(user.getUncommittedEvents())
+			user.markEventsAsCommitted()
 		}
 	}
 

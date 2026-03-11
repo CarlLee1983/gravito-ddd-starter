@@ -85,11 +85,6 @@ export class Post extends BaseEntity {
     })
   }
 
-  /** 取得文章 ID */
-  get id(): string {
-    return this.props.id
-  }
-
   /** 取得文章標題 */
   get title(): string {
     return this.props.title
