@@ -23,9 +23,11 @@
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
+import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
 import { User } from '../../Domain/Aggregates/User'
 import { Email } from '../../Domain/ValueObjects/Email'
 import { UserName } from '../../Domain/ValueObjects/UserName'
+import { UserCreated } from '../../Domain/Events/UserCreated'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 
 /**
@@ -55,18 +57,49 @@ export class UserRepository implements IUserRepository {
 	async save(user: User): Promise<void> {
 		const row = this.toRow(user)
 		const existing = await this.db.table('users').where('id', '=', user.id).first()
-		
+
 		if (existing) {
 			await this.db.table('users').where('id', '=', user.id).update(row)
 		} else {
 			await this.db.table('users').insert(row)
 		}
 
-		// ✨ 若注入了分發器，則分發積壓的領域事件
+		// ✨ 若注入了分發器，則分發事件
 		if (this.eventDispatcher) {
-			await this.eventDispatcher.dispatch([...user.getUncommittedEvents()])
+			const domainEvents = user.getUncommittedEvents()
+
+			// 同時分派領域事件和轉換後的整合事件
+			const integrationEvents = domainEvents.map(event => this.toIntegrationEvent(event))
+
+			await this.eventDispatcher.dispatch([...domainEvents, ...integrationEvents])
 			user.markEventsAsCommitted()
 		}
+	}
+
+	/**
+	 * 將領域事件轉換為整合事件 (ACL)
+	 * 這是跨 Bounded Context 邊界的轉換層
+	 *
+	 * @param event - 領域事件
+	 * @returns 整合事件
+	 * @private
+	 */
+	private toIntegrationEvent(event: any): IntegrationEvent {
+		if (event instanceof UserCreated) {
+			return toIntegrationEvent(
+				'UserCreated',
+				'User', // 來源 Bounded Context
+				{
+					userId: event.userId,
+					name: event.name,
+					email: event.email,
+					createdAt: event.createdAt.toISOString(),
+				},
+				event.userId
+			)
+		}
+		// 若有其他事件型別，可在此添加轉換邏輯
+		throw new Error(`不支援的領域事件型別：${event.constructor.name}`)
 	}
 
 	/**

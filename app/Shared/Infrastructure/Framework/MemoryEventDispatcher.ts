@@ -1,29 +1,31 @@
 /**
  * @file MemoryEventDispatcher.ts
- * @description 內存領域事件分發器實作 (Adapter)
- * 
+ * @description 內存事件分發器實作 (Adapter)
+ *
+ * 支援分發 DomainEvent 和 IntegrationEvent
  * Role: Infrastructure Adapter
  */
 
 import type { DomainEvent } from '../../Domain/DomainEvent'
-import type { IEventDispatcher, EventHandler } from '../IEventDispatcher'
+import type { IntegrationEvent } from '../../Domain/IntegrationEvent'
+import type { IEventDispatcher, Event, EventHandler } from '../IEventDispatcher'
 
 /**
  * 內存事件分發器
- * 
- * 負責在同一個執行序中同步或非同步地分發領域事件。
+ *
+ * 負責在同一個執行序中同步或非同步地分發領域事件和整合事件。
  */
 export class MemoryEventDispatcher implements IEventDispatcher {
 	private handlers: Map<string, EventHandler[]> = new Map()
 
 	/**
-	 * 分發事件
+	 * 分發事件（DomainEvent 或 IntegrationEvent）
 	 */
-	async dispatch(events: DomainEvent | DomainEvent[]): Promise<void> {
+	async dispatch(events: Event | Event[]): Promise<void> {
 		const eventList = Array.isArray(events) ? events : [events]
 
 		for (const event of eventList) {
-			const eventName = event.constructor.name
+			const eventName = this.getEventName(event)
 			const handlers = this.handlers.get(eventName) || []
 
 			if (handlers.length === 0) {
@@ -52,5 +54,21 @@ export class MemoryEventDispatcher implements IEventDispatcher {
 			this.handlers.set(eventName, [])
 		}
 		this.handlers.get(eventName)!.push(handler)
+	}
+
+	/**
+	 * 提取事件名稱
+	 * - DomainEvent: 使用 constructor.name
+	 * - IntegrationEvent: 使用 eventType
+	 *
+	 * @private
+	 */
+	private getEventName(event: Event): string {
+		if ('eventType' in event && typeof event.eventType === 'string') {
+			// IntegrationEvent
+			return event.eventType
+		}
+		// DomainEvent
+		return (event as DomainEvent).constructor.name
 	}
 }

@@ -22,6 +22,7 @@ import { PostDTO } from '@/Modules/Post/Application/DTOs/PostDTO'
 import { CreatePostService } from '@/Modules/Post/Application/Services/CreatePostService'
 import { UserCreatedHandler } from '@/Modules/Post/Application/Handlers/UserCreatedHandler'
 import { UserCreated } from '@/Modules/User/Domain/Events/UserCreated'
+import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
 import type { IPostRepository } from '@/Modules/Post/Domain/Repositories/IPostRepository'
 import type { IAuthorService } from '@/Modules/Post/Domain/Services/IAuthorService'
 
@@ -435,9 +436,19 @@ describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
       savedPost = post
     }
 
-    const createdAt = new Date('2024-01-15T10:30:00Z')
-    const userEvent = new UserCreated('user-1', 'John Doe', 'john@example.com', createdAt)
-    await handler.handle(userEvent)
+    // 構建 Integration Event（跨 Bounded Context 的事件）
+    const integrationEvent: IntegrationEvent = toIntegrationEvent(
+      'UserCreated',
+      'User',
+      {
+        userId: 'user-1',
+        name: 'John Doe',
+        email: 'john@example.com',
+        createdAt: '2024-01-15T10:30:00Z',
+      },
+      'user-1'
+    )
+    await handler.handle(integrationEvent)
 
     expect(savedPost).not.toBeNull()
     expect(savedPost?.title.value).toContain('歡迎來到我的部落格')
@@ -447,12 +458,21 @@ describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
   it('should handle errors gracefully without throwing', async () => {
     mockAuthorService.findAuthor = async () => null // Author doesn't exist
 
-    const createdAt = new Date('2024-01-15T10:30:00Z')
-    const userEvent = new UserCreated('user-2', 'Jane Doe', 'jane@example.com', createdAt)
+    const integrationEvent: IntegrationEvent = toIntegrationEvent(
+      'UserCreated',
+      'User',
+      {
+        userId: 'user-2',
+        name: 'Jane Doe',
+        email: 'jane@example.com',
+        createdAt: '2024-01-15T10:30:00Z',
+      },
+      'user-2'
+    )
 
     // Should not throw, only log error
     expect(async () => {
-      await handler.handle(userEvent)
+      await handler.handle(integrationEvent)
     }).not.toThrow()
   })
 
@@ -463,9 +483,18 @@ describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
       savedPost = post
     }
 
-    const createdAt = new Date('2024-01-15T10:30:00Z')
-    const userEvent = new UserCreated('user-3', 'Alice Smith', 'alice@example.com', createdAt)
-    await handler.handle(userEvent)
+    const integrationEvent: IntegrationEvent = toIntegrationEvent(
+      'UserCreated',
+      'User',
+      {
+        userId: 'user-3',
+        name: 'Alice Smith',
+        email: 'alice@example.com',
+        createdAt: '2024-01-15T10:30:00Z',
+      },
+      'user-3'
+    )
+    await handler.handle(integrationEvent)
 
     expect(savedPost?.title.value).toContain('Alice Smith')
     expect(savedPost?.content.value).toContain('Alice Smith')
