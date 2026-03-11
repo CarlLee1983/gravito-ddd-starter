@@ -7,6 +7,9 @@
 | `app.ts` | 應用：name、env、port、VIEW_DIR、debug、url |
 | `database.ts` | Atlas ORM（ENABLE_DB !== 'false' 時注入） |
 | `cache.ts` | Stasis 快取（可選） |
+| `redis.ts` | Redis 設定（可選） |
+| `orbits.ts` | Gravito Orbits 註冊（Prism、Atlas、Plasma 等） |
+| `drizzle.config.ts` | Drizzle Kit 配置（migrations、schema 位置） |
 | `types.ts` | 型別（AppConfig 等） |
 | `index.ts` | 匯出各 config、`buildConfig(port?)`、`useDatabase` |
 

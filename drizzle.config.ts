@@ -1,19 +1,8 @@
 /**
- * Drizzle Kit 配置
+ * Drizzle Kit 配置（轉發）
  *
- * 此檔案配置 Drizzle migrations 和代碼生成
+ * 實際配置在 config/drizzle.config.ts
+ * 此檔案為 Drizzle Kit 提供標準位置的入口點
  */
 
-import type { Config } from 'drizzle-kit'
-
-const config: Config = {
-  schema: './src/adapters/Drizzle/schema.ts',
-  out: './drizzle',
-  driver: 'turso',
-  dbCredentials: {
-    url: process.env.DATABASE_URL || 'file:local.db',
-    authToken: process.env.DATABASE_AUTH_TOKEN,
-  },
-}
-
-export default config
+export { default } from './config/drizzle.config.ts'
