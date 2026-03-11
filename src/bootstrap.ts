@@ -4,7 +4,7 @@
  */
 
 import { PlanetCore, defineConfig } from '@gravito/core'
-import { buildConfig } from '../config/index'
+import { buildConfig } from '../config/app/index'
 import { registerRoutes } from './routes'
 import { initializeRegistry } from './wiring/RepositoryRegistry'
 import { getCurrentORM } from './wiring/RepositoryFactory'
