@@ -14,18 +14,27 @@
  */
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
-import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
-import { User } from '../../Domain/Aggregates/User'
+import { CreateUserService } from '../../Application/Services/CreateUserService'
+import { GetUserService } from '../../Application/Services/GetUserService'
 
 /**
  * 用戶控制器類別
+ *
+ * 遵循 DDD 原則：
+ * - 所有業務邏輯完全透過 Application Service 進行
+ * - 不直接操作 Domain Entity 或 Repository
+ * - 職責僅限於解析 HTTP 請求和格式化回應
  */
 export class UserController {
 	/**
 	 * 建構子
-	 * @param repository - 用戶倉儲介面實例
+	 * @param createUserService - 建立用戶應用服務
+	 * @param getUserService - 查詢用戶應用服務
 	 */
-	constructor(private repository: IUserRepository) {}
+	constructor(
+		private createUserService: CreateUserService,
+		private getUserService: GetUserService
+	) {}
 
 	/**
 	 * GET /api/users
@@ -36,15 +45,15 @@ export class UserController {
 	 */
 	async index(ctx: IHttpContext): Promise<Response> {
 		try {
-			const users = await this.repository.list()
+			const users = await this.getUserService.listAll()
 
 			return ctx.json({
 				success: true,
-				data: users.map((u: any) => ({
+				data: users.map(u => ({
 					id: u.id,
 					name: u.name,
 					email: u.email,
-					createdAt: u.createdAt.toISOString(),
+					createdAt: u.createdAt,
 				})),
 			})
 		} catch (error: any) {
@@ -69,7 +78,7 @@ export class UserController {
 		try {
 			const body = await ctx.getJsonBody<{ name: string; email: string }>()
 
-			// 驗證輸入
+			// 基礎輸入驗證
 			if (!body.name || !body.email) {
 				return ctx.json(
 					{
@@ -80,43 +89,30 @@ export class UserController {
 				)
 			}
 
-			// 檢查用戶是否已存在
-			const existingUser = await this.repository.findByEmail(body.email)
-			if (existingUser) {
-				return ctx.json(
-					{
-						success: false,
-						message: 'User already exists',
-					},
-					400,
-				)
-			}
-
-			// 創建用戶實體
-			const id = crypto.randomUUID()
-			const user = User.create(id, body.name, body.email)
-			await this.repository.save(user)
+			// 透過 Application Service 執行建立用戶的業務邏輯
+			const userDto = await this.createUserService.execute({
+				id: crypto.randomUUID(),
+				name: body.name,
+				email: body.email,
+			})
 
 			return ctx.json(
 				{
 					success: true,
 					message: 'User created successfully',
-					data: {
-						id: user.id,
-						name: user.name,
-						email: user.email,
-						createdAt: user.createdAt.toISOString(),
-					},
+					data: userDto,
 				},
 				201,
 			)
 		} catch (error: any) {
+			// 根據不同的錯誤類型返回適當的 HTTP 狀態碼
+			const statusCode = error.message?.includes('已被使用') ? 400 : 400
 			return ctx.json(
 				{
 					success: false,
 					message: error.message || 'Failed to create user',
 				},
-				400,
+				statusCode,
 			)
 		}
 	}
@@ -142,9 +138,10 @@ export class UserController {
 				)
 			}
 
-			const user = await this.repository.findById(id)
+			// 透過 Application Service 查詢用戶
+			const userDto = await this.getUserService.findById(id)
 
-			if (!user) {
+			if (!userDto) {
 				return ctx.json(
 					{
 						success: false,
@@ -156,12 +153,7 @@ export class UserController {
 
 			return ctx.json({
 				success: true,
-				data: {
-					id: user.id,
-					name: user.name,
-					email: user.email,
-					createdAt: user.createdAt.toISOString(),
-				},
+				data: userDto,
 			})
 		} catch (error: any) {
 			return ctx.json(

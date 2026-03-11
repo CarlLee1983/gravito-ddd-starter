@@ -23,6 +23,7 @@ export type { IUserRepository } from './Domain/Repositories/IUserRepository'
 
 // Application - Services
 export { CreateUserService } from './Application/Services/CreateUserService'
+export { GetUserService } from './Application/Services/GetUserService'
 
 // Application - DTOs
 export { UserDTO, type UserJSONData } from './Application/DTOs/UserDTO'

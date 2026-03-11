@@ -26,6 +26,7 @@ export type { IAuthorService } from './Domain/Services/IAuthorService'
 
 // Application - Services
 export { CreatePostService } from './Application/Services/CreatePostService'
+export { GetPostService } from './Application/Services/GetPostService'
 
 // Application - DTOs
 export { PostDTO, type PostJSONData } from './Application/DTOs/PostDTO'
