@@ -1,3 +1,14 @@
+/**
+ * User Repository 單元測試
+ *
+ * 測試範圍：
+ * - UserRepository 的 CRUD 操作（保存、查詢）
+ * - 用戶查詢功能（按 ID、按 Email）
+ * - 不存在用戶的處理
+ *
+ * @module tests/User/UserRepository
+ */
+
 import { describe, it, expect } from 'bun:test'
 import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 import { UserRepository } from '../Infrastructure/Persistence/UserRepository'

@@ -1,3 +1,20 @@
+/**
+ * User Module 整合測試
+ *
+ * 測試範圍：
+ * - User API 的完整流程（建立、列表、查詢、404 處理）
+ * - HTTP 層的請求/響應處理
+ * - 模組內的依賴注入和協調
+ *
+ * 測試場景：
+ * - POST /api/users - 建立新用戶
+ * - GET /api/users - 列出所有用戶
+ * - GET /api/users/:id - 取得特定用戶
+ * - GET /api/users/non-existent - 404 錯誤處理
+ *
+ * @module tests/User/UserModule
+ */
+
 import { describe, it, expect, beforeAll } from 'bun:test'
 import { createHttpTester, type HttpTester } from '@gravito/core'
 import { createApp } from '../../../app'
