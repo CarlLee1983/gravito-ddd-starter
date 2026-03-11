@@ -12,3 +12,15 @@ gravito.lock.json
 .vscode
 .history
 KNOWLEDGE_BASE.md
+
+# 編譯產物遺留物（應只在 dist/ 中）
+config/**/*.d.ts
+config/**/*.d.ts.map
+config/**/*.js.map
+src/**/*.d.ts
+src/**/*.d.ts.map
+src/**/*.js.map
+
+# 生成的測試檔案
+coverage
+.nyc_output

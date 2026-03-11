@@ -1,7 +1,3 @@
-/**
- * Database configuration for @gravito/atlas.
- * Used only when ENABLE_DB is not 'false'.
- */
 export default {
     default: process.env.DB_CONNECTION ?? 'sqlite',
     connections: {
@@ -29,8 +25,7 @@ export default {
             password: process.env.DB_PASSWORD ?? '',
             charset: 'utf8mb4',
             collation: 'utf8mb4_unicode_ci',
-            useNativeDriver: false, // 使用 mysql2，避免 Bun.sql MySQL 的 .unsafe API 問題
+            useNativeDriver: false,
         },
     },
 };
-//# sourceMappingURL=database.js.map

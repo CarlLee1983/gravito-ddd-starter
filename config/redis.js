@@ -1,7 +1,3 @@
-/**
- * Redis configuration for @gravito/plasma (OrbitPlasma).
- * Used by cache (Stasis redis store), session, queue, etc.
- */
 export default {
     default: 'default',
     connections: {
@@ -14,4 +10,3 @@ export default {
         },
     },
 };
-//# sourceMappingURL=redis.js.map

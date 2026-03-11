@@ -1,0 +1,48 @@
+# ============================================================================
+# Stage 1: Builder - 編譯階段（包含所有開發依賴）
+# ============================================================================
+FROM oven/bun:latest AS builder
+
+WORKDIR /build
+
+# 只複製構建所需的文件
+COPY package.json bun.lock tsconfig.prod.json ./
+COPY src ./src
+
+# 安裝完整依賴（含 devDependencies）並編譯
+RUN bun install --production=false
+RUN bun run build:prod
+
+# ============================================================================
+# Stage 2: Production Runtime - 運行階段（無源代碼）
+# ============================================================================
+FROM oven/bun:latest
+
+WORKDIR /app
+
+# 設置生產環境
+ENV NODE_ENV=production
+
+# 複製 package.json 和 bun.lock
+COPY package.json bun.lock ./
+
+# 僅安裝生產依賴
+RUN bun install --production
+
+# 從 builder 複製編譯產物
+COPY --from=builder /build/dist ./dist
+
+# 清理：確保沒有源代碼、測試或開發文件洩露
+RUN rm -rf src tests scripts docs .git .env* *.md tsconfig* bun.lock
+RUN find . -name "*.map" -delete
+RUN find . -name "*.ts" -delete
+
+# 健檢
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD bun run -e "fetch('http://localhost:3000/health').then(r => r.ok ? process.exit(0) : process.exit(1)).catch(() => process.exit(1))" || exit 1
+
+# 暴露端口
+EXPOSE 3000
+
+# 啟動應用
+CMD ["node", "dist/index.js"]

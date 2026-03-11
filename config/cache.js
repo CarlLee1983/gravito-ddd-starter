@@ -1,7 +1,3 @@
-/**
- * Cache configuration for @gravito/stasis (optional).
- * Supported drivers: 'memory', 'file', 'redis'.
- */
 export default {
     default: process.env.CACHE_DRIVER ?? 'memory',
     stores: {
@@ -20,4 +16,3 @@ export default {
         },
     },
 };
-//# sourceMappingURL=cache.js.map

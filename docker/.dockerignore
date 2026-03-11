@@ -1,0 +1,54 @@
+# Source Code
+src
+tests
+scripts
+docs
+
+# Development Files
+.git
+.gitignore
+.env.development
+.env.staging
+.env.test
+*.md
+README.md
+CLAUDE.md
+
+# Configuration
+tsconfig.json
+tsconfig.prod.json
+bunfig.toml
+vite.config.ts
+
+# Build Artifacts
+dist
+.next
+build
+
+# Dependencies (不需要複製，會在 Builder 中安裝)
+node_modules
+.pnpm-store
+.yarn/cache
+
+# IDE & Tools
+.vscode
+.idea
+*.swp
+*.swo
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+bun-debug.log*
+
+# CI/CD
+.github
+.gitlab-ci.yml
+.circleci
+Jenkinsfile
+
+# Others
+.cache
+.turbo
+coverage
