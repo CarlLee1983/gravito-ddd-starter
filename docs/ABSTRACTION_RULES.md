@@ -427,7 +427,7 @@ Post 模組（使用方）
 
 ```typescript
 // ✅ Post 定義自己的 Port（需求）
-// src/Modules/Post/Application/Ports/IAuthorService.ts
+// src/Modules/Post/Domain/Ports/IAuthorService.ts
 export interface IAuthorService {
   findAuthor(authorId: string): Promise<AuthorDTO | null>
 }

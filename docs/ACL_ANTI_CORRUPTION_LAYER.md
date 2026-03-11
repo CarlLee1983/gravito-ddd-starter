@@ -91,39 +91,43 @@ export class PostController {
 
 ```
 src/Modules/Post/
-├── Application/
-│   ├── DTOs/
-│   │   └── PostWithAuthorDTO.ts          ← Post 的複合 DTO
+├── Domain/
 │   └── Ports/
-│       └── IAuthorService.ts             ← Post 定義的 Port（需求）
+│       └── IAuthorService.ts             ← Post Domain 定義的 Port（DDD）
+├── Application/
+│   └── DTOs/
+│       └── PostWithAuthorDTO.ts          ← Post 的複合 DTO
 ├── Infrastructure/
 │   └── Adapters/
 │       └── UserToPostAdapter.ts          ← ACL：實現 Port（供應）
-├── Domain/
 ├── Presentation/
 └── ...
 ```
 
-**關鍵**：ACL 在 `Infrastructure/Adapters/` 中，表明它是「如何實現需求」的細節。
+**關鍵設計原則**：
+- **Domain/Ports** - Domain 層定義它所依賴的抽象
+- **Infrastructure/Adapters** - Infrastructure 層實現 Port，具體如何滿足需求
+- 依賴方向：Domain → Infrastructure（單向依賴）
 
 ---
 
 ## 📝 實施步驟
 
-### 步驟 1：定義 Port（Post/Application/Ports/）
+### 步驟 1：在 Domain 層定義 Port（Post/Domain/Ports/）
 
-使用方定義自己需要的介面：
+Domain 層定義它所依賴的抽象（符合 DDD）：
 
 ```typescript
-// Post/Application/Ports/IAuthorService.ts
+// Post/Domain/Ports/IAuthorService.ts
 
 /**
  * Post 模組定義的作者服務介面（Port）
  *
- * 設計重點：
- * - 這是 Post 自己定義的介面，用 Post 的語言描述需求
- * - 不使用 User 模組的任何類型
- * - 只定義 Post 真正需要的欄位
+ * 設計重點（DDD）：
+ * - 位置：Domain 層（因為 Post Domain 層依賴此介面）
+ * - 所有權：Post 自己定義（使用方定義，不被迫用供應方的介面）
+ * - 語言：Post 的語言（不暴露 User 的細節）
+ * - 沒有外部依賴：只定義 Post 真正需要的欄位
  */
 
 export interface AuthorDTO {

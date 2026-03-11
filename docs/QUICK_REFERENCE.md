@@ -165,8 +165,8 @@ git commit -m "feat: [Order] add Order module"
 若 Post 模組需要 User 資訊，在 Post 中建立 ACL：
 
 ```bash
-# 1. 定義 Port（Post/Application/Ports/）
-# src/Modules/Post/Application/Ports/IAuthorService.ts
+# 1. 定義 Port（Post/Domain/Ports/）
+# src/Modules/Post/Domain/Ports/IAuthorService.ts
 export interface IAuthorService {
   findAuthor(authorId: string): Promise<AuthorDTO | null>
 }
