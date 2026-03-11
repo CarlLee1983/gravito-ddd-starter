@@ -51,16 +51,17 @@ export class MemoryHealthCheckRepository implements IHealthCheckRepository {
 
   /**
    * 獲取所有記錄並按時間倒序排列
-   * 
-   * @param limit - 限制返回筆數
+   *
+   * @param params - 分頁參數
    * @returns Promise 包含聚合根陣列
    */
-  async findAll(limit: number = 10): Promise<HealthCheck[]> {
+  async findAll(params?: { limit?: number; offset?: number }): Promise<HealthCheck[]> {
     const checks = Array.from(this.checks.values())
     // 按時間戳降序排序，返回最新的記錄
-    return checks
-      .sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
-      .slice(0, limit)
+    const sorted = checks.sort((a, b) => b.timestamp.getTime() - a.timestamp.getTime())
+    const offset = params?.offset ?? 0
+    const limit = params?.limit ?? 10
+    return sorted.slice(offset, offset + limit)
   }
 
   /**
@@ -88,8 +89,27 @@ export class MemoryHealthCheckRepository implements IHealthCheckRepository {
   }
 
   /**
+   * 根據 ID 刪除記錄
+   *
+   * @param id - 記錄唯一識別符
+   * @returns Promise<void>
+   */
+  async delete(id: string): Promise<void> {
+    this.checks.delete(id)
+  }
+
+  /**
+   * 計算符合條件的實體總數
+   *
+   * @returns Promise 包含記錄總筆數
+   */
+  async count(): Promise<number> {
+    return this.checks.size
+  }
+
+  /**
    * 刪除指定天數之前的舊記錄
-   * 
+   *
    * @param days - 天數限制
    * @returns Promise 包含被刪除的筆數
    */

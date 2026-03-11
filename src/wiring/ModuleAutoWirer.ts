@@ -6,7 +6,7 @@
  */
 
 import path from 'node:path'
-import { Glob } from 'bun'
+import { glob } from 'glob'
 import type { PlanetCore } from '@gravito/core'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Framework/GravitoServiceProviderAdapter'
@@ -25,11 +25,11 @@ export class ModuleAutoWirer {
 	 */
 	static async wire(core: PlanetCore, db: IDatabaseAccess): Promise<void> {
 		// 1. 定義掃描模式：所有模組目錄下的 index.ts
-		const glob = new Glob('src/Modules/*/index.ts')
+		const files = await glob('src/Modules/*/index.ts')
 		const modulesFound: string[] = []
 
 		// 2. 獲取絕對路徑列表並逐一導入
-		for (const file of glob.scanSync()) {
+		for (const file of files) {
 			const absolutePath = path.resolve(process.cwd(), file)
 
 			try {

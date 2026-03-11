@@ -6,9 +6,11 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
-    "dev:debug": "NODE_OPTIONS='--inspect-brk' bun run src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --format esm",
-    "start": "bun dist/index.js",
+    "dev:watch": "tsx watch src/index.ts",
+    "dev:bun": "bun run --hot src/index.ts",
+    "dev:debug": "NODE_OPTIONS='--inspect-brk' node dist/src/index.js",
+    "build": "tsc",
+    "start": "node dist/src/index.js",
     "test": "bun test",
     "test:watch": "bun test --watch",
     "test:coverage": "bun test --coverage",
@@ -51,8 +53,16 @@
     "@gravito/sentinel": "^4.0.1",
     "@gravito/signal": "^3.1.0",
     "@gravito/stasis": "^3.2.0",
+    "@inertiajs/react": "^2.3.17",
     "@libsql/client": "^0.17.0",
-    "drizzle-orm": "^0.45.1"
+    "clsx": "^2.1.1",
+    "drizzle-orm": "^0.45.1",
+    "glob": "^13.0.6",
+    "lucide-react": "^0.577.0",
+    "mongodb": "^7.1.0",
+    "react": "^19.2.4",
+    "react-dom": "^19.2.4",
+    "tailwind-merge": "^3.5.0"
   },
   "overrides": {
     "@gravito/atlas": "$@gravito/atlas",
@@ -63,9 +73,18 @@
   },
   "devDependencies": {
     "@gravito/pulse": "^3.4.0",
+    "@tailwindcss/vite": "^4.2.1",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.4",
+    "autoprefixer": "^10.4.27",
     "biome": "latest",
     "bun-types": "latest",
     "drizzle-kit": "^0.31.9",
-    "typescript": "^5.9.3"
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
   }
 }

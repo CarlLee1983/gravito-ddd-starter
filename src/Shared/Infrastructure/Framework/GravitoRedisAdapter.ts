@@ -25,7 +25,7 @@ export class GravitoRedisAdapter implements IRedisService {
 	 * @returns 狀態回傳值 (通常為 "PONG")
 	 */
 	async ping(): Promise<string> {
-		return this.redis.ping()
+		return (this.redis as any).ping()
 	}
 
 	/**
@@ -48,11 +48,11 @@ export class GravitoRedisAdapter implements IRedisService {
 		value: string,
 		expiresInSeconds?: number,
 	): Promise<void> {
-		await this.redis.set(
-			key,
-			value,
-			expiresInSeconds ? { ex: expiresInSeconds } : undefined,
-		)
+		if (expiresInSeconds) {
+			await (this.redis as any).set(key, value, { ex: expiresInSeconds })
+		} else {
+			await (this.redis as any).set(key, value)
+		}
 	}
 
 	/**
@@ -69,20 +69,20 @@ export class GravitoRedisAdapter implements IRedisService {
 	 * @returns 是否存在
 	 */
 	async exists(key: string): Promise<boolean> {
-		return (await this.redis.exists(key)) > 0
+		return (await (this.redis as any).exists(key)) > 0
 	}
 
 	/**
 	 * 將資料推入列表 (隊列生產者)
 	 */
 	async rpush(key: string, value: string): Promise<number> {
-		return this.redis.rpush(key, value)
+		return (this.redis as any).rpush(key, value)
 	}
 
 	/**
 	 * 從列表彈出資料 (隊列消費者)
 	 */
 	async lpop(key: string): Promise<string | null> {
-		return this.redis.lpop(key)
+		return (this.redis as any).lpop(key)
 	}
 }

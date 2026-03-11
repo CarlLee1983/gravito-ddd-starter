@@ -67,7 +67,7 @@ export class PerformHealthCheckService {
    * @returns Promise 包含健康檢查結果 DTO 陣列
    */
   async getHistory(limit: number = 10): Promise<HealthCheckDTO[]> {
-    const checks = await this.repository.findAll(limit)
+    const checks = await this.repository.findAll({ limit })
     return checks.map((check) => HealthCheckDTO.fromEntity(check))
   }
 }

@@ -10,6 +10,7 @@
  */
 
 import type { IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
+import * as Atlas from '@gravito/atlas'
 
 /**
  * 懶加載 Atlas DB 實例
@@ -17,8 +18,7 @@ import type { IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
  * @returns Gravito Atlas DB 實例
  */
 function getDB(): any {
-	// biome-ignore lint/style/noCommaOperator: Required for dynamic import
-	return (require('@gravito/atlas'), require('@gravito/atlas')).DB
+	return (Atlas as any).DB
 }
 
 /**

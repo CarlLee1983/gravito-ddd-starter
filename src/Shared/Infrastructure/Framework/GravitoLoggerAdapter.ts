@@ -4,28 +4,21 @@
  */
 
 import type { ILogger } from '../ILogger'
-import { Sentinel } from '@gravito/sentinel'
 
 export class GravitoLoggerAdapter implements ILogger {
-	private sentinel: Sentinel
-
-	constructor() {
-		this.sentinel = new Sentinel()
+	info(message: string, _context?: Record<string, any>): void {
+		console.info(`[INFO] ${message}`)
 	}
 
-	info(message: string, context?: Record<string, any>): void {
-		this.sentinel.info(message, context)
+	error(message: string, error?: Error | unknown, _context?: Record<string, any>): void {
+		console.error(`[ERROR] ${message}`, error)
 	}
 
-	error(message: string, error?: Error | unknown, context?: Record<string, any>): void {
-		this.sentinel.error(message, { error, ...context })
+	warn(message: string, _context?: Record<string, any>): void {
+		console.warn(`[WARN] ${message}`)
 	}
 
-	warn(message: string, context?: Record<string, any>): void {
-		this.sentinel.warn(message, context)
-	}
-
-	debug(message: string, context?: Record<string, any>): void {
-		this.sentinel.debug(message, context)
+	debug(message: string, _context?: Record<string, any>): void {
+		console.debug(`[DEBUG] ${message}`)
 	}
 }

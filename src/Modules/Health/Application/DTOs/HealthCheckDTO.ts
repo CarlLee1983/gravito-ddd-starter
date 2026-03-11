@@ -39,17 +39,17 @@ export interface HealthCheckJSONData {
  */
 export class HealthCheckDTO {
   /** 檢查記錄唯一識別符 */
-  id: string
+  id: string = ''
   /** 整體健康狀態 */
-  status: string
+  status: string = ''
   /** 檢查時間 */
-  timestamp: Date
+  timestamp: Date = new Date()
   /** 各項子系統檢查結果 */
   checks: {
     database: boolean
     redis?: boolean
     cache?: boolean
-  }
+  } = { database: false }
   /** 狀態描述訊息 */
   message?: string
 

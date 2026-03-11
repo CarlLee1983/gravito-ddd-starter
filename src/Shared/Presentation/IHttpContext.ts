@@ -1,14 +1,5 @@
 /**
  * IHttpContext - HTTP 上下文介面（框架無關）
- *
- * @module IHttpContext
- * @description
- * 控制器依賴此介面而非具體框架實作（GravitoContext）。
- * 允許未來更換框架或進行純 Mock 單元測試。
- *
- * **DDD 角色**
- * - 展示層：Presentation Port (Context)
- * - 職責：標準化 HTTP 請求與回應的操作介面。
  */
 
 import type { GravitoContext } from '@gravito/core'
@@ -17,90 +8,40 @@ import type { GravitoContext } from '@gravito/core'
  * HTTP 上下文介面
  */
 export interface IHttpContext {
-	/**
-	 * 取得請求文字內容
-	 *
-	 * @returns {Promise<string>} 請求 Body 文字
-	 */
+	/** 取得請求文字內容 */
 	getBodyText(): Promise<string>
-
-	/**
-	 * 取得請求 JSON 內容
-	 *
-	 * @template T - 回傳資料類型
-	 * @returns {Promise<T>} 請求 Body JSON 物件
-	 */
+	/** 取得請求 JSON 內容 */
 	getJsonBody<T>(): Promise<T>
-
-	/**
-	 * 取得請求標頭值
-	 *
-	 * @param {string} name - Header 名稱
-	 * @returns {string | undefined} Header 值
-	 */
+	/** 取得請求標頭值 */
 	getHeader(name: string): string | undefined
-
 	/** 路由路徑參數 */
 	params: Record<string, string | undefined>
-
 	/** 查詢參數 (?key=value) */
 	query: Record<string, string | undefined>
-
 	/** 請求標頭集合 */
 	headers: Record<string, string | undefined>
-
-	/**
-	 * 回傳 JSON 回應
-	 *
-	 * @template T - 資料類型
-	 * @param {T} data - 要回傳的資料
-	 * @param {number} [statusCode] - HTTP 狀態碼
-	 * @returns {Response} HTTP 回應物件
-	 */
+	/** 回傳 JSON 回應 */
 	json<T>(data: T, statusCode?: number): Response
-
-	/**
-	 * 回傳文字回應
-	 *
-	 * @param {string} content - 要回傳的文字
-	 * @param {number} [statusCode] - HTTP 狀態碼
-	 * @returns {Response} HTTP 回應物件
-	 */
+	/** 回傳文字回應 */
 	text(content: string, statusCode?: number): Response
-
-	/**
-	 * 回傳重新導向回應
-	 *
-	 * @param {string} url - 導向網址
-	 * @param {number} [statusCode=302] - HTTP 狀態碼
-	 * @returns {Response} HTTP 回應物件
-	 */
+	/** 回傳重新導向回應 */
 	redirect(url: string, statusCode?: number): Response
-
-	/**
-	 * 從 Context 取得暫存值
-	 *
-	 * @template T - 資料類型
-	 * @param {string} key - 鍵值名稱
-	 * @returns {T | undefined} 儲存的值
-	 */
+	/** 從 Context 取得暫存值 */
 	get<T>(key: string): T | undefined
+	/** 在 Context 設定暫存值 */
+	set(key: string, value: unknown): void
 
 	/**
-	 * 在 Context 設定暫存值
-	 *
-	 * @param {string} key - 鍵值名稱
-	 * @param {unknown} value - 要儲存的值
-	 * @returns {void}
+	 * 渲染前端頁面 (Inertia.js 橋接)
+	 * 
+	 * @param component - 前端組件路徑 (相對於 resources/js/Pages)
+	 * @param props - 傳遞給組件的資料
 	 */
-	set(key: string, value: unknown): void
+	render(component: string, props?: Record<string, any>): Response
 }
 
 /**
  * 適配器函式：將 GravitoContext 適配為 IHttpContext
- *
- * @param {GravitoContext} ctx - Gravito 原始上下文
- * @returns {IHttpContext} 框架無關的上下文實作
  */
 export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
 	// 解析查詢參數
@@ -144,5 +85,54 @@ export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
 		redirect: (url, statusCode = 302) => ctx.redirect(url, statusCode as any),
 		get: <T>(key: string) => ctx.get(key as any) as T | undefined,
 		set: (key, value) => ctx.set(key as any, value),
+
+		/**
+		 * 實作 Inertia 協議
+		 */
+		render(component, props = {}) {
+			const isInertia = ctx.req.header('X-Inertia') === 'true'
+			const url = new URL(ctx.req.url).pathname
+
+			const page = {
+				component,
+				props,
+				url,
+				version: process.env.VITE_ASSET_VERSION || '1.0.0'
+			}
+
+			if (isInertia) {
+				// 若是 Inertia 發起的請求，回傳 JSON
+				return ctx.json(page, {
+					headers: { 'X-Inertia': 'true' }
+				} as any)
+			}
+
+			// 否則回傳基礎 HTML 容器 (開發環境指向 Vite HMR)
+			const isDev = process.env.APP_ENV !== 'production'
+			const viteClient = isDev ? '<script type="module" src="http://localhost:5173/@vite/client"></script>' : ''
+			const viteEntry = isDev 
+				? '<script type="module" src="http://localhost:5173/resources/js/app.tsx"></script>'
+				: '<script type="module" src="/dist/public/app.js"></script>'
+
+			const html = `
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gravito DDD Dashboard</title>
+    ${viteClient}
+    ${viteEntry}
+</head>
+<body class="bg-gray-50">
+    <div id="app" data-page='${JSON.stringify(page)}'></div>
+</body>
+</html>
+			`.trim()
+
+			return ctx.text(html, {
+				headers: { 'Content-Type': 'text/html' }
+			} as any)
+		}
 	}
 }

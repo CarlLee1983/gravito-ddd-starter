@@ -62,7 +62,7 @@ export class UserRepository implements IUserRepository {
 
 		// ✨ 若注入了分發器，則分發積壓的領域事件
 		if (this.eventDispatcher) {
-			await this.eventDispatcher.dispatch(user.getUncommittedEvents())
+			await this.eventDispatcher.dispatch([...user.getUncommittedEvents()])
 			user.markEventsAsCommitted()
 		}
 	}

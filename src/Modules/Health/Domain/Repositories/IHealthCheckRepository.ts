@@ -31,11 +31,11 @@ export interface IHealthCheckRepository extends IRepository<HealthCheck> {
 
   /**
    * 獲取健康檢查歷史記錄 (支援分頁限制)
-   * 
-   * @param limit - 選填，限制返回筆數
+   *
+   * @param params - 選填，分頁參數
    * @returns Promise 包含聚合根陣列
    */
-  findAll(limit?: number): Promise<HealthCheck[]>
+  findAll(params?: { limit?: number; offset?: number }): Promise<HealthCheck[]>
 
   /**
    * 保存健康檢查記錄 (新增或更新)

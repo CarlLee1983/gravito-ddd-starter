@@ -3,7 +3,7 @@
  * @description 當用戶建立時發送歡迎信的處理程序
  */
 
-import type { UserCreated } from '../Domain/Events/UserCreated'
+import type { UserCreated } from '../../Domain/Events/UserCreated'
 import type { IMailer } from '@/Shared/Infrastructure/IMailer'
 import type { ILogger } from '@/Shared/Infrastructure/ILogger'
 import type { ITranslator } from '@/Shared/Infrastructure/ITranslator'

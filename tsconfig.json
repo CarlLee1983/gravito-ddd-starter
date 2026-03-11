@@ -2,10 +2,11 @@
   "compilerOptions": {
     "target": "ES2020",
     "module": "esnext",
-    "lib": ["ES2020"],
-    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "moduleResolution": "node",
     "rootDir": ".",
     "outDir": "dist",
+    "jsx": "react-jsx",
     "resolveJsonModule": true,
     "allowJs": true,
     "allowSyntheticDefaultImports": true,
@@ -23,13 +24,19 @@
     "sourceMap": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
+    "types": ["bun-types"],
     "paths": {
       "@/*": ["./src/*"],
-      "@gravito/prism": ["./node_modules/@gravito/prism/dist/index.js"],
-      "@gravito/signal": ["./node_modules/@gravito/signal/dist/index.mjs"],
-      "@gravito/stasis": ["./node_modules/@gravito/stasis/dist/index.js"]
+      "~/*": ["./resources/js/*"],
+      "@gravito/atlas": ["./node_modules/@gravito/atlas"],
+      "@gravito/core": ["./node_modules/@gravito/core"],
+      "@gravito/plasma": ["./node_modules/@gravito/plasma"],
+      "@gravito/prism": ["./node_modules/@gravito/prism"],
+      "@gravito/sentinel": ["./node_modules/@gravito/sentinel"],
+      "@gravito/signal": ["./node_modules/@gravito/signal"],
+      "@gravito/stasis": ["./node_modules/@gravito/stasis"]
     }
   },
-  "include": ["src", "tests", "config", "types", "database"],
+  "include": ["src", "tests", "config", "types", "database", "resources"],
   "exclude": ["node_modules", "dist"]
 }

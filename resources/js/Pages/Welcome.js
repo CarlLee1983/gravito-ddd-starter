@@ -1,0 +1,13 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import AppLayout from '../Layouts/AppLayout';
+import { Rocket, ShieldCheck, Zap, Layers } from 'lucide-react';
+export default function Welcome() {
+    const features = [
+        { title: 'DDD Architecture', desc: 'Strict separation of Domain, Application, and Infrastructure layers.', icon: Layers },
+        { title: 'Event Driven', desc: 'Decoupled module communication via Redis-backed Domain Events.', icon: Zap },
+        { title: 'Type Safe', desc: 'End-to-end type safety from Backend Repositories to Frontend Props.', icon: ShieldCheck },
+        { title: 'Zero-Wiring', desc: 'Auto-scanned modules and assembly for rapid development.', icon: Rocket },
+    ];
+    return (_jsx(AppLayout, { title: "Dashboard Overview", children: _jsxs("div", { className: "max-w-5xl mx-auto", children: [_jsxs("div", { className: "bg-white rounded-2xl shadow-sm border border-gray-100 p-12 mb-8 overflow-hidden relative", children: [_jsxs("div", { className: "relative z-10", children: [_jsxs("h2", { className: "text-4xl font-extrabold text-slate-900 mb-4", children: ["Welcome to your ", _jsx("span", { className: "text-brand", children: "DDD Starter" })] }), _jsx("p", { className: "text-xl text-slate-600 mb-8 max-w-2xl", children: "A high-quality full-stack boilerplate built with Bun, Gravito Framework, and React. Designed for scalability, testability, and developer happiness." }), _jsxs("div", { className: "flex gap-4", children: [_jsx("button", { className: "px-6 py-3 bg-slate-900 text-white rounded-xl font-medium hover:bg-slate-800 transition-colors", children: "View Documentation" }), _jsx("button", { className: "px-6 py-3 bg-white border border-gray-200 text-slate-700 rounded-xl font-medium hover:bg-gray-50 transition-colors", children: "Quick Start Guide" })] })] }), _jsx("div", { className: "absolute -right-20 -top-20 w-64 h-64 bg-blue-50 rounded-full blur-3xl opacity-50" })] }), _jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-6", children: features.map((f, i) => (_jsxs("div", { className: "p-8 bg-white rounded-2xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow group", children: [_jsx("div", { className: "w-12 h-12 bg-blue-50 rounded-xl flex items-center justify-center text-brand mb-6 group-hover:bg-brand group-hover:text-white transition-colors", children: _jsx(f.icon, { size: 24 }) }), _jsx("h3", { className: "text-xl font-bold text-slate-900 mb-2", children: f.title }), _jsx("p", { className: "text-slate-600 leading-relaxed", children: f.desc })] }, i))) })] }) }));
+}
+//# sourceMappingURL=Welcome.js.map

@@ -1,7 +1,7 @@
 /**
  * @file InfrastructureServiceProvider.ts
  * @description 基礎設施適配器服務提供者 - 對接 Gravito 框架模組
- * 
+ *
  * Role: Infrastructure Adapter / Provider
  */
 
@@ -14,8 +14,6 @@ import { GravitoMailAdapter } from '../Framework/GravitoMailAdapter'
 import { RedisJobQueueAdapter } from '../Framework/RedisJobQueueAdapter'
 import type { RedisClientContract } from '@gravito/plasma'
 import type { CacheManager } from '@gravito/stasis'
-import type { Prism } from '@gravito/prism'
-import type { Signal } from '@gravito/signal'
 
 /**
  * 基礎設施服務提供者
@@ -43,15 +41,13 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 		})
 
 		// 4. 註冊 Translator 適配器 (Prism)
-		container.singleton('translator', (c) => {
-			const prism = (c as any).make('prism') as Prism
-			return new GravitoTranslatorAdapter(prism)
+		container.singleton('translator', () => {
+			return new GravitoTranslatorAdapter()
 		})
 
 		// 5. 註冊 Mailer 適配器 (Signal)
-		container.singleton('mailer', (c) => {
-			const signal = (c as any).make('signal') as Signal
-			return new GravitoMailAdapter(signal)
+		container.singleton('mailer', () => {
+			return new GravitoMailAdapter()
 		})
 
 		// 6. 註冊 JobQueue 適配器

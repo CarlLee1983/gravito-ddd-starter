@@ -10,6 +10,7 @@
 import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
 import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/IDatabaseConnectivityCheck'
 import { AtlasQueryBuilder } from './AtlasQueryBuilder'
+import * as Atlas from '@gravito/atlas'
 
 /**
  * 懶加載 Atlas DB 實例
@@ -17,8 +18,7 @@ import { AtlasQueryBuilder } from './AtlasQueryBuilder'
  * @returns 原始 Atlas DB 物件
  */
 function getDB(): any {
-	// biome-ignore lint/style/noCommaOperator: Required for dynamic import
-	return (require('@gravito/atlas'), require('@gravito/atlas')).DB
+	return (Atlas as any).DB
 }
 
 /**

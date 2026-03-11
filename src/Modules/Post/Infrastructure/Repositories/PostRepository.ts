@@ -9,24 +9,6 @@ import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
 import { Post } from '../../Domain/Aggregates/Post'
 
 /**
- * Post 資料模型 (行) 介面
- * 
- * 代表資料庫中的原始資料結構。
- */
-interface PostRow {
-	/** 文章唯一識別符 */
-	id: string
-	/** 文章標題 */
-	title: string
-	/** 文章內容 */
-	content: string
-	/** 作者唯一識別符 */
-	user_id: string
-	/** 建立時間 (ISO 字串) */
-	created_at: string
-}
-
-/**
  * PostRepository 類別
  * 
  * 在 DDD 架構中屬於「基礎設施層 (Infrastructure Layer)」，實現了領域層定義的 IPostRepository 介面。

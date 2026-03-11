@@ -4,24 +4,26 @@
  */
 
 import type { ITranslator } from '../ITranslator'
-import { Prism } from '@gravito/prism'
 
 export class GravitoTranslatorAdapter implements ITranslator {
-	private prism: Prism
+	private locale: string = 'en'
 
-	constructor(prism: Prism) {
-		this.prism = prism
-	}
-
-	trans(key: string, replace?: Record<string, string | number>, locale?: string): string {
-		return this.prism.trans(key, replace, locale)
+	trans(key: string, replace?: Record<string, string | number>, _locale?: string): string {
+		// TODO: 整合 @gravito/prism
+		let message = key
+		if (replace) {
+			Object.entries(replace).forEach(([k, v]) => {
+				message = message.replace(`:${k}`, String(v))
+			})
+		}
+		return message
 	}
 
 	getLocale(): string {
-		return this.prism.getLocale()
+		return this.locale
 	}
 
 	setLocale(locale: string): void {
-		this.prism.setLocale(locale)
+		this.locale = locale
 	}
 }
