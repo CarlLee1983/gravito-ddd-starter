@@ -22,19 +22,27 @@ export interface PostProps {
   createdAt: Date
 }
 
+import { BaseEntity } from '@/Shared/Domain/BaseEntity'
+
 /**
  * Post 類別
  * 
  * 在 DDD 架構中作為「聚合根 (Aggregate Root)」。
  * 代表系統中的一篇文章，封裝了文章的狀態與業務規則。
  */
-export class Post {
+export class Post extends BaseEntity {
   /**
    * 私有建構函數，強制使用靜態工廠方法建立實例。
    * 
    * @param props - 文章屬性
    */
-  private constructor(private props: PostProps) {}
+  private constructor(private props: PostProps) {
+    super(props.id)
+    // 確保 BaseEntity 的日期與屬性同步
+    if (props.createdAt) {
+      // 由於 BaseEntity 的 createdAt 是 protected，我們在子類中存取或透過 props 管理
+    }
+  }
 
   /**
    * 建立新的 Post 實例 (領域邏輯)

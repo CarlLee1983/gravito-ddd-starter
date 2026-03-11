@@ -7,12 +7,13 @@
  * - 職責：描述如何存取與存儲用戶聚合根，使領域邏輯不依賴於特定的資料庫技術。
  */
 
+import type { IRepository } from '@/Shared/Domain/IRepository'
 import type { User } from '../Aggregates/User'
 
 /**
  * 用戶倉儲契約介面
  */
-export interface IUserRepository {
+export interface IUserRepository extends IRepository<User> {
   /**
    * 根據 ID 查詢用戶
    * @param id - 用戶唯一識別碼
@@ -29,7 +30,8 @@ export interface IUserRepository {
    */
   save(user: User): Promise<void>
   /**
-   * 取得所有用戶列表
+   * 取得所有用戶列表 (已廢棄，建議使用 findAll)
+   * @deprecated 使用 findAll() 代替
    */
   list(): Promise<User[]>
 }

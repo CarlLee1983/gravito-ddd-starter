@@ -21,16 +21,20 @@ export interface UserProps {
   createdAt: Date
 }
 
+import { BaseEntity } from '@/Shared/Domain/BaseEntity'
+
 /**
  * 用戶領域實體類別
  */
-export class User {
+export class User extends BaseEntity {
   /**
    * 私有建構子，強制使用靜態工廠方法建立實體
    * @param props - 用戶屬性
    * @private
    */
-  private constructor(private props: UserProps) {}
+  private constructor(private props: UserProps) {
+    super(props.id)
+  }
 
   /**
    * 建立新的用戶實體 (靜態工廠)

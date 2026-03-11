@@ -38,7 +38,8 @@ describe('Drizzle 倉儲整合測試', () => {
 
   it('應該能在 Drizzle 驅動下操作用戶倉庫 (UserRepo)', async () => {
     const id = `drizzle-user-${Date.now()}`
-    const user = User.create(id, 'Drizzle User', 'drizzle@sql.com')
+    const email = `drizzle-${id}@sql.com`
+    const user = User.create(id, 'Drizzle User', email)
 
     // 1. 保存
     await userRepo.save(user)
@@ -49,7 +50,7 @@ describe('Drizzle 倉儲整合測試', () => {
     expect(found?.name).toBe('Drizzle User')
 
     // 3. 按 Email 查詢 (業務方法)
-    const byEmail = await userRepo.findByEmail('drizzle@sql.com')
+    const byEmail = await userRepo.findByEmail(email)
     expect(byEmail?.id).toBe(id)
   })
 

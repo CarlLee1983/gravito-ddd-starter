@@ -4,6 +4,7 @@
  * @module src/Modules/Health/Domain/Aggregates
  */
 
+import { BaseEntity } from '@/Shared/Domain/BaseEntity'
 import { HealthStatus } from '../ValueObjects/HealthStatus'
 
 /**
@@ -37,7 +38,7 @@ export interface HealthCheckProps {
  * 在 DDD 架構中作為「聚合根 (Aggregate Root)」。
  * 代表系統在特定時間點的健康狀況快照，封裝了狀態判斷邏輯。
  */
-export class HealthCheck {
+export class HealthCheck extends BaseEntity {
   /** 內部屬性 */
   private props: HealthCheckProps
 
@@ -47,6 +48,7 @@ export class HealthCheck {
    * @param props - 健康檢查屬性
    */
   private constructor(props: HealthCheckProps) {
+    super(props.id)
     this.props = props
   }
 

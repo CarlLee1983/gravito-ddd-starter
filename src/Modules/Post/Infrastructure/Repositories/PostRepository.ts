@@ -6,6 +6,7 @@
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
+import { Post } from '../../Domain/Aggregates/Post'
 
 /**
  * Post 資料模型 (行) 介面
@@ -19,6 +20,8 @@ interface PostRow {
 	title: string
 	/** 文章內容 */
 	content: string
+	/** 作者唯一識別符 */
+	user_id: string
 	/** 建立時間 (ISO 字串) */
 	created_at: string
 }
@@ -46,10 +49,10 @@ export class PostRepository implements IPostRepository {
 	 * 
 	 * 根據實體 ID 是否存在來決定執行插入 (insert) 或更新 (update) 操作。
 	 * 
-	 * @param entity - 要保存的文章實體 (目前暫用 any，應替換為 Post 聚合根)
+	 * @param entity - 要保存的文章實體
 	 * @returns Promise<void>
 	 */
-	async save(entity: any): Promise<void> {
+	async save(entity: Post): Promise<void> {
 		const row = this.toRow(entity)
 		const exists = await this.findById(entity.id)
 		if (exists) {
@@ -65,7 +68,7 @@ export class PostRepository implements IPostRepository {
 	 * @param id - 文章唯一識別符
 	 * @returns Promise 包含文章實體或 null (若找不到)
 	 */
-	async findById(id: string): Promise<any | null> {
+	async findById(id: string): Promise<Post | null> {
 		const row = await this.db.table('posts').where('id', '=', id).first()
 		return row ? this.toDomain(row) : null
 	}
@@ -86,7 +89,7 @@ export class PostRepository implements IPostRepository {
 	 * @param params - 查詢參數，包含 limit (每頁筆數) 與 offset (偏移量)
 	 * @returns Promise 包含文章實體陣列
 	 */
-	async findAll(params?: { limit?: number; offset?: number }): Promise<any[]> {
+	async findAll(params?: { limit?: number; offset?: number }): Promise<Post[]> {
 		let query = this.db.table('posts')
 		if (params?.offset) query = query.offset(params.offset)
 		if (params?.limit) query = query.limit(params.limit)
@@ -104,6 +107,32 @@ export class PostRepository implements IPostRepository {
 	}
 
 	// ============================================
+	// 業務相關方法（實現 IPostRepository）
+	// ============================================
+
+	/**
+	 * 根據標題查找文章
+	 * 
+	 * @param title - 文章標題
+	 * @returns 找到的 Post 聚合根或 null
+	 */
+	async findByTitle(title: string): Promise<Post | null> {
+		const row = await this.db.table('posts').where('title', '=', title).first()
+		return row ? this.toDomain(row) : null
+	}
+
+	/**
+	 * 獲取特定作者的所有文章
+	 * 
+	 * @param authorId - 作者 ID
+	 * @returns 該作者的文章列表
+	 */
+	async findByAuthor(authorId: string): Promise<Post[]> {
+		const rows = await this.db.table('posts').where('user_id', '=', authorId).select()
+		return rows.map((row) => this.toDomain(row))
+	}
+
+	// ============================================
 	// 私有轉換方法（隱藏資料層細節）
 	// ============================================
 
@@ -114,13 +143,14 @@ export class PostRepository implements IPostRepository {
 	 * @returns Domain Entity 格式的資料
 	 * @private
 	 */
-	private toDomain(row: Record<string, unknown>): any {
-		return {
+	private toDomain(row: Record<string, unknown>): Post {
+		return Post.fromDatabase({
 			id: row.id as string,
 			title: row.title as string,
 			content: row.content as string,
+			user_id: row.user_id as string,
 			created_at: row.created_at as string,
-		}
+		})
 	}
 
 	/**
@@ -130,12 +160,13 @@ export class PostRepository implements IPostRepository {
 	 * @returns 符合資料庫結構的資料行對象
 	 * @private
 	 */
-	private toRow(post: any): Record<string, unknown> {
+	private toRow(post: Post): Record<string, unknown> {
 		return {
 			id: post.id,
 			title: post.title,
 			content: post.content,
-			created_at: post.created_at ?? new Date().toISOString(),
+			user_id: post.userId,
+			created_at: post.createdAt.toISOString(),
 		}
 	}
 }

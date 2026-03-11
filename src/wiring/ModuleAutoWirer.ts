@@ -1,10 +1,8 @@
 /**
  * @file ModuleAutoWirer.ts
- * @description 模組自動掃描裝配器 (Auto-Wiring Mechanism)
- *
- * 在 DDD 架構中的角色：
- * - 接線層 (Wiring Layer)：應用程式啟動時的自動化組裝中心。
- * 職責：掃描 src/Modules/*/index.ts，自動執行所有層級 (DI, Repository, Routes) 的裝配。
+ * @description Module Auto-Wiring Mechanism
+ * 
+ * Role: Wiring Layer
  */
 
 import path from 'node:path'

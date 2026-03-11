@@ -5,6 +5,7 @@
  */
 
 import type { IRepository } from '@/Shared/Domain/IRepository'
+import { Post } from '../Aggregates/Post'
 
 /**
  * IPostRepository 介面
@@ -18,16 +19,25 @@ import type { IRepository } from '@/Shared/Domain/IRepository'
  * 
  * 這使得領域邏輯可以獨立於具體的資料庫技術 (如 Atlas, Drizzle, Memory 等)。
  */
-export interface IPostRepository extends IRepository<any> {
+export interface IPostRepository extends IRepository<Post> {
 	// 基礎 CRUD 操作由 IRepository 提供：
-	// - save(entity: any): Promise<void>
-	// - findById(id: string): Promise<any | null>
+	// - save(entity: Post): Promise<void>
+	// - findById(id: string): Promise<Post | null>
 	// - delete(id: string): Promise<void>
-	// - findAll(params?): Promise<any[]>
+	// - findAll(params?): Promise<Post[]>
 	// - count(params?): Promise<number>
 
-	// 業務相關方法可在此添加
-	// 例如：
-	// findByTitle(title: string): Promise<Post | null>
-	// findByAuthor(authorId: string): Promise<Post[]>
+	/**
+	 * 根據標題查找文章
+	 * @param title - 文章標題
+	 * @returns 找到的 Post 聚合根或 null
+	 */
+	findByTitle(title: string): Promise<Post | null>
+
+	/**
+	 * 獲取特定作者的所有文章
+	 * @param authorId - 作者 ID
+	 * @returns 該作者的文章列表
+	 */
+	findByAuthor(authorId: string): Promise<Post[]>
 }

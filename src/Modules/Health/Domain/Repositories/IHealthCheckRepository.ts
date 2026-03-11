@@ -4,6 +4,7 @@
  * @module src/Modules/Health/Domain/Repositories
  */
 
+import type { IRepository } from '@/Shared/Domain/IRepository'
 import { HealthCheck } from '../Aggregates/HealthCheck'
 
 /**
@@ -12,7 +13,7 @@ import { HealthCheck } from '../Aggregates/HealthCheck'
  * 在 DDD 架構中屬於「領域層 (Domain Layer)」。
  * 定義了對 HealthCheck 聚合根進行持久化與查詢的操作契約。
  */
-export interface IHealthCheckRepository {
+export interface IHealthCheckRepository extends IRepository<HealthCheck> {
   /**
    * 根據唯一識別符尋找記錄
    * 
