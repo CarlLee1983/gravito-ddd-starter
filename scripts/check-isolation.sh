@@ -45,6 +45,14 @@ check "src/ 編譯產物" "$([ $SRC_JS -eq 0 ] && echo true || echo false)" \
 check "src/ 源代碼" "$([ $SRC_TS -gt 0 ] && echo true || echo false)" \
   "$SRC_TS 個 .ts 文件" "找不到源代碼"
 
+# 檢查 database 目錄
+DB_JS=$(find database -name "*.js" 2>/dev/null | wc -l)
+DB_TS=$(find database -name "*.ts" 2>/dev/null | wc -l)
+check "database/ 編譯產物" "$([ $DB_JS -eq 0 ] && echo true || echo false)" \
+  "0 個 .js 文件" "$DB_JS 個 .js 文件"
+check "database/ 源代碼" "$([ $DB_TS -gt 0 ] && echo true || echo false)" \
+  "$DB_TS 個 .ts 文件" "找不到源代碼"
+
 echo ""
 echo "📊 編譯產物隔離"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

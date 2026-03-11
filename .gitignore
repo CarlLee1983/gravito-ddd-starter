@@ -15,13 +15,17 @@ KNOWLEDGE_BASE.md
 
 # 編譯產物遺留物（應只在 dist/ 中）
 config/**/*.js      # config 只保留源代碼
+src/**/*.js         # src 只保留源代碼
+database/**/*.js    # database 只保留源代碼
 config/**/*.d.ts
 config/**/*.d.ts.map
 config/**/*.js.map
-src/**/*.js         # src 只保留源代碼
 src/**/*.d.ts
 src/**/*.d.ts.map
 src/**/*.js.map
+database/**/*.d.ts
+database/**/*.d.ts.map
+database/**/*.js.map
 
 # 生成的測試檔案
 coverage
