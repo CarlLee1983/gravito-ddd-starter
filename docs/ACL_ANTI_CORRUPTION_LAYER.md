@@ -90,24 +90,30 @@ export class PostController {
 ## 🏗️ 目錄結構
 
 ```
-src/Modules/Post/
-├── Domain/
-│   └── Ports/
-│       └── IAuthorService.ts             ← Post Domain 定義的 Port（DDD）
-├── Application/
-│   └── DTOs/
-│       └── PostWithAuthorDTO.ts          ← Post 的複合 DTO
-├── Infrastructure/
-│   └── Adapters/
-│       └── UserToPostAdapter.ts          ← ACL：實現 Port（供應）
-├── Presentation/
-└── ...
+src/
+├── Shared/
+│   └── Application/
+│       └── DTOs/
+│           └── AuthorDTO.ts              ← 跨 Domain 共享的 DTO
+│
+└── Modules/Post/
+    ├── Domain/
+    │   └── Ports/
+    │       └── IAuthorService.ts         ← Post Domain 定義的 Port（依賴 Shared）
+    ├── Application/
+    │   └── DTOs/
+    │       └── PostWithAuthorDTO.ts      ← Post 的複合 DTO（依賴 Shared）
+    ├── Infrastructure/
+    │   └── Adapters/
+    │       └── UserToPostAdapter.ts      ← ACL：實現 Port（依賴 Shared）
+    └── Presentation/
 ```
 
 **關鍵設計原則**：
-- **Domain/Ports** - Domain 層定義它所依賴的抽象
-- **Infrastructure/Adapters** - Infrastructure 層實現 Port，具體如何滿足需求
-- 依賴方向：Domain → Infrastructure（單向依賴）
+- **Shared/Application/DTOs** - 跨 Domain 共享的數據結構
+- **Domain/Ports** - Domain 層定義它所依賴的抽象（導入自 Shared）
+- **Infrastructure/Adapters** - Infrastructure 層實現 Port（導入自 Shared）
+- 依賴方向：清晰單向 → Shared → Domain → Infrastructure → Application（無循環）
 
 ---
 
