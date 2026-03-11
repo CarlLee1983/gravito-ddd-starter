@@ -5,23 +5,18 @@
 實現了**真正的 ORM 無關性**：
 
 ```typescript
-// ✅ 只有一個 UserRepository 類
+// ✅ 只有一個 UserRepository 類，依賴必填的 IDatabaseAccess
 export class UserRepository implements IUserRepository {
-  constructor(private db: IDatabaseAccess | undefined) {}
+  constructor(private readonly db: IDatabaseAccess) {}
 
   async findById(id: string): Promise<User | null> {
-    if (this.db) {
-      // 使用數據庫
-      return this.db.table('users').where('id', '=', id).first()
-    } else {
-      // 使用內存
-      return this.memoryUsers.get(id) || null
-    }
+    const row = await this.db.table('users').where('id', '=', id).first()
+    return row ? this.toDomain(row) : null
   }
 }
 ```
 
-**關鍵洞察：** Repository 根據 IDatabaseAccess 是否存在自動選擇實現方式，無需為每個 ORM 創建不同的類。
+**關鍵洞察：** 內存/數據庫由上層決定：`orm=memory` 時上層注入 `MemoryDatabaseAccess`，Repository 底層僅依賴 Port，無 `if (db)` 分支。
 
 ---
 
@@ -48,18 +43,18 @@ Wiring 層 (bootstrap)
 ```
 Wiring 層 (bootstrap)
     ↓
-決定 IDatabaseAccess → Memory（undefined）/ Drizzle / Prisma / Atlas
+DatabaseAccessBuilder 決定 IDatabaseAccess
+    → orm=memory：MemoryDatabaseAccess
+    → orm=drizzle/atlas：對應適配器
     ↓
-注入到 Repository
-    ↓
-Repository 內部根據 IDatabaseAccess 選擇實現
+注入到 Repository（必填，無分支）
     ↓
 完全透明，零重複
 ```
 
 **優勢：**
-- 只有一個 UserRepository 類
-- 內存和數據庫邏輯在同一個類中，易於維護
+- 只有一個 UserRepository 類，無底層 `if (db)` 分支
+- 內存預設由上層處理（MemoryDatabaseAccess），Repository 不感知
 - 新增 ORM 時只改 DatabaseAccessBuilder，不改 Repository
 - 代碼清晰，責任明確
 
@@ -67,101 +62,75 @@ Repository 內部根據 IDatabaseAccess 選擇實現
 
 ## 核心設計
 
-### 1. Repository（已改進）
+### 1. Repository（依賴 Port，無分支）
 
 ```typescript
 /**
- * UserRepository - 內存 + 數據庫雙模式
+ * UserRepository - 僅依賴 IDatabaseAccess
  *
  * 設計：
- * - db 參數可選
- * - 若 db 存在 → 使用數據庫
- * - 若 db 不存在 → 使用內存 Map
+ * - db 必填（由上層注入；無 DB 時上層注入 MemoryDatabaseAccess）
+ * - 底層無 if (db) 分支，完全透過 Port 抽象
  */
 export class UserRepository implements IUserRepository {
-  private memoryUsers: Map<string, User> = new Map()  // 內存存儲
-  private db: IDatabaseAccess | undefined              // 數據庫存儲
-
-  constructor(db?: IDatabaseAccess) {
-    this.db = db
-  }
+  constructor(private readonly db: IDatabaseAccess) {}
 
   async findById(id: string): Promise<User | null> {
-    if (this.db) {
-      // 數據庫模式
-      const row = await this.db
-        .table('users')
-        .where('id', '=', id)
-        .first()
-      return row ? this.toDomain(row) : null
-    } else {
-      // 內存模式
-      return this.memoryUsers.get(id) || null
-    }
+    const row = await this.db.table('users').where('id', '=', id).first()
+    return row ? this.toDomain(row) : null
   }
 
-  // 所有其他方法都遵循相同模式：if (this.db) { ... } else { ... }
+  // 其他方法同樣只使用 this.db.table('users')...
 }
 ```
 
 **好處：**
-- 一份代碼支援所有 ORM
-- 邏輯清晰：內存和數據庫的 if/else 分開
-- 易於理解：同一個方法可以看到兩種實現
+- 一份代碼支援所有 ORM 與內存
+- 無分支，易於維護與測試
+- 內存/數據庫由上層決定，底層單一責任
 
-### 2. DatabaseAccessBuilder（新增）
+### 2. DatabaseAccessBuilder（上層預設）
 
 ```typescript
 /**
- * DatabaseAccessBuilder - 決定注入什麼 IDatabaseAccess
+ * DatabaseAccessBuilder - 決定注入什麼 IDatabaseAccess（必為非 undefined）
  */
 export class DatabaseAccessBuilder {
   private orm: ORMType
-  private dbInstance: IDatabaseAccess | undefined
+  private dbInstance: IDatabaseAccess
 
   constructor(orm: ORMType) {
     this.orm = orm
-    // 只在非 memory 模式下初始化數據庫
-    if (orm !== 'memory') {
-      this.dbInstance = getDatabaseAccess()
-    }
+    this.dbInstance =
+      orm === 'memory'
+        ? new MemoryDatabaseAccess()
+        : getDatabaseAccess()
   }
 
-  getDatabaseAccess(): IDatabaseAccess | undefined {
+  getDatabaseAccess(): IDatabaseAccess {
     return this.dbInstance
   }
 }
 ```
 
 **職責：**
-- Memory 模式 → 返回 undefined
+- Memory 模式 → 返回 `MemoryDatabaseAccess`（上層預設，Repository 無需分支）
 - Drizzle/Prisma/Atlas → 初始化並返回對應適配器
-- **不涉及 Repository 類的選擇**，只提供 IDatabaseAccess
+- **永遠返回 IDatabaseAccess**，Repository 建構子必填
 
 ### 3. registerUserRepositories（簡化）
 
 ```typescript
 /**
- * 之前（FactoryMapBuilder）：
- * - 為每個 ORM 定義映射
- * - 複雜的工廠邏輯
- * - 代碼行數：30+ 行
- */
-
-/**
  * 現在（DatabaseAccessBuilder）：
- * - 接收 IDatabaseAccess
+ * - 接收 IDatabaseAccess（必填，由 getDatabaseAccess() 提供）
  * - 創建 UserRepository 實例
- * - 代碼行數：10 行
  */
-export function registerUserRepositories(db: IDatabaseAccess | undefined): void {
+export function registerUserRepositories(db: IDatabaseAccess): void {
   const registry = getRegistry()
-
-  // 非常簡潔：一個工廠函數，一次註冊
   const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
-    return new UserRepository(db)  // ← 注入 db，Repository 自動選擇模式
+    return new UserRepository(db)
   }
-
   registry.register('user', factory)
   console.log('✅ [User] Repository 工廠已註冊')
 }
@@ -194,15 +163,13 @@ registerPostRepositories(db)
 ```typescript
 const orm = getCurrentORM()           // 'memory'
 const dbBuilder = new DatabaseAccessBuilder(orm)
-const db = dbBuilder.getDatabaseAccess()  // undefined
+const db = dbBuilder.getDatabaseAccess()  // MemoryDatabaseAccess 實例
 
-registerUserRepositories(db)          // 注入 undefined
+registerUserRepositories(db)
 // ↓
-const repo = new UserRepository(undefined)
+const repo = new UserRepository(db)   // db 為 MemoryDatabaseAccess
 // ↓
-repo.findById('123')
-  if (this.db) { ... }  // false
-  else { return this.memoryUsers.get('123') }  // ✅ 使用 Map
+repo.findById('123')  // this.db.table('users').where(...).first() → 內存表
 ```
 
 ### 生產環境（ORM=drizzle）
@@ -212,12 +179,11 @@ const orm = getCurrentORM()           // 'drizzle'
 const dbBuilder = new DatabaseAccessBuilder(orm)
 const db = dbBuilder.getDatabaseAccess()  // DrizzleDatabaseAccess 實例
 
-registerUserRepositories(db)          // 注入實例
+registerUserRepositories(db)
 // ↓
-const repo = new UserRepository(DrizzleDatabaseAccess 實例)
+const repo = new UserRepository(db)
 // ↓
-repo.findById('123')
-  if (this.db) { return this.db.table('users')... }  // ✅ 使用數據庫
+repo.findById('123')  // this.db.table('users').where(...).first() → 真實數據庫
 ```
 
 ---
@@ -231,23 +197,14 @@ repo.findById('123')
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 
 export class OrderRepository implements IOrderRepository {
-  private memoryOrders: Map<string, Order> = new Map()
-  private db: IDatabaseAccess | undefined
-
-  constructor(db?: IDatabaseAccess) {
-    this.db = db
-  }
+  constructor(private readonly db: IDatabaseAccess) {}
 
   async findById(id: string): Promise<Order | null> {
-    if (this.db) {
-      const row = await this.db.table('orders').where('id', '=', id).first()
-      return row ? this.toDomain(row) : null
-    } else {
-      return this.memoryOrders.get(id) || null
-    }
+    const row = await this.db.table('orders').where('id', '=', id).first()
+    return row ? this.toDomain(row) : null
   }
 
-  // 其他方法...
+  // 其他方法僅使用 this.db.table('orders')...
 }
 ```
 
@@ -259,13 +216,11 @@ import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { OrderRepository } from '../Repositories/OrderRepository'
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 
-export function registerOrderRepositories(db: IDatabaseAccess | undefined): void {
+export function registerOrderRepositories(db: IDatabaseAccess): void {
   const registry = getRegistry()
-
   const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
     return new OrderRepository(db)
   }
-
   registry.register('order', factory)
   console.log('✅ [Order] Repository 工廠已註冊')
 }
@@ -300,7 +255,7 @@ export function getDatabaseAccess() {
   const orm = getCurrentORM()
 
   if (orm === 'memory') {
-    return undefined
+    return undefined  // 實際由 DatabaseAccessBuilder 改為注入 MemoryDatabaseAccess
   }
 
   if (orm === 'drizzle') {
@@ -377,21 +332,16 @@ DatabaseAccessBuilder：
 
 ### 2. 完全透明
 
-Repository 不知道使用了什麼 ORM：
+Repository 不知道使用了什麼 ORM 或是否為內存：
 
 ```typescript
-// 相同的代碼，支援所有 ORM
+// 相同的代碼，支援所有 ORM 與 MemoryDatabaseAccess
 export class UserRepository {
-  constructor(db?: IDatabaseAccess) {
-    this.db = db
-  }
+  constructor(private readonly db: IDatabaseAccess) {}
 
   async findById(id: string): Promise<User | null> {
-    if (this.db) {
-      return this.db.table('users').where('id', '=', id).first()
-    } else {
-      return this.memoryUsers.get(id) || null
-    }
+    const row = await this.db.table('users').where('id', '=', id).first()
+    return row ? this.toDomain(row) : null
   }
 }
 ```
@@ -409,11 +359,11 @@ cp -r src/Modules/User src/Modules/Order
 ### 4. 易於測試
 
 ```typescript
-// 測試 Memory 實現
-const repo = new UserRepository(undefined)
-await repo.findById('123')  // 使用 Map
+// 測試內存實現
+const repo = new UserRepository(new MemoryDatabaseAccess())
+await repo.findById('123')  // 使用內存表
 
-// 測試 Database 實現
+// 測試 Database / Mock
 const repo = new UserRepository(mockDatabaseAccess)
 await repo.findById('123')  // 使用 mock
 ```
@@ -425,17 +375,14 @@ await repo.findById('123')  // 使用 mock
 ### ✅ DO
 
 ```typescript
-// 1. Repository 接受可選 IDatabaseAccess
-constructor(db?: IDatabaseAccess) { this.db = db }
+// 1. Repository 依賴必填 IDatabaseAccess，無底層分支
+constructor(private readonly db: IDatabaseAccess) {}
 
-// 2. 根據 db 是否存在決定實現
-if (this.db) { /* 數據庫 */ } else { /* 內存 */ }
+// 2. 上層在無 DB 時注入 MemoryDatabaseAccess
+const db = new DatabaseAccessBuilder(orm).getDatabaseAccess()  // 必為非 undefined
 
-// 3. 在 DatabaseAccessBuilder 中決定注入什麼
-const db = new DatabaseAccessBuilder(orm).getDatabaseAccess()
-
-// 4. 簡單註冊函數
-export function registerXxx(db?: IDatabaseAccess) {
+// 3. 註冊函數接收 IDatabaseAccess（必填）
+export function registerXxx(db: IDatabaseAccess) {
   registry.register('xxx', () => new XxxRepository(db))
 }
 ```
@@ -443,17 +390,17 @@ export function registerXxx(db?: IDatabaseAccess) {
 ### ❌ DON'T
 
 ```typescript
-// 1. 不要為每個 ORM 創建不同的 Repository 類
+// 1. 不要在 Repository 底層做 if (this.db) 分支
+if (this.db) { ... } else { this.memoryMap.get(...) }  // ❌ 上層應注入 MemoryDatabaseAccess
+
+// 2. 不要為每個 ORM 創建不同的 Repository 類
 export class DrizzleUserRepository { ... }  // ❌ 重複！
 
-// 2. 不要在 Repository 中硬編碼 ORM
+// 3. 不要在 Repository 中硬編碼 ORM
 if (process.env.ORM === 'drizzle') { ... }  // ❌ 感知 ORM！
 
-// 3. 不要在 FactoryMapBuilder 中複雜邏輯
-build(moduleName): RepositoryFactoryMap { ... }  // ❌ 複雜！
-
-// 4. 不要在多個地方複製 IDatabaseAccess 初始化
-const db = getDatabaseAccess()  // 只在 DatabaseAccessBuilder 中
+// 4. 不要讓 getDatabaseAccess() 在 memory 時返回 undefined 給 Repository 使用
+//    應在上層改為返回 MemoryDatabaseAccess，Repository 一律接收 IDatabaseAccess
 ```
 
 ---
@@ -476,7 +423,7 @@ const db = getDatabaseAccess()  // 只在 DatabaseAccessBuilder 中
 # 開發環境
 export ORM=memory
 bun run dev
-# → UserRepository 使用 memoryUsers Map
+# → db = MemoryDatabaseAccess，UserRepository 使用內存表
 
 # 測試環境
 export ORM=drizzle

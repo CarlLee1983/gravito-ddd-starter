@@ -185,7 +185,8 @@ export function createUserRepositoryTests(createRepository: () => IRepository<Us
 describe('User Repository - 可替換性驗證', () => {
   it('in-memory 實現應該通過所有測試', async () => {
     const { UserRepository } = await import('@/Modules/User/Infrastructure/Persistence/UserRepository')
-    createUserRepositoryTests(() => new UserRepository())
+    const { MemoryDatabaseAccess } = await import('@/Shared/Infrastructure/MemoryDatabaseAccess')
+    createUserRepositoryTests(() => new UserRepository(new MemoryDatabaseAccess()))
   })
 
   // 待實現：Drizzle 適配器測試

@@ -37,18 +37,16 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	initializeRegistry()
 
 	// Step 3: Register all Repository factories（通過 DatabaseAccessBuilder 注入 IDatabaseAccess）
-	// DatabaseAccessBuilder 是應用的核心決策點：決定 Repository 使用內存還是數據庫
+	// DatabaseAccessBuilder 是應用的核心決策點：無 DB 時注入 MemoryDatabaseAccess，有 ORM 時注入對應適配器
 	//
 	// 架構重點：
-	// - 只有一個 UserRepository 和 PostRepository 類
-	// - 根據 IDatabaseAccess 決定使用內存（Map）或數據庫（db.table().where()...）
-	// - 所有模組完全對 ORM 無感知，完全透明
+	// - 只有一個 UserRepository / PostRepository，依賴必填的 IDatabaseAccess
+	// - orm=memory 時 db = MemoryDatabaseAccess；orm=drizzle/atlas 時 db = 對應適配器
+	// - Repository 底層無 if (db) 分支，完全透過 Port 抽象
 	const orm = getCurrentORM()
 	const dbBuilder = new DatabaseAccessBuilder(orm)
 	const db = dbBuilder.getDatabaseAccess()
 
-	// 為每個模組注入 IDatabaseAccess
-	// Repository 內部根據 db 是否存在自動選擇實現模式
 	registerUserRepositories(db)
 	registerPostRepositories(db)
 	// registerOrderRepositories(db)   // 未來：新增 Order 模組時

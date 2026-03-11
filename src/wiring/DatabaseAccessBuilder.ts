@@ -32,6 +32,7 @@
  */
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/MemoryDatabaseAccess'
 import type { ORMType } from './RepositoryFactory'
 import { getDatabaseAccess } from './RepositoryFactory'
 
@@ -41,12 +42,12 @@ import { getDatabaseAccess } from './RepositoryFactory'
  * 根據 ORM 類型決定為 Repository 注入什麼 IDatabaseAccess
  *
  * 設計：
- * - Memory 模式：返回 undefined（Repository 使用內存 Map）
+ * - Memory 模式：返回 MemoryDatabaseAccess（上層預設，Repository 無需分支）
  * - Drizzle/Prisma/Atlas：初始化並返回對應的 IDatabaseAccess 實現
  */
 export class DatabaseAccessBuilder {
 	private orm: ORMType
-	private dbInstance: IDatabaseAccess | undefined
+	private dbInstance: IDatabaseAccess
 
 	/**
 	 * 初始化 DatabaseAccessBuilder
@@ -54,45 +55,29 @@ export class DatabaseAccessBuilder {
 	 * @param orm 選擇的 ORM 類型
 	 *
 	 * 行為：
-	 * - 若 orm='memory'：不初始化任何數據庫（Repository 使用內存）
+	 * - 若 orm='memory'：注入 MemoryDatabaseAccess（內存表，同上層預設）
 	 * - 若 orm='drizzle'：初始化 Drizzle DatabaseAccess
 	 * - 若 orm='prisma'：初始化 Prisma DatabaseAccess
 	 * - 若 orm='atlas'：初始化 Atlas DatabaseAccess
 	 */
 	constructor(orm: ORMType) {
 		this.orm = orm
-
-		// 只在非 memory 模式下初始化數據庫
-		if (orm !== 'memory') {
-			this.dbInstance = getDatabaseAccess()
-		}
+		this.dbInstance =
+			orm === 'memory' ? new MemoryDatabaseAccess() : (getDatabaseAccess() as IDatabaseAccess)
 	}
 
 	/**
 	 * 取得應該注入給 Repository 的 IDatabaseAccess
 	 *
 	 * 行為：
-	 * - Memory 模式：返回 undefined
-	 *   → Repository 內部檢測到 undefined，使用 Map<id, entity> 進行內存存儲
+	 * - Memory 模式：返回 MemoryDatabaseAccess
 	 * - 其他 ORM：返回對應的 IDatabaseAccess 實現
-	 *   → Repository 內部檢測到 IDatabaseAccess 存在，使用 db.table().where()... 進行查詢
 	 *
-	 * 這樣 Repository 可以自動適應兩種模式，無需重複代碼！
+	 * Repository 僅依賴 IDatabaseAccess，不再在底層做 if (db) 分支。
 	 *
-	 * @returns IDatabaseAccess | undefined
-	 *
-	 * @example
-	 * // 開發環境：使用內存
-	 * const builder = new DatabaseAccessBuilder('memory')
-	 * const db = builder.getDatabaseAccess()  // undefined
-	 * const userRepo = new UserRepository(db)  // 使用內存實現
-	 *
-	 * // 生產環境：使用 Drizzle
-	 * const builder = new DatabaseAccessBuilder('drizzle')
-	 * const db = builder.getDatabaseAccess()  // DrizzleDatabaseAccess 實例
-	 * const userRepo = new UserRepository(db)  // 使用數據庫實現
+	 * @returns IDatabaseAccess（必為非 undefined）
 	 */
-	getDatabaseAccess(): IDatabaseAccess | undefined {
+	getDatabaseAccess(): IDatabaseAccess {
 		return this.dbInstance
 	}
 
@@ -118,6 +103,6 @@ export class DatabaseAccessBuilder {
  * const db = createDatabaseAccess('drizzle')
  * registerUserRepositories(db)
  */
-export function createDatabaseAccess(orm: ORMType): IDatabaseAccess | undefined {
+export function createDatabaseAccess(orm: ORMType): IDatabaseAccess {
 	return new DatabaseAccessBuilder(orm).getDatabaseAccess()
 }

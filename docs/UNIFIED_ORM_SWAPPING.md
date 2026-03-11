@@ -24,17 +24,15 @@
                    │
                    └─► ServiceProvider.register() 被呼叫
                        │
-                       ├─► UserServiceProvider.register()
-                       │   └─► createRepository('user', db)
-                       │       ├─ ORM=memory? → UserRepository()
-                       │       ├─ ORM=drizzle? → DrizzleUserRepository(db)
-                       │       └─ ORM=atlas? → AtlasUserRepository(db)
+                       ├─► bootstrap: db = DatabaseAccessBuilder(orm).getDatabaseAccess()
+                       │       ├─ orm=memory → MemoryDatabaseAccess
+                       │       └─ orm=drizzle/atlas → 對應適配器
                        │
-                       └─► PostServiceProvider.register()
-                           └─► createRepository('post', db)
-                               ├─ ORM=memory? → PostRepository()
-                               ├─ ORM=drizzle? → DrizzlePostRepository(db)
-                               └─ ORM=atlas? → AtlasPostRepository(db)
+                       ├─► registerUserRepositories(db) / registerPostRepositories(db)
+                       │   └─ 工廠：new UserRepository(db) / new PostRepository(db)
+                       │
+                       └─► UserServiceProvider / PostServiceProvider
+                               └─ container.make('userRepository') → 工廠回傳 Repository
                        │
                        └─► Container 儲存已配置的 repositories
 
@@ -270,14 +268,15 @@ export function getDatabaseAccess(): IDatabaseAccess | undefined
 ```
 環境變數 ORM=?
     ↓
-getCurrentORM() 讀取
+DatabaseAccessBuilder(orm).getDatabaseAccess()  → 必為 IDatabaseAccess
+    ├─ orm=memory → MemoryDatabaseAccess
+    ├─ orm=drizzle → DrizzleDatabaseAccess
+    └─ orm=atlas/prisma → 對應適配器
     ↓
-createRepository('user', db) 分發
+registerUserRepositories(db) / registerPostRepositories(db)
     ↓
-├─ ORM=memory → UserRepository()
-├─ ORM=drizzle → DrizzleUserRepository(db)
-├─ ORM=atlas → AtlasUserRepository(db) [未來]
-└─ ORM=prisma → PrismaUserRepository(db) [未來]
+工廠回傳 new UserRepository(db) / new PostRepository(db)
+（Repository 一律接收 IDatabaseAccess，無底層分支）
 ```
 
 ---

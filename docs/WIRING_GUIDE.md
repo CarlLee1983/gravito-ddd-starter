@@ -101,8 +101,8 @@ export const registerUser = (core: PlanetCore): void => {
 // ✅ 好的做法：從容器取出服務
 const repository = core.container.make('userRepository')
 
-// ❌ 錯誤做法：在 Wiring 層直接建立
-const repository = new UserRepository() // 不知道該用哪個實現
+// ❌ 錯誤做法：在 Wiring 層直接建立（且 Repository 需注入 IDatabaseAccess）
+const repository = new UserRepository(someDb) // 應由容器 + 註冊工廠提供
 
 // ❌ 錯誤做法：在 Wiring 層選擇 ORM
 if (orm === 'drizzle') {
@@ -171,40 +171,16 @@ export function createRepository<T extends RepositoryType>(
     )
   }
 
-  // User Repository 分發
+  // 實際專案中：Repository 由 Registry 的工廠建立，工廠在 bootstrap 時
+  // 以 DatabaseAccessBuilder.getDatabaseAccess() 註冊（memory 時為 MemoryDatabaseAccess）。
+  // 以下為概念性分發邏輯，僅供理解：
   if (type === 'user') {
-    switch (orm) {
-      case 'memory':
-        return new UserRepository()
-
-      case 'drizzle':
-        return new DrizzleUserRepository(databaseAccess!)
-
-      case 'atlas':
-      case 'prisma':
-        throw new Error(`❌ ORM "${orm}" 尚未實現`)
-
-      default:
-        return new UserRepository()
-    }
+    const db = databaseAccess ?? new MemoryDatabaseAccess()
+    return new UserRepository(db)
   }
-
-  // Post Repository 分發
   if (type === 'post') {
-    switch (orm) {
-      case 'memory':
-        return new PostRepository()
-
-      case 'drizzle':
-        return new DrizzlePostRepository(databaseAccess!)
-
-      case 'atlas':
-      case 'prisma':
-        throw new Error(`❌ ORM "${orm}" 尚未實現`)
-
-      default:
-        return new PostRepository()
-    }
+    const db = databaseAccess ?? new MemoryDatabaseAccess()
+    return new PostRepository(db)
   }
 
   throw new Error(`❌ 不支援的 Repository 類型: "${type}"`)
@@ -217,38 +193,20 @@ export function createRepository<T extends RepositoryType>(
 - ✅ 對每個類型提供分發邏輯
 - ✅ 錯誤消息明確指出解決方案
 
-### getDatabaseAccess() 實現
+### getDatabaseAccess() / DatabaseAccessBuilder
 
-```typescript
-export function getDatabaseAccess(): IDatabaseAccess | undefined {
-  const orm = getCurrentORM()
+實際專案由 **DatabaseAccessBuilder** 統一提供 IDatabaseAccess（必為非 undefined）：
 
-  if (orm === 'memory') {
-    return undefined  // In-memory 不需要 Database
-  }
+- **orm=memory** → `new MemoryDatabaseAccess()`
+- **orm=drizzle/atlas** → 對應適配器
 
-  if (orm === 'drizzle') {
-    const { createDrizzleDatabaseAccess } = require('@/adapters/Drizzle')
-    return createDrizzleDatabaseAccess()  // Singleton
-  }
-
-  if (orm === 'atlas') {
-    throw new Error('❌ Atlas 適配器尚未實現')
-  }
-
-  if (orm === 'prisma') {
-    throw new Error('❌ Prisma 適配器尚未實現')
-  }
-
-  throw new Error(`❌ 不支援的 ORM: "${orm}"`)
-}
-```
+Repository 建構子一律接收 `IDatabaseAccess`，無底層 `if (db)` 分支。  
+若直接使用 `RepositoryFactory.getDatabaseAccess()`，memory 時會回傳 undefined，僅在 Builder 外使用時需自行改為注入 `MemoryDatabaseAccess`。
 
 **設計要點：**
-- ✅ Memory ORM 返回 undefined（無需資料庫）
-- ✅ 初始化對應的 DatabaseAccess（每個 ORM 一個）
-- ✅ 清晰的錯誤信息
-- ✅ 支援動態加載（require）
+- ✅ DatabaseAccessBuilder 永遠返回 IDatabaseAccess（memory = MemoryDatabaseAccess）
+- ✅ Repository 建構子必填 db，無底層分支
+- ✅ 支援動態加載適配器（require）
 
 ---
 
@@ -326,17 +284,14 @@ $ ORM=memory bun run dev
 ```
 1. 讀取環境：ORM=memory
 2. bootstrap() 初始化 PlanetCore
+   └─ DatabaseAccessBuilder('memory').getDatabaseAccess() → MemoryDatabaseAccess
+   └─ registerUserRepositories(db) / registerPostRepositories(db) 註冊工廠
 3. UserServiceProvider.register()
-   └─ getCurrentORM() → 'memory'
-   └─ getDatabaseAccess() → undefined
-   └─ createRepository('user', undefined) → new UserRepository()
+   └─ container.make('userRepository') → 工廠回傳 new UserRepository(db)
 4. PostServiceProvider.register()
-   └─ createRepository('post', undefined) → new PostRepository()
-5. registerUser(core)
-   └─ core.container.make('userRepository') → UserRepository 實例
-   └─ 組裝 UserController
-   └─ 註冊路由
-6. 應用啟動，所有資料存在記憶體
+   └─ container.make('postRepository') → new PostRepository(db)
+5. registerUser(core) / 路由註冊
+6. 應用啟動，所有資料存在記憶體（MemoryDatabaseAccess 內存表）
 ```
 
 ### 場景 2：生產（ORM=drizzle）
@@ -350,17 +305,13 @@ $ ORM=drizzle DATABASE_URL=file:./data.db bun run start
 ```
 1. 讀取環境：ORM=drizzle, DATABASE_URL=file:./data.db
 2. bootstrap() 初始化 PlanetCore
+   └─ DatabaseAccessBuilder('drizzle').getDatabaseAccess() → DrizzleDatabaseAccess
+   └─ registerUserRepositories(db) / registerPostRepositories(db) 註冊工廠
 3. UserServiceProvider.register()
-   └─ getCurrentORM() → 'drizzle'
-   └─ getDatabaseAccess() → createDrizzleDatabaseAccess()
-      └─ 初始化 Drizzle 連接
-   └─ createRepository('user', drizzleDb) → new DrizzleUserRepository(drizzleDb)
+   └─ container.make('userRepository') → new UserRepository(drizzleDb)
 4. PostServiceProvider.register()
-   └─ createRepository('post', drizzleDb) → new DrizzlePostRepository(drizzleDb)
-5. registerUser(core)
-   └─ core.container.make('userRepository') → DrizzleUserRepository 實例
-   └─ 組裝 UserController
-   └─ 註冊路由
+   └─ container.make('postRepository') → new PostRepository(drizzleDb)
+5. registerUser(core) / 路由註冊
 6. 應用啟動，所有資料持久化到 SQLite 資料庫
 ```
 
