@@ -1,0 +1,5 @@
+{
+  "welcome_subject": "歡迎加入，{name}！",
+  "welcome_body": "親愛的 {name}，感謝您註冊我們的部落格平台。祝您寫作愉快！",
+  "created_log": "新用戶已建立：{id}"
+}

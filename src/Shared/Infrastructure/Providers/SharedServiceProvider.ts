@@ -6,13 +6,12 @@
 import { ModuleServiceProvider, type IContainer } from '../IServiceProvider'
 import { MemoryEventDispatcher } from '../Framework/MemoryEventDispatcher'
 import { RedisEventDispatcher } from '../Framework/RedisEventDispatcher'
-import { EventWorker } from '../../Application/EventWorker'
+import { SystemWorker } from '../../Application/SystemWorker'
 import type { IRedisService } from '../IRedisService'
+import type { RedisJobQueueAdapter } from '../Framework/RedisJobQueueAdapter'
 
 /**
  * 共享服務提供者
- * 
- * 負責註冊全系統通用的基礎設施組件。
  */
 export class SharedServiceProvider extends ModuleServiceProvider {
 	/**
@@ -30,12 +29,13 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 			return new MemoryEventDispatcher()
 		})
 
-		// 註冊 Worker (僅在 Redis 模式下有效)
+		// 註冊統一 Worker (僅在 Redis 模式下有效)
 		if (driver === 'redis') {
-			container.singleton('eventWorker', (c) => {
+			container.singleton('systemWorker', (c) => {
 				const redis = c.make('redis') as IRedisService
-				const dispatcher = c.make('eventDispatcher') as RedisEventDispatcher
-				return new EventWorker(redis, dispatcher)
+				const eventDispatcher = c.make('eventDispatcher') as RedisEventDispatcher
+				const jobQueue = c.make('jobQueue') as RedisJobQueueAdapter
+				return new SystemWorker(redis, eventDispatcher, jobQueue)
 			})
 		}
 	}
@@ -49,11 +49,11 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 		const driver = process.env.EVENT_DRIVER || 'memory'
 		if (driver === 'redis') {
 			try {
-				const worker = core.container.make('eventWorker') as EventWorker
+				const worker = core.container.make('systemWorker') as SystemWorker
 				worker.start()
-				console.log('🔗 [Shared] Event Worker started in background')
+				console.log('🔗 [Shared] System Worker started in background')
 			} catch (error) {
-				console.warn('⚠️ [Shared] Could not start Event Worker: redis service might be missing')
+				console.warn('⚠️ [Shared] Could not start System Worker')
 			}
 		}
 	}

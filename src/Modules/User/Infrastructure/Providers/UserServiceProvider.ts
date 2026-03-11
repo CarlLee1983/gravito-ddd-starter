@@ -22,6 +22,11 @@
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
+import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
+import type { IMailer } from '@/Shared/Infrastructure/IMailer'
+import type { ILogger } from '@/Shared/Infrastructure/ILogger'
+import type { ITranslator } from '@/Shared/Infrastructure/ITranslator'
 
 /**
  * User 模組服務提供者實作類別
@@ -44,15 +49,35 @@ export class UserServiceProvider extends ModuleServiceProvider {
 			const db = orm !== 'memory' ? getDatabaseAccess() : undefined
 			return registry.create('user', orm, db)
 		})
+
+		// 2. 註冊歡迎信 Handler (單例)
+		container.singleton('sendWelcomeEmailHandler', (c) => {
+			return new SendWelcomeEmail(
+				c.make('mailer') as IMailer,
+				c.make('logger') as ILogger,
+				c.make('translator') as ITranslator
+			)
+		})
 	}
 
 	/**
 	 * 啟動時執行初始化邏輯
 	 *
-	 * @param _context - 啟動上下文
+	 * @param core - 啟動上下文 (Gravito 核心實例)
 	 */
-	override boot(_context: any): void {
+	override boot(core: any): void {
 		const orm = getCurrentORM()
 		console.log(`👤 [User] Module loaded (ORM: ${orm})`)
+
+		// ✨ 訂閱用戶建立事件 (自動化業務流程)
+		try {
+			const dispatcher = core.container.make('eventDispatcher') as IEventDispatcher
+			const handler = core.container.make('sendWelcomeEmailHandler') as SendWelcomeEmail
+			
+			dispatcher.subscribe('UserCreated', (event) => handler.handle(event))
+			console.log('🔗 [User] Subscribed to UserCreated for Welcome Email')
+		} catch (error) {
+			console.warn('⚠️ [User] Could not subscribe to UserCreated events')
+		}
 	}
 }
