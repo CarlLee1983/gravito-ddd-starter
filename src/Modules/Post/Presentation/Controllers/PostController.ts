@@ -13,7 +13,7 @@
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
 import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
-import type { IAuthorService } from '../../Domain/Ports/IAuthorService'
+import type { IAuthorService } from '../../Domain/Services/IAuthorService'
 import type { PostWithAuthorDTO } from '../../Application/DTOs/PostWithAuthorDTO'
 
 export class PostController {

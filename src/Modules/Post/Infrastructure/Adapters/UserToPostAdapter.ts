@@ -15,7 +15,7 @@
  */
 
 import type { AuthorDTO } from '@/Shared/Application/DTOs/AuthorDTO'
-import type { IAuthorService } from '../../Domain/Ports/IAuthorService'
+import type { IAuthorService } from '../../Domain/Services/IAuthorService'
 import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
 
 /**
