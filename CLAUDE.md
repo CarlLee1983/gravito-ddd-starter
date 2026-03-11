@@ -90,9 +90,9 @@ src/Modules/Product/
 │
 ├── Infrastructure/
 │   ├── Repositories/
-│   │   └── ProductRepository.ts   # 實現 IProductRepository，依賴 Atlas ORM
+│   │   └── ProductRepository.ts   # 實現 IProductRepository（ORM 無關）
 │   └── Providers/
-│       └── ProductServiceProvider.ts  # DI 容器配置
+│       └── ProductServiceProvider.ts  # DI 容器配置（綁定 Repository 實現）
 │
 ├── index.ts                        # 模組導出點
 └── README.md                       # 模組文檔
@@ -277,6 +277,53 @@ export class GravitoSessionAdapter {
   }
 }
 ```
+
+### Repository ORM 無關設計
+
+Repository 實現是 ORM 可替換的關鍵。Module 本身不依賴任何固定的套件：
+
+```typescript
+// src/Modules/Product/Infrastructure/Repositories/ProductRepository.ts
+// 此文件的具體實現（使用 Atlas/Drizzle/Prisma/TypeORM）由外部綁定決定
+
+export class ProductRepository implements IProductRepository {
+  constructor(private db: IDatabaseAccess) {
+    // db 是通用的數據庫訪問介面，不知道背後是什麼 ORM
+  }
+
+  async findById(id: string): Promise<Product | null> {
+    // 使用 this.db 通用方法，不使用 ORM 特定 API
+    const repo = this.db.getRepository(Product)
+    return repo.findById(id)
+  }
+
+  async save(product: Product): Promise<void> {
+    const repo = this.db.getRepository(Product)
+    await repo.save(product)
+    // EventDispatcher 由外部注入，與 ORM 無關
+    await this.eventDispatcher.dispatch(product.getUncommittedEvents())
+  }
+}
+
+// Service Provider 中綁定實現 - 這是唯一依賴 ORM 的地方
+// src/Modules/Product/Infrastructure/Providers/ProductServiceProvider.ts
+
+export class ProductServiceProvider {
+  register(container: IContainer) {
+    // 綁定 Repository 實現 - ORM 變更時，只需改這裡
+    container.bind('productRepository', () =>
+      new ProductRepository(container.resolve(IDatabaseAccess))
+    )
+  }
+}
+```
+
+**遷移流程**（從 Atlas → Drizzle）：
+1. 修改 `ProductRepository` 實現（使用 Drizzle API 而非 Atlas）
+2. 檢查 `IDatabaseAccess` 適配層是否支持新 ORM
+3. 如需新適配器，在 `src/adapters/` 添加 `DrizzelDatabaseAdapter`
+4. 更新 Service Provider 的綁定
+5. Module 自身無需改動 ✅
 
 ### 分層測試
 
