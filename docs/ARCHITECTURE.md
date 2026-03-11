@@ -473,6 +473,14 @@ A: 在層邊界處轉換 (Presentation ↔ Application, Application ↔ Domain)
 **Q: 是否能跳過某一層?**
 A: 否。四層架構強制分離，保證可測試和可維護。
 
+**Q: 何時需要使用 CQRS 或 Event Sourcing?**
+A: 本樣版使用 **簡單模式**（直接 Repository）以保持架構清晰。當以下場景出現時，再考慮進階模式：
+- **CQRS**：讀寫不對稱（讀多寫少）或需要複雜查詢優化時
+- **Event Sourcing**：需要完整變更歷史或事件回放時
+- **Saga Pattern**：跨多個聚合的長流程事務時
+
+詳見 [ARCHITECTURE_PATTERNS.md](./ARCHITECTURE_PATTERNS.md) 中的進階模式案例。
+
 ## 跨模組整合（ACL 防腐層）
 
 當多個模組需要協作時，使用 **Anti-Corruption Layer (ACL)** 來隔離它們，防止一個模組污染另一個。
@@ -510,6 +518,7 @@ Post 模組（使用方）
 
 ## 相關文檔
 
+- [ARCHITECTURE_PATTERNS.md](./ARCHITECTURE_PATTERNS.md) - 進階模式（CQRS、Event Sourcing、Saga）
 - [ABSTRACTION_RULES.md](./ABSTRACTION_RULES.md) - 分層規則與 ACL 原則
 - [ACL_ANTI_CORRUPTION_LAYER.md](./ACL_ANTI_CORRUPTION_LAYER.md) - ACL 設計詳細指南
 - [MODULE_GUIDE.md](./MODULE_GUIDE.md) - 如何創建新模組
