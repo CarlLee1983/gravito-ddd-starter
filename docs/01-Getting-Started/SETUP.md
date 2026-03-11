@@ -1,3 +1,5 @@
+> **Tier: 1 - 必需** | 預計 10 分鐘 | 新手入門 | ⭐⭐⭐
+
 # 開發環境設置指南 (Setup Guide)
 
 完整的開發環境配置步驟，支援 macOS、Linux 和 Windows。

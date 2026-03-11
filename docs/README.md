@@ -1,6 +1,59 @@
 # 📚 Gravito DDD Starter 文檔中心
 
-歡迎來到 Gravito DDD Starter 的完整文檔。本文檔庫組織清晰，按功能和開發階段分類。
+歡迎來到 Gravito DDD Starter。本文檔區分**必需**和**可選**，幫助你快速上手。
+
+---
+
+## 🎯 選擇你的起點
+
+### 👤 我是新手（15 分鐘快速開始）
+
+**Tier 1 - 必需文檔**（⭐⭐⭐）
+
+只需讀 **5 個文檔**，可以開始開發：
+
+1. **[環境設置](./01-Getting-Started/SETUP.md)** (5 min)
+   - 如何安裝和啟動
+
+2. **[快速參考](./01-Getting-Started/QUICK_REFERENCE.md)** (5 min)
+   - 最常用的指令
+
+3. **[建立模組](./04-Module-Development/MODULE_GUIDE.md)** (15 min)
+   - 如何從零開始建立業務功能
+
+4. **[資料庫操作](./05-Database-ORM/DATABASE.md)** (10 min)
+   - Migration、Seeder、查詢操作
+
+5. **[質量檢查](./04-Module-Development/NEW_MODULE_CHECKLIST.md)** (5 min)
+   - 完成模組後的驗證清單
+
+✅ 讀完這 5 個，你就可以開始開發了！
+
+---
+
+### 🔨 我要開發功能（日常使用）
+
+**常見任務快速查找**：
+
+| 任務 | 文檔 | 時間 |
+|------|------|------|
+| 建立新模組 | [MODULE_GUIDE.md](./04-Module-Development/MODULE_GUIDE.md) | 15 min |
+| 操作資料庫 | [DATABASE.md](./05-Database-ORM/DATABASE.md) | 10 min |
+| 驗證模組質量 | [NEW_MODULE_CHECKLIST.md](./04-Module-Development/NEW_MODULE_CHECKLIST.md) | 5 min |
+| 遇到問題 | [故障排除](./07-Production-Deployment/TROUBLESHOOTING.md) | ? |
+
+---
+
+### 📖 我想深入理解（可選）
+
+**Tier 2 & 3 - 參考和深度文檔**（⭐⭐ / ⭐）
+
+有時間時可深入學習：
+
+- **[整體架構](./02-Architecture/ARCHITECTURE.md)** - 理解設計思想
+- **[DDD 實施](./03-DDD-Design/DDD_IMPLEMENTATION_CHECKLIST.md)** - 深入 DDD 原則
+- **[生產就緒](./07-Production-Deployment/PRODUCTION_READINESS_ROADMAP.md)** - 補充功能計畫
+- **[完整文檔目錄](#-完整文檔導航)** - 按分類查閱
 
 ---
 

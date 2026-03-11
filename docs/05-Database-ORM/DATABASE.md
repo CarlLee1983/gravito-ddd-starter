@@ -1,3 +1,5 @@
+> **Tier: 1 - 必需** | 預計 10 分鐘 | 資料庫和遷移 | ⭐⭐⭐
+
 # 資料庫操作指南
 
 本指南介紹如何使用 Gravito DDD Starter 中的資料庫相關工具，參考 Laravel Artisan 設計原則。
