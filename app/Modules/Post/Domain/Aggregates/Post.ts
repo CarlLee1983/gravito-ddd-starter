@@ -16,6 +16,9 @@ import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
 import { Title } from '../ValueObjects/Title'
 import { Content } from '../ValueObjects/Content'
 import { PostCreated } from '../Events/PostCreated'
+import { PostPublished } from '../Events/PostPublished'
+import { PostArchived } from '../Events/PostArchived'
+import { PostTitleChanged } from '../Events/PostTitleChanged'
 import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
 
 /**
@@ -29,6 +32,8 @@ export class Post extends AggregateRoot {
   private _content!: Content
   private _authorId!: string
   private _createdAt!: Date
+  private _isPublished: boolean = false
+  private _isArchived: boolean = false
 
   /**
    * 私有建構子，強制使用靜態工廠方法建立實體
@@ -71,6 +76,8 @@ export class Post extends AggregateRoot {
    * @param content - 文章內容 ValueObject
    * @param authorId - 作者識別碼
    * @param createdAt - 建立時間
+   * @param isPublished - 是否已發佈（預設 false）
+   * @param isArchived - 是否已存檔（預設 false）
    * @returns 還原後的 Post 實體
    */
   static reconstitute(
@@ -78,13 +85,17 @@ export class Post extends AggregateRoot {
     title: Title,
     content: Content,
     authorId: string,
-    createdAt: Date
+    createdAt: Date,
+    isPublished: boolean = false,
+    isArchived: boolean = false
   ): Post {
     const post = new Post(id)
     post._title = title
     post._content = content
     post._authorId = authorId
     post._createdAt = createdAt
+    post._isPublished = isPublished
+    post._isArchived = isArchived
     return post
   }
 
@@ -100,7 +111,75 @@ export class Post extends AggregateRoot {
       this._content = Content.create(event.content)
       this._authorId = event.authorId
       this._createdAt = event.createdAt
+    } else if (event instanceof PostPublished) {
+      this._isPublished = true
+    } else if (event instanceof PostArchived) {
+      this._isArchived = true
+    } else if (event instanceof PostTitleChanged) {
+      this._title = Title.create(event.newTitle)
     }
+  }
+
+  // ============ 行為方法（發佈事件） ============
+
+  /**
+   * 發佈文章
+   *
+   * 將草稿文章發佈為公開可見。
+   * 發佈後的文章無法變更為草稿狀態。
+   *
+   * @throws Error 如果文章已發佈或已存檔
+   */
+  publish(): void {
+    if (this._isPublished) {
+      throw new Error('文章已發佈，無法重複發佈')
+    }
+
+    if (this._isArchived) {
+      throw new Error('已存檔的文章無法發佈')
+    }
+
+    // 發佈事件 - applyEvent() 會設定 _isPublished = true
+    this.raiseEvent(new PostPublished(this.id, this._authorId))
+  }
+
+  /**
+   * 存檔文章
+   *
+   * 將文章存檔。存檔後的文章無法編輯、發佈或變更。
+   * 存檔是一個終止狀態。
+   *
+   * @throws Error 如果文章已存檔
+   */
+  archive(): void {
+    if (this._isArchived) {
+      throw new Error('文章已存檔，無法重複存檔')
+    }
+
+    // 發佈事件 - applyEvent() 會設定 _isArchived = true
+    this.raiseEvent(new PostArchived(this.id, this._authorId))
+  }
+
+  /**
+   * 變更文章標題
+   *
+   * 修改文章標題。已存檔的文章無法變更標題。
+   *
+   * @param newTitle - 新的文章標題 ValueObject
+   * @throws Error 如果標題驗證失敗或文章已存檔
+   */
+  changeTitle(newTitle: Title): void {
+    if (this._isArchived) {
+      throw new Error('已存檔的文章無法變更標題')
+    }
+
+    // 如果標題相同，無需發佈事件
+    if (this._title.equals(newTitle)) {
+      return
+    }
+
+    // 發佈事件 - applyEvent() 會更新 _title
+    this.raiseEvent(new PostTitleChanged(this.id, this._title.value, newTitle.value))
   }
 
   // ============ Getters （只讀屬性） ============
@@ -123,5 +202,15 @@ export class Post extends AggregateRoot {
   /** 取得建立時間 */
   get createdAt(): Date {
     return this._createdAt
+  }
+
+  /** 取得是否已發佈 */
+  get isPublished(): boolean {
+    return this._isPublished
+  }
+
+  /** 取得是否已存檔 */
+  get isArchived(): boolean {
+    return this._isArchived
   }
 }

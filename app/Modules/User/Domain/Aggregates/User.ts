@@ -14,6 +14,8 @@
 
 import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
 import { UserCreated } from '../Events/UserCreated'
+import { UserNameChanged } from '../Events/UserNameChanged'
+import { UserEmailChanged } from '../Events/UserEmailChanged'
 import { Email } from '../ValueObjects/Email'
 import { UserName } from '../ValueObjects/UserName'
 import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
@@ -100,7 +102,51 @@ export class User extends AggregateRoot {
       this._name = UserName.create(event.name)
       this._email = Email.create(event.email)
       this._createdAt = event.createdAt
+    } else if (event instanceof UserNameChanged) {
+      this._name = UserName.create(event.newName)
+    } else if (event instanceof UserEmailChanged) {
+      this._email = Email.create(event.newEmail)
     }
+  }
+
+  // ============ 行為方法（發佈事件） ============
+
+  /**
+   * 變更用戶名稱
+   *
+   * 驗證新名稱有效性，發佈 UserNameChanged 事件。
+   * 實際的狀態變更由 applyEvent() 處理。
+   *
+   * @param newName - 新的用戶名稱 ValueObject
+   * @throws Error 如果名稱驗證失敗
+   */
+  changeName(newName: UserName): void {
+    // 如果名稱相同，無需發佈事件
+    if (this._name.equals(newName)) {
+      return
+    }
+
+    // 發佈事件 - applyEvent() 會更新 _name
+    this.raiseEvent(new UserNameChanged(this.id, newName.value))
+  }
+
+  /**
+   * 變更用戶電子郵件
+   *
+   * 驗證新郵件有效性，發佈 UserEmailChanged 事件。
+   * 實際的狀態變更由 applyEvent() 處理。
+   *
+   * @param newEmail - 新的電子郵件 ValueObject
+   * @throws Error 如果郵件驗證失敗
+   */
+  changeEmail(newEmail: Email): void {
+    // 如果郵件相同，無需發佈事件
+    if (this._email.equals(newEmail)) {
+      return
+    }
+
+    // 發佈事件 - applyEvent() 會更新 _email
+    this.raiseEvent(new UserEmailChanged(this.id, newEmail.value))
   }
 
   // ============ Getters （只讀屬性） ============

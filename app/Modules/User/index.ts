@@ -17,6 +17,8 @@ export { UserName } from './Domain/ValueObjects/UserName'
 
 // Domain - Events
 export { UserCreated } from './Domain/Events/UserCreated'
+export { UserNameChanged } from './Domain/Events/UserNameChanged'
+export { UserEmailChanged } from './Domain/Events/UserEmailChanged'
 
 // Domain - Repositories
 export type { IUserRepository } from './Domain/Repositories/IUserRepository'

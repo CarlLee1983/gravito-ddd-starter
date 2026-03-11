@@ -17,6 +17,9 @@ export { Content } from './Domain/ValueObjects/Content'
 
 // Domain - Events
 export { PostCreated } from './Domain/Events/PostCreated'
+export { PostPublished } from './Domain/Events/PostPublished'
+export { PostArchived } from './Domain/Events/PostArchived'
+export { PostTitleChanged } from './Domain/Events/PostTitleChanged'
 
 // Domain - Repositories
 export type { IPostRepository } from './Domain/Repositories/IPostRepository'

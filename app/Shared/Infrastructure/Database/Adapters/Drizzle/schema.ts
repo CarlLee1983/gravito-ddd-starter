@@ -41,7 +41,7 @@ export const posts = sqliteTable('posts', {
   /** 文章內容 */
   content: text('content'),
   /** 作者 ID (關聯到 users.id) */
-  user_id: text('user_id')
+  author_id: text('author_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
   /** 建立時間 */

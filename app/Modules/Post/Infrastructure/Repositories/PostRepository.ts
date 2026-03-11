@@ -133,7 +133,7 @@ export class PostRepository implements IPostRepository {
    * @returns 該作者的文章列表
    */
   async findByAuthor(authorId: string): Promise<Post[]> {
-    const rows = await this.db.table('posts').where('user_id', '=', authorId).select()
+    const rows = await this.db.table('posts').where('author_id', '=', authorId).select()
     return rows.map((row) => this.toDomain(row))
   }
 
@@ -153,7 +153,7 @@ export class PostRepository implements IPostRepository {
     const content = Content.create(row.content as string)
     const createdAt = row.created_at instanceof Date ? row.created_at : new Date(row.created_at as string)
 
-    return Post.reconstitute(row.id as string, title, content, row.user_id as string, createdAt)
+    return Post.reconstitute(row.id as string, title, content, row.author_id as string, createdAt)
   }
 
   /**
@@ -168,7 +168,7 @@ export class PostRepository implements IPostRepository {
       id: post.id,
       title: post.title.value,
       content: post.content.value,
-      user_id: post.authorId,
+      author_id: post.authorId,
       created_at: post.createdAt.toISOString(),
       updated_at: new Date().toISOString(),
     }

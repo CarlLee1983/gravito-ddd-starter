@@ -6,7 +6,9 @@ import { createTable, dropTableIfExists } from '../MigrationHelper'
 export async function up(db: AtlasOrbit): Promise<void> {
 	await createTable(db, 'posts', (t) => {
 		t.id()
-		t.string('name').notNull()
+		t.string('title').notNull()
+		t.text('content')
+		t.string('author_id').notNull()
 		t.timestamps()
 	})
 }
