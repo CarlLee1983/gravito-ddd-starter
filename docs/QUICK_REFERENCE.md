@@ -160,6 +160,48 @@ git add -A
 git commit -m "feat: [Order] add Order module"
 ```
 
+### 實現跨模組 ACL（防腐層）
+
+若 Post 模組需要 User 資訊，在 Post 中建立 ACL：
+
+```bash
+# 1. 定義 Port（Post/Application/Ports/）
+# src/Modules/Post/Application/Ports/IAuthorService.ts
+export interface IAuthorService {
+  findAuthor(authorId: string): Promise<AuthorDTO | null>
+}
+
+# 2. 實現 Adapter（Post/Infrastructure/Adapters/）
+# src/Modules/Post/Infrastructure/Adapters/UserToPostAdapter.ts
+export class UserToPostAdapter implements IAuthorService {
+  constructor(private userRepository: IUserRepository) {}
+  async findAuthor(authorId: string): Promise<AuthorDTO | null> {
+    const user = await this.userRepository.findById(authorId)
+    if (!user) return null
+    return { id: user.id, name: user.name, email: user.email }
+  }
+}
+
+# 3. 在 Controller 使用 Port（不知道 User）
+# src/Modules/Post/Presentation/Controllers/PostController.ts
+export class PostController {
+  constructor(
+    private postRepository: IPostRepository,
+    private authorService: IAuthorService  // ← Port
+  ) {}
+  async show(ctx: IHttpContext) {
+    const author = await this.authorService.findAuthor(post.userId)
+    return ctx.json({ success: true, data: { ...post, author } })
+  }
+}
+
+# 4. 在 Framework 層組裝（Wiring）
+const authorService = new UserToPostAdapter(userRepository)
+const controller = new PostController(postRepository, authorService)
+```
+
+詳見 [ACL_ANTI_CORRUPTION_LAYER.md](./ACL_ANTI_CORRUPTION_LAYER.md)
+
 ### 修復格式和 Lint 問題
 
 ```bash
@@ -281,11 +323,14 @@ bun run dev 2>&1 | grep -i database
 | [README.md](../README.md) | 專案概述和快速開始 |
 | [SETUP.md](./SETUP.md) | 詳細的開發環境配置 |
 | [ARCHITECTURE.md](./ARCHITECTURE.md) | DDD 架構詳解 |
+| [ABSTRACTION_RULES.md](./ABSTRACTION_RULES.md) | 分層規則與 ACL 原則 |
+| [ACL_ANTI_CORRUPTION_LAYER.md](./ACL_ANTI_CORRUPTION_LAYER.md) | ACL 設計與實施（詳細指南） |
 | [MODULE_GUIDE.md](./MODULE_GUIDE.md) | 模組開發完整指南 |
 | [MODULE_ADD_CHECKLIST.md](./MODULE_ADD_CHECKLIST.md) | 新增模組檢查清單 |
 | [DATABASE.md](./DATABASE.md) | 資料庫操作和 Migration 指南 |
 | [TESTING.md](./TESTING.md) | 測試策略和範例 |
 | [API_GUIDELINES.md](./API_GUIDELINES.md) | API 設計規範 |
+| [DEPENDENCY_INJECTION_ARCHITECTURE.md](./DEPENDENCY_INJECTION_ARCHITECTURE.md) | 依賴注入架構 |
 | [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) | 常見問題解決 |
 | [DEPLOYMENT.md](./DEPLOYMENT.md) | 部署和生產配置 |
 

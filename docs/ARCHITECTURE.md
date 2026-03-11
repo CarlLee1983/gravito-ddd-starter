@@ -473,8 +473,45 @@ A: 在層邊界處轉換 (Presentation ↔ Application, Application ↔ Domain)
 **Q: 是否能跳過某一層?**
 A: 否。四層架構強制分離，保證可測試和可維護。
 
+## 跨模組整合（ACL 防腐層）
+
+當多個模組需要協作時，使用 **Anti-Corruption Layer (ACL)** 來隔離它們，防止一個模組污染另一個。
+
+### 原則
+
+1. **ACL 屬於使用方** — 如果 Post 需要 User 資訊，ACL 在 Post 模組內
+2. **Port 由使用方定義** — Post 定義 `IAuthorService`（Port），而不是被迫使用 User 的介面
+3. **Adapter 實現 Port** — ACL 實現 Port，轉換供應方的語言
+
+### 範例：Post 獲取 Author 資訊
+
+```
+User 模組（供應方）
+  └─ IUserRepository.findById()
+
+Post 模組（使用方）
+  ├─ Application/Ports/IAuthorService  ← Post 定義
+  │   └─ findAuthor(authorId): AuthorDTO
+  │
+  └─ Infrastructure/Adapters/
+      └─ UserToPostAdapter  ← ACL 實現
+          └─ 呼叫 userRepository
+             轉換為 AuthorDTO { id, name, email }
+```
+
+### 好處
+
+- ✅ **完全解耦** — Post 不知道 User 的實現
+- ✅ **ORM 無關** — 改變 User 的 ORM 不影響 Post
+- ✅ **易於測試** — 可輕鬆 mock IAuthorService
+- ✅ **易於替換** — 改變作者來源（API/DB），只改 Adapter
+
+詳見 [ACL_ANTI_CORRUPTION_LAYER.md](./ACL_ANTI_CORRUPTION_LAYER.md)
+
 ## 相關文檔
 
+- [ABSTRACTION_RULES.md](./ABSTRACTION_RULES.md) - 分層規則與 ACL 原則
+- [ACL_ANTI_CORRUPTION_LAYER.md](./ACL_ANTI_CORRUPTION_LAYER.md) - ACL 設計詳細指南
 - [MODULE_GUIDE.md](./MODULE_GUIDE.md) - 如何創建新模組
 - [TROUBLESHOOTING.md](./TROUBLESHOOTING.md) - 常見問題和解決方案
 - [../README.md](../README.md) - 專案概況

@@ -397,6 +397,130 @@ export class OrderRepository implements IOrderRepository {
 
 ---
 
+## 🛡️ 跨模組 ACL（防腐層）
+
+當一個模組需要另一個模組的資訊時，使用 ACL 防腐層隔離兩個模組。
+
+### 原則
+
+1. **ACL 屬於使用方** — 如果 Post 需要 User 資訊，ACL 在 Post 的 `Infrastructure/Adapters/`
+2. **Port 由使用方定義** — Post 定義 `IAuthorService`（我需要什麼）
+3. **Adapter 實現 Port** — ACL 實現 Port，並轉換供應方的語言
+
+### 範例結構
+
+```
+User 模組（供應方）
+  └─ IUserRepository（User 的介面）
+      └─ findById(id): Promise<User>
+
+Post 模組（使用方）
+  ├─ Application/Ports/
+  │   └─ IAuthorService.ts (Post 定義：我需要什麼)
+  └─ Infrastructure/Adapters/
+      └─ UserToPostAdapter.ts (ACL 實現：如何適配)
+          ├─ 呼叫 userRepository.findById()
+          └─ 轉換為 AuthorDTO { id, name, email }
+```
+
+### DO's
+
+```typescript
+// ✅ Post 定義自己的 Port（需求）
+// src/Modules/Post/Application/Ports/IAuthorService.ts
+export interface IAuthorService {
+  findAuthor(authorId: string): Promise<AuthorDTO | null>
+}
+
+// ✅ ACL 實現 Port（在 Post 的 Infrastructure 層）
+// src/Modules/Post/Infrastructure/Adapters/UserToPostAdapter.ts
+export class UserToPostAdapter implements IAuthorService {
+  constructor(private userRepository: IUserRepository) {}
+
+  async findAuthor(authorId: string): Promise<AuthorDTO | null> {
+    const user = await this.userRepository.findById(authorId)
+    if (!user) return null
+    // 翻譯：User 語言 → Post 語言
+    return { id: user.id, name: user.name, email: user.email }
+  }
+}
+
+// ✅ Application 層只依賴 Port
+// src/Modules/Post/Presentation/Controllers/PostController.ts
+export class PostController {
+  constructor(
+    private postRepository: IPostRepository,
+    private authorService: IAuthorService  // ← Port
+  ) {}
+
+  async show(ctx: IHttpContext): Promise<Response> {
+    const post = await this.postRepository.findById(id)
+    const author = await this.authorService.findAuthor(post.userId)
+    // Post 完全不知道 User 存在
+    return ctx.json({ success: true, data: { ...post, author } })
+  }
+}
+```
+
+### DON'Ts
+
+```typescript
+// ❌ 禁止：在 Post 的 Application 層直接使用 User Repository
+export class PostService {
+  constructor(
+    private postRepository: IPostRepository,
+    private userRepository: IUserRepository  // ← 跨模組耦合！
+  ) {}
+
+  async getPostWithAuthor(id: string) {
+    const post = await this.postRepository.findById(id)
+    const user = await this.userRepository.findById(post.userId)
+    // Post 知道 User 的實現細節
+  }
+}
+
+// ❌ 禁止：在 src/Adapters/ 中放 ACL
+// src/Adapters/ProductShop/ProductToShopAdapter.ts  ← 錯誤位置
+// 應該改為：src/Modules/Post/Infrastructure/Adapters/UserToPostAdapter.ts
+
+// ❌ 禁止：污染 User Repository 介面
+// src/Modules/User/Domain/Repositories/IUserRepository.ts
+export interface IUserRepository {
+  findById(id: string): Promise<User | null>
+  findUsersByPostCategory(category: string): Promise<User[]>  // ← 污染！
+  findAuthorsByPostId(postId: string): Promise<User[]>  // ← 污染！
+}
+
+// 改為：在 ACL 層自己實現這些複雜查詢
+export class UserToPostAdapter implements IAuthorService {
+  constructor(
+    private userRepository: IUserRepository,
+    private db: IDatabaseAccess
+  ) {
+    // ✅ 複雜查詢不污染 User Repository
+    const users = await this.db
+      .table('users')
+      .whereIn('id', (qb) => qb.select('user_id').from('posts').where('category', category))
+      .get()
+  }
+}
+```
+
+### 驗證 ACL 設計
+
+檢查跨模組依賴的位置：
+
+```bash
+# 應該只在 Adapters/ 中有 User 依賴
+grep -r "Modules/User" src/Modules/Post --include="*.ts" | grep -v Adapters
+
+# 預期：無結果
+```
+
+詳見 [ACL_ANTI_CORRUPTION_LAYER.md](./ACL_ANTI_CORRUPTION_LAYER.md)
+
+---
+
 ## ❓ 常見問題
 
 ### Q: 如果我需要 ORM 特定功能怎麼辦？
