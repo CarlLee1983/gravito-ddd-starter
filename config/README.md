@@ -9,7 +9,6 @@
 | `cache.ts` | Stasis 快取（可選） |
 | `redis.ts` | Redis 設定（可選） |
 | `orbits.ts` | Gravito Orbits 註冊（Prism、Atlas、Plasma 等） |
-| `drizzle.config.ts` | Drizzle Kit 配置（migrations、schema 位置） |
 | `types.ts` | 型別（AppConfig 等） |
 | `index.ts` | 匯出各 config、`buildConfig(port?)`、`useDatabase` |
 
@@ -25,5 +24,7 @@ defineConfig({
 ```
 
 環境變數見專案根目錄 `.env.example`。
+
+**注意**：特定套件的設定檔（Drizzle、Vite 等工具配置）請見 [`configs/`](../configs/) 目錄。
 
 新增模組時若需改動 Orbits 或設定，請對照 [docs/MODULE_ADD_CHECKLIST.md](../docs/MODULE_ADD_CHECKLIST.md) 的「選做設定」。
