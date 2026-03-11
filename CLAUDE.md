@@ -384,9 +384,30 @@ bun test tests/Feature/       # 端到端測試
 cd /Users/carl/Dev/Carl/gravito-core/packages/core && bun run build
 ```
 
-### Q: 新模組無法自動註冊
+### Q: 新模組無法自動註冊或路由未生效
 
-**A**: 檢查 `src/Modules/{ModuleName}/index.ts` 是否正確導出 `IModuleDefinition`。
+**A**: 檢查以下幾點：
+1. `src/Modules/{ModuleName}/index.ts` 是否正確導出 `IModuleDefinition`
+2. `registerRoutes` 函數中，如果需要從容器取得服務（如 redis、database），應使用 try-catch 處理：
+   ```typescript
+   let service: any
+   try {
+     service = core.container.make('serviceName')
+   } catch {
+     // 服務不存在時優雅降級
+     console.warn('Service not found, skipping routes')
+     return
+   }
+   ```
+
+### Q: 某個 HTTP 端點返回 404 Not Found
+
+**A**: 檢查路由日誌。啟動伺服器時應看到：
+```
+[Router] Registering GET /your-route
+[Router] Registering POST /your-route
+```
+如果沒有看到路由註冊日誌，表示 `registerRoutes` 沒有被執行。參考上面的「路由未生效」排查步驟。
 
 ## 開發最佳實踐
 
