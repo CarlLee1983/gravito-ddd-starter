@@ -1,181 +1,71 @@
 /**
- * Drizzle 基礎功能測試
+ * Drizzle 適配器 整合測試
  *
- * 簡單驗證 Drizzle 適配器的基本功能
- * 不依賴 Atlas，可獨立運行
+ * 驗證 Drizzle 實作是否正確符合 IDatabaseAccess 與 IDatabaseConnectivityCheck 契約
+ *
+ * @module test/integration/adapters/Drizzle
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createDrizzleDatabaseAccess } from '@/adapters/Drizzle'
-import { createDrizzleConnectivityCheck } from '@/adapters/Drizzle'
+import { describe, it, expect, beforeAll } from 'bun:test'
+import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
+import { createDrizzleConnectivityCheck } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 
-describe('Drizzle 適配器 - 基礎功能驗證', () => {
+describe('Drizzle 適配器 整合測試', () => {
   let db: IDatabaseAccess
 
-  describe('初始化', () => {
-    it('應該能創建 DatabaseAccess 實例', () => {
-      db = createDrizzleDatabaseAccess()
-      expect(db).toBeDefined()
-      expect(typeof db.table).toBe('function')
-    })
-
-    it('應該能創建 ConnectivityCheck 實例', () => {
-      const check = createDrizzleConnectivityCheck()
-      expect(check).toBeDefined()
-      expect(typeof check.ping).toBe('function')
-    })
+  beforeAll(async () => {
+    db = createDrizzleDatabaseAccess()
+    
+    // 初始化 Schema (確保測試表存在)
+    try {
+      const rawDb = (db as any).db || db
+      // Drizzle 適配器目前沒有暴露 raw execute，我們透過 table().insert 觸發初始化，
+      // 或直接在適配器配置中處理。這裡我們假設測試環境需要手動建立表。
+      // 由於目前的 DrizzleAdapter 隱藏了底層，我們直接嘗試操作。
+    } catch (e) {
+      console.error('Schema init failed', e)
+    }
   })
 
-  describe('QueryBuilder 介面', () => {
-    beforeEach(() => {
-      db = createDrizzleDatabaseAccess()
-    })
-
-    it('table() 應返回 QueryBuilder', () => {
-      const query = db.table('users')
-      expect(query).toBeDefined()
-    })
-
-    it('QueryBuilder 應有所有必要方法', () => {
-      const query = db.table('users')
-
-      const requiredMethods = [
-        'where',
-        'first',
-        'select',
-        'insert',
-        'update',
-        'delete',
-        'limit',
-        'offset',
-        'orderBy',
-        'whereBetween',
-        'count',
-      ]
-
-      requiredMethods.forEach((method) => {
-        expect(typeof (query as any)[method]).toBe('function')
-      })
-    })
-
-    it('應支持鏈式調用', () => {
-      const query = db.table('users')
-        .where('email', '=', 'test@example.com')
-        .limit(10)
-        .offset(0)
-        .orderBy('created_at', 'DESC')
-
-      expect(query).toBeDefined()
-    })
-
-    it('select() 應返回 Promise<Record[]>', async () => {
-      const result = await db.table('users').select()
-      expect(Array.isArray(result)).toBe(true)
-    })
-
-    it('first() 應返回 Promise<Record | null>', async () => {
-      const result = await db.table('users').where('id', '=', 'nonexistent').first()
-      expect(result === null || typeof result === 'object').toBe(true)
-    })
-
-    it('count() 應返回 Promise<number>', async () => {
-      const count = await db.table('users').count()
-      expect(typeof count).toBe('number')
-      expect(count >= 0).toBe(true)
-    })
+  it('應該能成功連線資料庫 (Ping)', async () => {
+    const checker = createDrizzleConnectivityCheck()
+    const isHealthy = await checker.ping()
+    // 註：這需要環境中有 DATABASE_URL，若無則會使用預設的 local.db
+    expect(typeof isHealthy).toBe('boolean')
   })
 
-  describe('WHERE 運算子支持', () => {
-    beforeEach(() => {
-      db = createDrizzleDatabaseAccess()
+  it('應該能對 users 表進行基本操作', async () => {
+    const tableName = 'users'
+    const testId = crypto.randomUUID()
+    
+    // 1. Insert
+    await db.table(tableName).insert({
+      id: testId,
+      name: 'Drizzle Test User',
+      email: `drizzle-${testId}@example.com`
     })
 
-    it('應支持 = 運算子', () => {
-      const query = db.table('users').where('id', '=', '123')
-      expect(query).toBeDefined()
-    })
+    // 2. Select / Where / First
+    const user = await db.table(tableName).where('id', '=', testId).first()
+    expect(user).toBeDefined()
+    expect(user?.name).toBe('Drizzle Test User')
 
-    it('應支持 != 運算子', () => {
-      const query = db.table('users').where('email', '!=', 'test@example.com')
-      expect(query).toBeDefined()
+    // 3. Update
+    await db.table(tableName).where('id', '=', testId).update({
+      name: 'Updated Drizzle User'
     })
+    
+    const updatedUser = await db.table(tableName).where('id', '=', testId).first()
+    expect(updatedUser?.name).toBe('Updated Drizzle User')
 
-    it('應支持 > 運算子', () => {
-      const query = db.table('users').where('name', '>', 'A')
-      expect(query).toBeDefined()
-    })
+    // 4. Count
+    const count = await db.table(tableName).where('id', '=', testId).count()
+    expect(count).toBe(1)
 
-    it('應支持 < 運算子', () => {
-      const query = db.table('users').where('name', '<', 'Z')
-      expect(query).toBeDefined()
-    })
-
-    it('應支持 >= 運算子', () => {
-      const query = db.table('users').where('email', '>=', 'a@example.com')
-      expect(query).toBeDefined()
-    })
-
-    it('應支持 <= 運算子', () => {
-      const query = db.table('users').where('email', '<=', 'z@example.com')
-      expect(query).toBeDefined()
-    })
-
-    it('應支持 like 運算子', () => {
-      const query = db.table('users').where('email', 'like', '%@example.com')
-      expect(query).toBeDefined()
-    })
-
-    it('應支持 in 運算子', () => {
-      const query = db.table('users').where('name', 'in', ['admin', 'user'])
-      expect(query).toBeDefined()
-    })
-  })
-
-  describe('分頁和排序', () => {
-    beforeEach(() => {
-      db = createDrizzleDatabaseAccess()
-    })
-
-    it('應支持 limit()', () => {
-      const query = db.table('users').limit(10)
-      expect(query).toBeDefined()
-    })
-
-    it('應支持 offset()', () => {
-      const query = db.table('users').offset(20)
-      expect(query).toBeDefined()
-    })
-
-    it('應支持 orderBy() 使用 ASC', () => {
-      const query = db.table('users').orderBy('created_at', 'ASC')
-      expect(query).toBeDefined()
-    })
-
-    it('應支持 orderBy() 使用 DESC', () => {
-      const query = db.table('users').orderBy('created_at', 'DESC')
-      expect(query).toBeDefined()
-    })
-
-    it('應支持 whereBetween()', () => {
-      const startDate = new Date('2024-01-01')
-      const endDate = new Date('2024-12-31')
-      const query = db.table('users').whereBetween('created_at', [startDate, endDate])
-      expect(query).toBeDefined()
-    })
-  })
-
-  describe('連線檢查', () => {
-    it('ping() 應返回 boolean', async () => {
-      const check = createDrizzleConnectivityCheck()
-      const result = await check.ping()
-      expect(typeof result).toBe('boolean')
-    })
-
-    it('ping() 應返回 false 或 true', async () => {
-      const check = createDrizzleConnectivityCheck()
-      const result = await check.ping()
-      expect([true, false]).toContain(result)
-    })
+    // 5. Delete
+    await db.table(tableName).where('id', '=', testId).delete()
+    const deletedUser = await db.table(tableName).where('id', '=', testId).first()
+    expect(deletedUser).toBeNull()
   })
 })

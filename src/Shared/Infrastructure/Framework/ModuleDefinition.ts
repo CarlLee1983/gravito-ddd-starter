@@ -1,0 +1,40 @@
+/**
+ * @file ModuleDefinition.ts
+ * @description 模組定義介面 - 用於自動化裝配 (Auto-Wiring)
+ *
+ * 在 DDD 架構中的角色：
+ * - 框架層 (Framework Layer)：定義模組如何與核心系統對接的契約。
+ * - 職責：規定每個獨立模組必須提供的組裝資訊，包括 DI 註冊、倉庫註冊與路由裝配。
+ */
+
+import type { PlanetCore } from '@gravito/core'
+import type { IDatabaseAccess } from '../IDatabaseAccess'
+import type { ModuleServiceProvider } from '../IServiceProvider'
+
+/**
+ * 模組定義介面
+ * 每個模組的入口點 (index.ts) 必須導出一個符合此介面的物件
+ */
+export interface IModuleDefinition {
+	/** 模組名稱 (用於日誌與診斷) */
+	name: string
+
+	/** 服務提供者類別 (用於註冊依賴注入) */
+	provider: new () => ModuleServiceProvider
+
+	/**
+	 * 倉庫註冊函式 (選填)
+	 * 若模組有持久化需求，在此註冊 Repository 工廠
+	 *
+	 * @param db - 已選定的資料庫適配器 (Atlas/Drizzle/Memory)
+	 */
+	registerRepositories?: (db: IDatabaseAccess) => void
+
+	/**
+	 * 路由與表現層註冊函式 (選填)
+	 * 用於裝配 Controller 並在框架中註冊路由
+	 *
+	 * @param core - Gravito 核心實例
+	 */
+	registerRoutes?: (core: PlanetCore) => void
+}

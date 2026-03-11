@@ -13,6 +13,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { IContainer, IServiceProvider } from '@/Shared/Infrastructure/IServiceProvider'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import { resetRegistry } from '@/wiring'
 
 /**
  * 簡單的容器實現（用於測試）
@@ -24,6 +25,7 @@ class SimpleContainer implements IContainer {
 
   singleton<T = any>(name: string, callback: (container: IContainer) => T): void {
     this.factories.set(name, callback)
+    this.singletons.delete(name)
   }
 
   bind<T = any>(name: string, callback: (container: IContainer) => T): void {
@@ -59,6 +61,7 @@ describe('容器 & 依賴注入 - 可替換性測試', () => {
 
   beforeEach(() => {
     container = new SimpleContainer()
+    resetRegistry()
   })
 
   describe('基本註冊和解析', () => {

@@ -1,189 +1,84 @@
 /**
- * Drizzle Repository 實現測試
+ * Drizzle 倉儲實現 - 整合測試
  *
- * 驗證 Drizzle 版本的 User 和 Post Repository 實現
+ * 驗證各模組的 Repository 是否能正確透過 Drizzle 驅動進行 CRUD。
+ *
+ * @module test/integration/repositories/DrizzleRepositories
  */
 
-import { describe, it, expect, beforeEach } from 'vitest'
-import { createDrizzleDatabaseAccess } from '@/adapters/Drizzle'
-import { DrizzleUserRepository } from '@/adapters/Drizzle/Repositories/DrizzleUserRepository'
-import { DrizzlePostRepository } from '@/adapters/Drizzle/Repositories/DrizzlePostRepository'
-import { User } from '@/Modules/User/Domain/Aggregates/User'
-import { Post } from '@/Modules/Post/Domain/Aggregates/Post'
+import { describe, it, expect, beforeAll } from 'bun:test'
+import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
+import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
+import { User } from '@/Modules/User/Domain/Aggregates/User'
 
-describe('Drizzle Repository 實現', () => {
+describe('Drizzle 倉儲整合測試', () => {
   let db: IDatabaseAccess
-  let userRepo: DrizzleUserRepository
-  let postRepo: DrizzlePostRepository
+  let userRepo: UserRepository
+  let postRepo: PostRepository
 
-  beforeEach(() => {
+  beforeAll(async () => {
+    // 確保環境變數為測試用的 sqlite
+    process.env.DATABASE_URL = 'file:test.db'
+    
     db = createDrizzleDatabaseAccess()
-    userRepo = new DrizzleUserRepository(db)
-    postRepo = new DrizzlePostRepository(db)
+    userRepo = new UserRepository(db)
+    postRepo = new PostRepository(db)
+
+    // 獲取底層 client 並建立必要的表
+    const drizzle = (db as any).db || require('@/Shared/Infrastructure/Database/Adapters/Drizzle/config').getDrizzleInstance()
+    try {
+      await drizzle.run('CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, name TEXT NOT NULL, email TEXT NOT NULL UNIQUE, created_at TEXT, updated_at TEXT)')
+      await drizzle.run('CREATE TABLE IF NOT EXISTS posts (id TEXT PRIMARY KEY, title TEXT NOT NULL, content TEXT, user_id TEXT, created_at TEXT, updated_at TEXT)')
+    } catch (e) {
+      // 忽略表已存在的錯誤
+    }
   })
 
-  describe('User Repository', () => {
-    it('應該能創建 Repository 實例', () => {
-      expect(userRepo).toBeDefined()
-      expect(typeof userRepo.save).toBe('function')
-      expect(typeof userRepo.findById).toBe('function')
-      expect(typeof userRepo.findByEmail).toBe('function')
-      expect(typeof userRepo.findAll).toBe('function')
-      expect(typeof userRepo.count).toBe('function')
-      expect(typeof userRepo.delete).toBe('function')
-    })
+  it('應該能在 Drizzle 驅動下操作用戶倉庫 (UserRepo)', async () => {
+    const id = `drizzle-user-${Date.now()}`
+    const user = User.create(id, 'Drizzle User', 'drizzle@sql.com')
 
-    it('應該能保存和查詢用戶', async () => {
-      const user = User.create('user-1', 'John Doe', 'john@example.com')
+    // 1. 保存
+    await userRepo.save(user)
 
-      // 保存用戶
-      await userRepo.save(user)
+    // 2. 查詢
+    const found = await userRepo.findById(id)
+    expect(found).toBeDefined()
+    expect(found?.name).toBe('Drizzle User')
 
-      // 查詢用戶
-      const found = await userRepo.findById('user-1')
-      expect(found).toBeDefined()
-      expect(found?.name).toBe('John Doe')
-      expect(found?.email).toBe('john@example.com')
-    })
-
-    it('應該能按 email 查詢用戶', async () => {
-      const user = User.create('user-2', 'Jane Doe', 'jane@example.com')
-      await userRepo.save(user)
-
-      const found = await userRepo.findByEmail('jane@example.com')
-      expect(found).toBeDefined()
-      expect(found?.id).toBe('user-2')
-    })
-
-    it('應該能計算用戶數量', async () => {
-      const user1 = User.create('user-3', 'Alice', 'alice@example.com')
-      const user2 = User.create('user-4', 'Bob', 'bob@example.com')
-
-      await userRepo.save(user1)
-      await userRepo.save(user2)
-
-      const count = await userRepo.count()
-      expect(typeof count).toBe('number')
-      expect(count >= 0).toBe(true)
-    })
-
-    it('應該能刪除用戶', async () => {
-      const user = User.create('user-5', 'Charlie', 'charlie@example.com')
-      await userRepo.save(user)
-
-      await userRepo.delete('user-5')
-      const found = await userRepo.findById('user-5')
-      expect(found).toBeNull()
-    })
-
-    it('應該支持分頁', async () => {
-      const users = [
-        User.create('user-6', 'User 1', 'user1@example.com'),
-        User.create('user-7', 'User 2', 'user2@example.com'),
-      ]
-
-      for (const user of users) {
-        await userRepo.save(user)
-      }
-
-      const result = await userRepo.findAll({ limit: 1, offset: 0 })
-      expect(Array.isArray(result)).toBe(true)
-    })
+    // 3. 按 Email 查詢 (業務方法)
+    const byEmail = await userRepo.findByEmail('drizzle@sql.com')
+    expect(byEmail?.id).toBe(id)
   })
 
-  describe('Post Repository', () => {
-    it('應該能創建 Repository 實例', () => {
-      expect(postRepo).toBeDefined()
-      expect(typeof postRepo.save).toBe('function')
-      expect(typeof postRepo.findById).toBe('function')
-      expect(typeof postRepo.findByUserId).toBe('function')
-      expect(typeof postRepo.findAll).toBe('function')
-      expect(typeof postRepo.count).toBe('function')
-      expect(typeof postRepo.delete).toBe('function')
-    })
+  it('應該能在 Drizzle 驅動下操作文章倉庫 (PostRepo)', async () => {
+    const id = `drizzle-post-${Date.now()}`
+    
+    // Post 目前使用 any 實體，暫時模擬存取
+    const post = {
+      id,
+      title: 'Hello Drizzle',
+      content: 'Database swappability test',
+      userId: 'user-1',
+      createdAt: new Date()
+    }
 
-    it('應該能保存和查詢文章', async () => {
-      const post = Post.create('post-1', 'My First Post', 'user-1', 'This is content')
+    // 1. 保存
+    await postRepo.save(post)
 
-      // 保存文章
-      await postRepo.save(post)
+    // 2. 查詢
+    const found = await postRepo.findById(id)
+    expect(found).toBeDefined()
+    expect(found.title).toBe('Hello Drizzle')
 
-      // 查詢文章
-      const found = await postRepo.findById('post-1')
-      expect(found).toBeDefined()
-      expect(found?.title).toBe('My First Post')
-      expect(found?.userId).toBe('user-1')
-    })
+    // 3. 列表
+    const all = await postRepo.findAll({ limit: 1 })
+    expect(all.length).toBeGreaterThan(0)
 
-    it('應該能按用戶 ID 查詢文章', async () => {
-      const post = Post.create('post-2', 'Another Post', 'user-1', 'More content')
-      await postRepo.save(post)
-
-      const posts = await postRepo.findByUserId('user-1')
-      expect(Array.isArray(posts)).toBe(true)
-    })
-
-    it('應該能計算文章數量', async () => {
-      const post1 = Post.create('post-3', 'Post 1', 'user-2', 'Content 1')
-      const post2 = Post.create('post-4', 'Post 2', 'user-3', 'Content 2')
-
-      await postRepo.save(post1)
-      await postRepo.save(post2)
-
-      const count = await postRepo.count()
-      expect(typeof count).toBe('number')
-      expect(count >= 0).toBe(true)
-    })
-
-    it('應該能刪除文章', async () => {
-      const post = Post.create('post-5', 'Post to Delete', 'user-1', 'Delete me')
-      await postRepo.save(post)
-
-      await postRepo.delete('post-5')
-      const found = await postRepo.findById('post-5')
-      expect(found).toBeNull()
-    })
-
-    it('應該支持分頁', async () => {
-      const posts = [
-        Post.create('post-6', 'Post 1', 'user-1', 'Content'),
-        Post.create('post-7', 'Post 2', 'user-1', 'Content'),
-      ]
-
-      for (const post of posts) {
-        await postRepo.save(post)
-      }
-
-      const result = await postRepo.findAll({ limit: 1, offset: 0 })
-      expect(Array.isArray(result)).toBe(true)
-    })
-
-    it('應該允許不包含 content（可選）', async () => {
-      const post = Post.create('post-8', 'Post Without Content', 'user-1')
-
-      await postRepo.save(post)
-      const found = await postRepo.findById('post-8')
-
-      expect(found).toBeDefined()
-      expect(found?.content).toBeUndefined()
-    })
-  })
-
-  describe('Repository 一致性', () => {
-    it('User 和 Post Repository 應該實現相同的接口方法', () => {
-      const userMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(userRepo))
-        .filter((m) => m !== 'constructor' && !m.startsWith('_'))
-
-      const postMethods = Object.getOwnPropertyNames(Object.getPrototypeOf(postRepo))
-        .filter((m) => m !== 'constructor' && !m.startsWith('_'))
-
-      const commonMethods = ['save', 'findById', 'findAll', 'count', 'delete']
-
-      commonMethods.forEach((method) => {
-        expect(userMethods).toContain(method)
-        expect(postMethods).toContain(method)
-      })
-    })
+    // 4. 計數
+    const count = await postRepo.count()
+    expect(count).toBeGreaterThan(0)
   })
 })

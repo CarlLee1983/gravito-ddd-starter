@@ -3,25 +3,19 @@
  * @description 根路由註冊 (Root Routes Registration)
  *
  * 在 DDD 架構中的角色：
- * - 表現層 (Presentation Layer)：應用程式的全域路由配置中心。
- * - 職責：集中註冊所有模組的表現層路由，並將其適配到特定的 Web 框架（如 Gravito）上。
+ * - 表現層 (Presentation Layer)：全域 API 進入點與靜態路由定義。
+ * - 職責：定義與業務模組無關的全域端點（如 API 根目錄、Version Check 等）。
  *
- * 設計原則：
- * - 集中註冊所有模組的 Presentation Layer 路由。
- * - 所有模組透過接線層（wiring/index.ts）註冊，確保框架解耦：
- * - 框架特定邏輯（Gravito）集中在 src/adapters/
- * - 模組路由簽名統一使用 IModuleRouter
- * - 日後抽換框架時只需修改 wiring 層
+ * 注意：業務模組的路由現在由 ModuleAutoWirer 自動掃描並註冊，
+ * 不再需要在本檔案中手動 import 或調用 registerUser/registerHealth。
  */
 
 import type { PlanetCore } from '@gravito/core'
-import { registerHealth, registerUser } from './wiring'
 
 /**
- * 註冊全系統應用路由
+ * 註冊全系統全域路由
  *
- * @param core - Gravito 核心實例，提供路由器存取功能
- * @returns 非同步作業
+ * @param core - Gravito 核心實例
  */
 export async function registerRoutes(core: PlanetCore) {
 	// API 根路徑端點，提供系統基本資訊
@@ -34,13 +28,10 @@ export async function registerRoutes(core: PlanetCore) {
 				health: '/health',
 				healthHistory: '/health/history',
 				users: '/api/users',
+				posts: '/api/Post'
 			},
 		})
 	})
 
-	// 所有業務模組透過接線層 (Wiring Layer) 統一註冊，保持框架無關性
-	registerHealth(core)
-	registerUser(core)
-
-	console.log('✅ Routes registered')
+	console.log('✅ Global routes registered (Business routes handled by AutoWirer)')
 }
