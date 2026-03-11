@@ -14,7 +14,7 @@
 import type { PlanetCore } from '@gravito/core'
 
 import { createGravitoModuleRouter } from './GravitoModuleRouter'
-import { createGravitoDatabaseAccess } from './Atlas'
+import { createAtlasDatabaseAccess } from './Atlas'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { PostController } from '@/Modules/Post/Presentation/Controllers/PostController'
 import { registerPostRoutes } from '@/Modules/Post/Presentation/Routes/Post.routes'
@@ -24,7 +24,7 @@ import { registerPostRoutes } from '@/Modules/Post/Presentation/Routes/Post.rout
  */
 export function registerPostWithGravito(core: PlanetCore): void {
 	// 建立資料庫訪問實例（使用 Atlas adapter）
-	const db = createGravitoDatabaseAccess()
+	const db = createAtlasDatabaseAccess()
 
 	// 組裝應用層
 	const repository = new PostRepository(db)

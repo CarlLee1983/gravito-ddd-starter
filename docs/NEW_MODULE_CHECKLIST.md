@@ -142,43 +142,16 @@ import { DrizzleOrderRepository } from '@/adapters/Drizzle/Repositories/DrizzleO
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 
 /**
- * Order Repository 工廠函數
- *
- * 根據 ORM 類型返回對應的 Repository 實現
- */
-function createOrderRepository(
-  orm: string,
-  databaseAccess: IDatabaseAccess | undefined
-): any {
-  switch (orm) {
-    case 'memory':
-      return new OrderRepository()
-
-    case 'drizzle':
-      if (!databaseAccess) {
-        throw new Error('❌ ORM=drizzle 需要 DatabaseAccess')
-      }
-      return new DrizzleOrderRepository(databaseAccess)
-
-    case 'atlas':
-      throw new Error('❌ Atlas ORM 尚未實現')
-
-    case 'prisma':
-      throw new Error('❌ Prisma ORM 尚未實現')
-
-    default:
-      throw new Error(`❌ 不支援的 ORM: "${orm}"`)
-  }
-}
-
-/**
  * 註冊 Order Repository 工廠到全局 Registry
  *
- * 應在 bootstrap 時被呼叫
+ * db 由 DatabaseAccessBuilder.getDatabaseAccess() 提供（必填，memory 時為 MemoryDatabaseAccess）
  */
-export function registerOrderRepositories(): void {
+export function registerOrderRepositories(db: IDatabaseAccess): void {
   const registry = getRegistry()
-  registry.register('order', createOrderRepository)
+  const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
+    return new OrderRepository(db)
+  }
+  registry.register('order', factory)
   console.log('✅ [Order] Repository 工廠已註冊')
 }
 ```
@@ -198,7 +171,7 @@ export class OrderServiceProvider extends ModuleServiceProvider {
       const registry = getRegistry()
       const orm = getCurrentORM()
       const db = orm !== 'memory' ? getDatabaseAccess() : undefined
-      return registry.create('order', orm, db)
+      return registry.create('order', orm, db)  // 工廠在 bootstrap 時已用 db 註冊
     })
 
     // TODO: 如需 Application Service，在此註冊
@@ -225,10 +198,11 @@ import { OrderServiceProvider } from './Modules/Order/Infrastructure/Providers/O
 export async function bootstrap(port = 3000): Promise<PlanetCore> {
   // ...
 
-  // Step 3: Register all Repository factories
-  registerUserRepositories()
-  registerPostRepositories()
-  registerOrderRepositories()  // ← 新增這行
+  // Step 3: Register all Repository factories（db 來自 DatabaseAccessBuilder）
+  const db = new DatabaseAccessBuilder(getCurrentORM()).getDatabaseAccess()
+  registerUserRepositories(db)
+  registerPostRepositories(db)
+  registerOrderRepositories(db)  // ← 新增這行
 
   // ...
 
@@ -298,42 +272,11 @@ export function registerOrderRoutes(router: IModuleRouter, controller: OrderCont
 export class AtlasOrderRepository implements IOrderRepository { }
 ```
 
-#### 2. 更新註冊檔案
+#### 2. 在 DatabaseAccessBuilder / RepositoryFactory 中新增適配器
 
-```typescript
-// src/Modules/Order/Infrastructure/Providers/registerOrderRepositories.ts
-function createOrderRepository(orm: string, db?: IDatabaseAccess): any {
-  switch (orm) {
-    case 'memory':
-      return new OrderRepository()
-    case 'drizzle':
-      return new DrizzleOrderRepository(db!)
-    case 'atlas':  // ← 新增
-      return new AtlasOrderRepository(db!)
-    // ...
-  }
-}
-```
+新增 ORM 時只需在 `DatabaseAccessBuilder` 或 `getDatabaseAccess()` 中加入對應分支，例如 `orm === 'atlas'` 時回傳 Atlas 的 IDatabaseAccess。各模組的 `registerXxxRepositories(db)` 與單一 `XxxRepository(db)` 無需修改。
 
-#### 3. 在 RepositoryFactory 中新增 DatabaseAccess 適配器
-
-```typescript
-// src/wiring/RepositoryFactory.ts
-export function getDatabaseAccess(): IDatabaseAccess | undefined {
-  const orm = getCurrentORM()
-
-  // ...
-
-  if (orm === 'atlas') {  // ← 新增
-    const { createAtlasDatabaseAccess } = require('@/adapters/Atlas')
-    return createAtlasDatabaseAccess()
-  }
-
-  // ...
-}
-```
-
-#### 4. 完成！
+#### 3. 完成！
 
 ```bash
 # 所有模組自動支援 Atlas
@@ -365,46 +308,55 @@ export async function bootstrap() {
 export async function bootstrap() {
   initializeRegistry()
 
-  registerOrderRepositories()  // ← 加上這行
+  const db = new DatabaseAccessBuilder(getCurrentORM()).getDatabaseAccess()
+  registerOrderRepositories(db)  // ← 加上這行
 
   core.register(createGravitoServiceProvider(new OrderServiceProvider()))
 }
 ```
 
-### ❌ 錯誤 2：在工廠函數中忘記処理所有 ORM
+### ❌ 錯誤 2：忘記在 bootstrap 傳入 db
 
 ```typescript
-// ❌ 錯誤
-function createOrderRepository(orm: string, db?: IDatabaseAccess): any {
-  switch (orm) {
-    case 'memory':
-      return new OrderRepository()
-    case 'drizzle':
-      return new DrizzleOrderRepository(db!)
-    // 忘記 atlas 和 prisma 的 case
-  }
-}
+// ❌ 錯誤：registerOrderRepositories 需要 db 參數
+registerOrderRepositories()  // 缺少 db
 ```
-
-**結果：** 當使用未支援的 ORM 時拋出 undefined
 
 **修復：**
 ```typescript
-// ✅ 正確
-function createOrderRepository(orm: string, db?: IDatabaseAccess): any {
-  switch (orm) {
-    case 'memory':
-      return new OrderRepository()
-    case 'drizzle':
-      return new DrizzleOrderRepository(db!)
-    case 'atlas':
-      throw new Error('❌ Atlas ORM 尚未實現')  // ← 明確的錯誤信息
-    case 'prisma':
-      throw new Error('❌ Prisma ORM 尚未實現')
-    default:
-      throw new Error(`❌ 不支援的 ORM: "${orm}"`)
-  }
+// ✅ 正確：db 由 DatabaseAccessBuilder 提供（必為 IDatabaseAccess）
+const db = new DatabaseAccessBuilder(getCurrentORM()).getDatabaseAccess()
+registerUserRepositories(db)
+registerPostRepositories(db)
+registerOrderRepositories(db)
+```
+
+### ❌ 錯誤 3：Repository 底層做 if (db) 分支
+
+```typescript
+// ❌ 舊寫法：底層預設內存
+constructor(db?: IDatabaseAccess) {
+  this.db = db
 }
+async findById(id: string) {
+  if (this.db) return this.db.table('orders')...
+  return this.memoryMap.get(id)  // 預設應由上層 MemoryDatabaseAccess 處理
+}
+```
+
+**修復：**
+```typescript
+// ✅ 正確：依賴必填 IDatabaseAccess，無分支
+constructor(private readonly db: IDatabaseAccess) {}
+async findById(id: string) {
+  const row = await this.db.table('orders').where('id', '=', id).first()
+  return row ? this.toDomain(row) : null
+}
+```
+
+註冊工廠僅需：`(_orm, _db) => new OrderRepository(db)`，db 由 bootstrap 傳入閉包。
+
+---
 ```
 
 ### ❌ 錯誤 3：ServiceProvider 中直接 new Repository

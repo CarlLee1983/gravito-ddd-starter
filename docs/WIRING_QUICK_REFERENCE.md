@@ -160,19 +160,12 @@ export function createRepository<T extends RepositoryType>(
   // ... 其他類型自動支援新 ORM
 }
 
+// 實際由 DatabaseAccessBuilder 提供，必為 IDatabaseAccess（memory = MemoryDatabaseAccess）
 export function getDatabaseAccess(): IDatabaseAccess | undefined {
   const orm = getCurrentORM()
-
   // ... 現有的
-
-  if (orm === 'atlas') {  // ← 新增
-    return createAtlasDatabaseAccess()
-  }
-
-  if (orm === 'prisma') {  // ← 新增
-    return createPrismaDatabaseAccess()
-  }
-
+  if (orm === 'atlas') return createAtlasDatabaseAccess()
+  if (orm === 'prisma') return createPrismaDatabaseAccess()
   // ...
 }
 ```

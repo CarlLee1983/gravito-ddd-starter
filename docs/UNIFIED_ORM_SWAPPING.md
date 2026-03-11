@@ -300,9 +300,9 @@ ORM=memory bun run dev
 
 **流程：**
 1. getCurrentORM() 返回 'memory'
-2. createRepository('user') 返回 UserRepository()
-3. 資料存在記憶體中
-4. 無需資料庫
+2. db = DatabaseAccessBuilder('memory').getDatabaseAccess() → MemoryDatabaseAccess
+3. 工廠回傳 new UserRepository(db)，資料存在內存表
+4. 無需真實資料庫
 
 ---
 
@@ -320,8 +320,8 @@ ORM=drizzle bun run start
 
 **流程：**
 1. getCurrentORM() 返回 'drizzle'
-2. getDatabaseAccess() 初始化 DrizzleDatabase
-3. createRepository('user', db) 返回 DrizzleUserRepository(db)
+2. db = DatabaseAccessBuilder('drizzle').getDatabaseAccess() → DrizzleDatabaseAccess
+3. 工廠回傳 new UserRepository(db)
 4. 資料持久化到資料庫
 
 ---
@@ -520,6 +520,7 @@ export function createRepository<T extends RepositoryType>(
   // ... 其他類型
 }
 
+// 實際由 DatabaseAccessBuilder 統一提供；memory 時為 MemoryDatabaseAccess
 export function getDatabaseAccess(): IDatabaseAccess | undefined {
   // ... 其他
   if (orm === 'prisma') {

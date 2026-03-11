@@ -59,7 +59,7 @@ class MemoryQueryBuilder implements IQueryBuilder {
 
 	private matchRow(row: Record<string, unknown>, cond: WhereCondition): boolean {
 		const val = row[cond.column]
-		if (val === undefined && !(col in row)) return false
+		if (val === undefined && !(cond.column in row)) return false
 		switch (cond.operator) {
 			case '=':
 				return val === cond.value

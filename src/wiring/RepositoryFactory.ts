@@ -84,8 +84,8 @@ export function getDatabaseAccess() {
 	}
 
 	if (orm === 'atlas') {
-		// TODO: 實現 Atlas 適配器
-		throw new Error('❌ Atlas 適配器尚未實現')
+		const { createAtlasDatabaseAccess } = require('@/adapters/Atlas')
+		return createAtlasDatabaseAccess()
 	}
 
 	if (orm === 'prisma') {
