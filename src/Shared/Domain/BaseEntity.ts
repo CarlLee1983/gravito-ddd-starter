@@ -18,76 +18,54 @@
  * @abstract
  */
 export abstract class BaseEntity {
-	/** 實體唯一識別碼 */
-	protected id: string
-	/** 建立時間 */
-	protected createdAt: Date
+	/** 實體唯一識別碼（子類可覆寫 getter 以回傳自有 props） */
+	protected _id: string
+	/** 建立時間（子類可覆寫 getter） */
+	protected _createdAt: Date
 	/** 最後更新時間 */
-	protected updatedAt: Date
+	protected _updatedAt: Date
 
-	/**
-	 * 建構子
-	 *
-	 * @param {string} [id] - 可選的初始 ID，若不提供則自動生成 UUID
-	 */
 	constructor(id?: string) {
-		this.id = id || crypto.randomUUID()
-		this.createdAt = new Date()
-		this.updatedAt = new Date()
+		this._id = id || crypto.randomUUID()
+		this._createdAt = new Date()
+		this._updatedAt = new Date()
 	}
 
-	/**
-	 * 取得實體 ID
-	 *
-	 * @returns {string} 實體 ID
-	 */
+	/** 取得實體 ID（子類可 override 以回傳 props.id） */
+	get id(): string {
+		return this._id
+	}
+
+	/** 取得建立時間（子類可 override 以回傳 props.createdAt） */
+	get createdAt(): Date {
+		return this._createdAt
+	}
+
+	/** 取得最後更新時間 */
+	get updatedAt(): Date {
+		return this._updatedAt
+	}
+
 	getId(): string {
 		return this.id
 	}
 
-	/**
-	 * 取得建立時間
-	 *
-	 * @returns {Date} 建立時間
-	 */
 	getCreatedAt(): Date {
 		return this.createdAt
 	}
 
-	/**
-	 * 取得最後更新時間
-	 *
-	 * @returns {Date} 最後更新時間
-	 */
 	getUpdatedAt(): Date {
 		return this.updatedAt
 	}
 
-	/**
-	 * 設定更新時間
-	 *
-	 * @param {Date} date - 更新時間
-	 * @returns {void}
-	 */
 	setUpdatedAt(date: Date): void {
-		this.updatedAt = date
+		this._updatedAt = date
 	}
 
-	/**
-	 * 比較兩個實體是否相同（基於 ID）
-	 *
-	 * @param {BaseEntity} other - 要比較的另一個實體
-	 * @returns {boolean} 是否相等
-	 */
 	equals(other: BaseEntity): boolean {
 		return this.id === other.id
 	}
 
-	/**
-	 * 實體的字串表示
-	 *
-	 * @returns {string} 實體字串描述
-	 */
 	toString(): string {
 		return `${this.constructor.name}(${this.id})`
 	}

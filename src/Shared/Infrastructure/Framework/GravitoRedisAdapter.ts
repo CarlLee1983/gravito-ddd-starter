@@ -71,4 +71,18 @@ export class GravitoRedisAdapter implements IRedisService {
 	async exists(key: string): Promise<boolean> {
 		return (await this.redis.exists(key)) > 0
 	}
+
+	/**
+	 * 將資料推入列表 (隊列生產者)
+	 */
+	async rpush(key: string, value: string): Promise<number> {
+		return this.redis.rpush(key, value)
+	}
+
+	/**
+	 * 從列表彈出資料 (隊列消費者)
+	 */
+	async lpop(key: string): Promise<string | null> {
+		return this.redis.lpop(key)
+	}
 }

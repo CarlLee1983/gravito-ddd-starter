@@ -52,4 +52,17 @@ export interface IRedisService {
 	 * @returns {Promise<boolean>} 是否存在
 	 */
 	exists(key: string): Promise<boolean>
+
+	/**
+	 * 將值推入列表尾部 (隊列生產者)
+	 * @param key - 隊列名稱
+	 * @param value - 序列化的資料
+	 */
+	rpush(key: string, value: string): Promise<number>
+
+	/**
+	 * 從列表頭部取出值 (隊列消費者)
+	 * @param key - 隊列名稱
+	 */
+	lpop(key: string): Promise<string | null>
 }

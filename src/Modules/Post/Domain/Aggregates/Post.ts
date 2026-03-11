@@ -85,6 +85,11 @@ export class Post extends BaseEntity {
     })
   }
 
+  /** 取得文章 ID（覆寫 BaseEntity，以 props 為單一來源） */
+  override get id(): string {
+    return this.props.id
+  }
+
   /** 取得文章標題 */
   get title(): string {
     return this.props.title
@@ -100,8 +105,8 @@ export class Post extends BaseEntity {
     return this.props.userId
   }
 
-  /** 取得建立時間 */
-  get createdAt(): Date {
+  /** 取得建立時間（覆寫 BaseEntity，以 props 為單一來源） */
+  override get createdAt(): Date {
     return this.props.createdAt
   }
 }
