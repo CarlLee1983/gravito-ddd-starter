@@ -18,7 +18,6 @@
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
-import { CreateUserHandler } from '../../Application/Commands/CreateUser/CreateUserHandler'
 
 export class UserServiceProvider extends ModuleServiceProvider {
 	/**
@@ -27,7 +26,6 @@ export class UserServiceProvider extends ModuleServiceProvider {
 	 * 流程：
 	 * 1. 從 RepositoryRegistry 取得已註冊的 Repository 工廠
 	 * 2. 創建 Repository 實例（ORM 選擇由 Registry 負責）
-	 * 3. 註冊 Application Service（依賴 Repository）
 	 *
 	 * @param container - 框架無關的容器介面
 	 */
@@ -38,13 +36,6 @@ export class UserServiceProvider extends ModuleServiceProvider {
 			const orm = getCurrentORM()
 			const db = orm !== 'memory' ? getDatabaseAccess() : undefined
 			return registry.create('user', orm, db)
-		})
-
-		// 2. 註冊 Application Service / Handler（工廠）
-		// 依賴於上面註冊的 userRepository
-		container.bind('createUserHandler', (c: IContainer) => {
-			const repository = c.make('userRepository')
-			return new CreateUserHandler(repository)
 		})
 	}
 

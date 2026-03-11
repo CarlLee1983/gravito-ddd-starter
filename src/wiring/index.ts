@@ -99,10 +99,9 @@ export const registerUser = (core: PlanetCore): void => {
 
 	// 從容器中獲取服務（已由 UserServiceProvider 透過 RepositoryFactory 配置）
 	const repository = core.container.make('userRepository') as any
-	const createUserHandler = core.container.make('createUserHandler') as any
 
 	// 實例化控制器
-	const controller = new UserController(repository, createUserHandler)
+	const controller = new UserController(repository)
 
 	// 使用框架無關的路由註冊
 	registerUserRoutes(router, controller)

@@ -9,14 +9,11 @@
  */
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
-import type { CreateUserHandler } from '../../Application/Commands/CreateUser/CreateUserHandler'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
+import { User } from '../../Domain/Aggregates/User'
 
 export class UserController {
-	constructor(
-		private repository: IUserRepository,
-		private createUserHandler: CreateUserHandler,
-	) {}
+	constructor(private repository: IUserRepository) {}
 
 	/**
 	 * GET /api/users
@@ -63,16 +60,33 @@ export class UserController {
 				)
 			}
 
-			const user = await this.createUserHandler.handle({
-				name: body.name,
-				email: body.email,
-			})
+			// 檢查用戶是否已存在
+			const existingUser = await this.repository.findByEmail(body.email)
+			if (existingUser) {
+				return ctx.json(
+					{
+						success: false,
+						message: 'User already exists',
+					},
+					400,
+				)
+			}
+
+			// 創建用戶實體
+			const id = crypto.randomUUID()
+			const user = User.create(id, body.name, body.email)
+			await this.repository.save(user)
 
 			return ctx.json(
 				{
 					success: true,
 					message: 'User created successfully',
-					data: user,
+					data: {
+						id: user.id,
+						name: user.name,
+						email: user.email,
+						createdAt: user.createdAt.toISOString(),
+					},
 				},
 				201,
 			)
