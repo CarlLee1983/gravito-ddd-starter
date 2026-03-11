@@ -22,7 +22,7 @@ find "$DIST_DIR" -type f \( -name "*.ts" -o -name "*.map" -o -name "*.test.js" -
 
 # 清理源代碼目錄中的編譯產物遺留物（防止意外提交）
 echo "  清理源代碼遺留產物..."
-find config src database -type f \( -name "*.js" -o -name "*.d.ts" -o -name "*.d.ts.map" -o -name "*.js.map" \) ! -name "*.ts" -delete 2>/dev/null || true
+find config src database resources tests types -type f \( -name "*.js" -o -name "*.d.ts" -o -name "*.d.ts.map" -o -name "*.js.map" \) ! -name "*.ts" ! -name "*.tsx" ! -name "postcss.config.js" -delete 2>/dev/null || true
 
 # 修復 ESM 導入：添加 .js 擴展和修正路徑別名
 echo "  修復 ESM 導入..."

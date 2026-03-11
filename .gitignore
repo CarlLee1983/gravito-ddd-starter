@@ -17,6 +17,12 @@ KNOWLEDGE_BASE.md
 config/**/*.js      # config 只保留源代碼
 src/**/*.js         # src 只保留源代碼
 database/**/*.js    # database 只保留源代碼
+resources/**/*.js   # resources 只保留源代碼 (JSX/TSX)
+tests/**/*.js       # tests 只保留源代碼
+tests/**/*.d.ts     # tests 宣告檔
+tests/**/*.map
+
+# 宣告檔與源地圖（全局排除）
 config/**/*.d.ts
 config/**/*.d.ts.map
 config/**/*.js.map
@@ -26,6 +32,12 @@ src/**/*.js.map
 database/**/*.d.ts
 database/**/*.d.ts.map
 database/**/*.js.map
+resources/**/*.d.ts
+resources/**/*.d.ts.map
+resources/**/*.js.map
+types/**/*.d.ts
+types/**/*.d.ts.map
+types/**/*.js.map
 
 # 生成的測試檔案
 coverage

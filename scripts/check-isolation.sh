@@ -53,6 +53,14 @@ check "database/ 編譯產物" "$([ $DB_JS -eq 0 ] && echo true || echo false)" 
 check "database/ 源代碼" "$([ $DB_TS -gt 0 ] && echo true || echo false)" \
   "$DB_TS 個 .ts 文件" "找不到源代碼"
 
+# 檢查 resources 目錄
+RES_JS=$(find resources -name "*.js" 2>/dev/null | wc -l)
+RES_TSX=$(find resources -name "*.tsx" 2>/dev/null | wc -l)
+check "resources/ 編譯產物" "$([ $RES_JS -eq 0 ] && echo true || echo false)" \
+  "0 個 .js 文件" "$RES_JS 個 .js 文件"
+check "resources/ 源代碼" "$([ $RES_TSX -gt 0 ] && echo true || echo false)" \
+  "$RES_TSX 個 .tsx 文件" "找不到源代碼"
+
 echo ""
 echo "📊 編譯產物隔離"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
