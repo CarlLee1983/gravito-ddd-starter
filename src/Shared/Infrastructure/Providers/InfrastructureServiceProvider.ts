@@ -8,14 +8,17 @@
 import { ModuleServiceProvider, type IContainer } from '../IServiceProvider'
 import { GravitoRedisAdapter } from '../Framework/GravitoRedisAdapter'
 import { GravitoCacheAdapter } from '../Framework/GravitoCacheAdapter'
+import { GravitoLoggerAdapter } from '../Framework/GravitoLoggerAdapter'
+import { GravitoTranslatorAdapter } from '../Framework/GravitoTranslatorAdapter'
+import { GravitoMailAdapter } from '../Framework/GravitoMailAdapter'
+import { RedisJobQueueAdapter } from '../Framework/RedisJobQueueAdapter'
 import type { RedisClientContract } from '@gravito/plasma'
 import type { CacheManager } from '@gravito/stasis'
+import type { Prism } from '@gravito/prism'
+import type { Signal } from '@gravito/signal'
 
 /**
  * 基礎設施服務提供者
- * 
- * 職責：將 Gravito 框架提供的原始服務 (如 Plasma Redis) 
- * 適配為系統定義的 Port 介面並註冊到容器中。
  */
 export class InfrastructureServiceProvider extends ModuleServiceProvider {
 	/**
@@ -24,23 +27,37 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 	override register(container: IContainer): void {
 		// 1. 註冊 Redis 適配器
 		container.singleton('redis', (c) => {
-			// 從 Gravito 原始容器獲取 Plasma 實例 (通常在 core.register 階段已就緒)
 			const rawRedis = (c as any).make('redis') as RedisClientContract | undefined
-			if (!rawRedis) {
-				console.warn('⚠️ [Infrastructure] Gravito Redis 模組未配置或未載入')
-				return null
-			}
-			return new GravitoRedisAdapter(rawRedis)
+			return rawRedis ? new GravitoRedisAdapter(rawRedis) : null
 		})
 
 		// 2. 註冊 Cache 適配器
 		container.singleton('cache', (c) => {
 			const rawCache = (c as any).make('cache') as CacheManager | undefined
-			if (!rawCache) {
-				console.warn('⚠️ [Infrastructure] Gravito Cache 模組未配置或未載入')
-				return null
-			}
-			return new GravitoCacheAdapter(rawCache)
+			return rawCache ? new GravitoCacheAdapter(rawCache) : null
+		})
+
+		// 3. 註冊 Logger 適配器 (Sentinel)
+		container.singleton('logger', () => {
+			return new GravitoLoggerAdapter()
+		})
+
+		// 4. 註冊 Translator 適配器 (Prism)
+		container.singleton('translator', (c) => {
+			const prism = (c as any).make('prism') as Prism
+			return new GravitoTranslatorAdapter(prism)
+		})
+
+		// 5. 註冊 Mailer 適配器 (Signal)
+		container.singleton('mailer', (c) => {
+			const signal = (c as any).make('signal') as Signal
+			return new GravitoMailAdapter(signal)
+		})
+
+		// 6. 註冊 JobQueue 適配器
+		container.singleton('jobQueue', (c) => {
+			const redis = c.make('redis')
+			return new RedisJobQueueAdapter(redis)
 		})
 	}
 
@@ -48,6 +65,6 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 	 * 啟動後的檢查
 	 */
 	override boot(_context: any): void {
-		console.log('🧱 [Infrastructure] Framework adapters integrated')
+		console.log('🧱 [Infrastructure] Framework adapters integrated (Logging, i18n, Mail, Queue)')
 	}
 }
