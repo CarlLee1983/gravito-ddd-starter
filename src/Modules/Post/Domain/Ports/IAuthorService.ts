@@ -12,11 +12,7 @@
  * - Adapter：Infrastructure 層實現 Port（如何實現）
  */
 
-export interface AuthorDTO {
-  id: string
-  name: string
-  email: string
-}
+import type { AuthorDTO } from '@/Shared/Application/DTOs/AuthorDTO'
 
 export interface IAuthorService {
   /**

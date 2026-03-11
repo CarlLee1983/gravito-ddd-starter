@@ -11,7 +11,7 @@
  * - 支援擴展（可輕鬆添加其他欄位）
  */
 
-import type { AuthorDTO } from '../../Domain/Ports/IAuthorService'
+import type { AuthorDTO } from '@/Shared/Application/DTOs/AuthorDTO'
 
 export interface PostDTO {
   id: string
