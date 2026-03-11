@@ -98,39 +98,39 @@ src/
 │
 └── Modules/Post/
     ├── Domain/
-    │   └── Ports/
-    │       └── IAuthorService.ts         ← Post Domain 定義的 Port（依賴 Shared）
+    │   └── Services/
+    │       └── IAuthorService.ts         ← Post Domain 定義的 Service（依賴 Shared）
     ├── Application/
     │   └── DTOs/
     │       └── PostWithAuthorDTO.ts      ← Post 的複合 DTO（依賴 Shared）
     ├── Infrastructure/
     │   └── Adapters/
-    │       └── UserToPostAdapter.ts      ← ACL：實現 Port（依賴 Shared）
+    │       └── UserToPostAdapter.ts      ← ACL：實現 Service Interface（依賴 Shared）
     └── Presentation/
 ```
 
-**關鍵設計原則**：
+**關鍵設計原則**（符合 DDD 規範）：
 - **Shared/Application/DTOs** - 跨 Domain 共享的數據結構
-- **Domain/Ports** - Domain 層定義它所依賴的抽象（導入自 Shared）
-- **Infrastructure/Adapters** - Infrastructure 層實現 Port（導入自 Shared）
+- **Domain/Services** - Domain 層定義的服務介面（導入自 Shared）
+- **Infrastructure/Adapters** - Infrastructure 層實現 Service Interface（導入自 Shared）
 - 依賴方向：清晰單向 → Shared → Domain → Infrastructure → Application（無循環）
 
 ---
 
 ## 📝 實施步驟
 
-### 步驟 1：在 Domain 層定義 Port（Post/Domain/Ports/）
+### 步驟 1：在 Domain 層定義 Service Interface（Post/Domain/Services/）
 
-Domain 層定義它所依賴的抽象（符合 DDD）：
+Domain 層定義它所依賴的服務介面（符合 DDD 規範）：
 
 ```typescript
-// Post/Domain/Ports/IAuthorService.ts
+// Post/Domain/Services/IAuthorService.ts
 
 /**
- * Post 模組定義的作者服務介面（Port）
+ * Post 模組定義的作者服務介面（Domain Service）
  *
- * 設計重點（DDD）：
- * - 位置：Domain 層（因為 Post Domain 層依賴此介面）
+ * 設計重點（DDD 規範）：
+ * - 位置：Domain/Services/（Domain 層的服務介面）
  * - 所有權：Post 自己定義（使用方定義，不被迫用供應方的介面）
  * - 語言：Post 的語言（不暴露 User 的細節）
  * - 沒有外部依賴：只定義 Post 真正需要的欄位
