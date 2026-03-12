@@ -11,7 +11,7 @@ import { WelcomePostAutomation } from '../../Application/Handlers/WelcomePostAut
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 import { UserToPostAdapter } from '../Adapters/UserToPostAdapter'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
+import { EventListenerRegistry } from '@/Shared/Infrastructure/EventListenerRegistry'
 import type { ILogger } from '@/Shared/Infrastructure/ILogger'
 import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
 
@@ -63,11 +63,25 @@ export class PostServiceProvider extends ModuleServiceProvider {
 				c.make('logger') as ILogger
 			)
 		})
+
+		// 向 EventListenerRegistry 聲明事件監聽（用於中心化綁定）
+		EventListenerRegistry.register({
+			moduleName: 'Post',
+			listeners: [
+				{
+					eventName: 'UserCreated',
+					handlerFactory: (c) => {
+						const handler = c.make('welcomePostAutomation') as WelcomePostAutomation
+						return (event) => handler.handle(event)
+					},
+				},
+			],
+		})
 	}
 
 	/**
-	 * 啟動時執行模組初始化邏輯與事件訂閱
-	 * 
+	 * 啟動時執行模組初始化邏輯
+	 *
 	 * @param core - 啟動上下文 (Gravito 核心實例)
 	 * @returns void
 	 */
@@ -78,39 +92,7 @@ export class PostServiceProvider extends ModuleServiceProvider {
 			console.log(`✨ [Post] Module loaded (ORM: ${orm})`)
 		}
 
-		// ✨ 訂閱 User 模組發出的事件，自動發布歡迎文章 (達成跨模組非同步通訊)
-		try {
-			console.log('[Post.boot] 開始訂閱事件...')
-			let dispatcher: IEventDispatcher | undefined
-			try {
-				dispatcher = core.container.make('eventDispatcher') as IEventDispatcher
-				console.log('[Post.boot] eventDispatcher 已取得:', dispatcher?.constructor.name)
-			} catch (dispatcherError) {
-				console.error('[Post.boot] 無法取得 eventDispatcher:', dispatcherError instanceof Error ? dispatcherError.message : dispatcherError)
-				throw dispatcherError
-			}
-
-			let automation: WelcomePostAutomation | undefined
-			try {
-				automation = core.container.make('welcomePostAutomation') as WelcomePostAutomation
-				console.log('[Post.boot] welcomePostAutomation 已取得:', automation?.constructor.name)
-			} catch (automationError) {
-				console.error('[Post.boot] 無法取得 welcomePostAutomation:', automationError instanceof Error ? automationError.message : automationError)
-				throw automationError
-			}
-
-			if (dispatcher && automation) {
-				dispatcher.subscribe('UserCreated', (event) => {
-					console.log('[WelcomePostAutomation] 收到 UserCreated 事件:', {
-						eventType: (event as any).eventType || (event as any).constructor.name,
-						eventId: (event as any).eventId,
-					})
-					return automation.handle(event)
-				})
-				console.log('🔗 [Post] Subscribed to UserCreated events for welcome post automation')
-			}
-		} catch (error) {
-			console.error('❌ [Post.boot] 訂閱事件失敗:', error instanceof Error ? error.message : String(error))
-		}
+		// ✨ 事件監聽已由中心化 Registry 管理
+		// SharedServiceProvider.boot() 中的 EventListenerRegistry.bindAll() 會自動綁定所有監聽
 	}
 }

@@ -25,11 +25,14 @@ import { getCurrentORM } from '@/wiring/RepositoryFactory'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'
+import { SendWelcomeEmailJob } from '../../Application/Jobs/SendWelcomeEmailJob'
+import { EventListenerRegistry } from '@/Shared/Infrastructure/EventListenerRegistry'
+import { JobRegistry } from '@/Shared/Infrastructure/JobRegistry'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 import type { IMailer } from '@/Shared/Infrastructure/IMailer'
 import type { ILogger } from '@/Shared/Infrastructure/ILogger'
 import type { ITranslator } from '@/Shared/Infrastructure/ITranslator'
+import type { IJobQueue } from '@/Shared/Infrastructure/IJobQueue'
 
 /**
  * User 模組服務提供者實作類別
@@ -56,13 +59,47 @@ export class UserServiceProvider extends ModuleServiceProvider {
 			return new GetUserService(c.make('userRepository') as IUserRepository)
 		})
 
-		// 3. 註冊歡迎信 Handler (單例)
-		container.singleton('sendWelcomeEmailHandler', (c) => {
-			return new SendWelcomeEmail(
+		// 3. 註冊 Job（單例）
+		container.singleton('sendWelcomeEmailJob', (c) => {
+			return new SendWelcomeEmailJob(
 				c.make('mailer') as IMailer,
 				c.make('logger') as ILogger,
 				c.make('translator') as ITranslator
 			)
+		})
+
+		// 4. 向 JobRegistry 聲明 Job（用於中心化綁定）
+		JobRegistry.register({
+			moduleName: 'User',
+			jobs: [
+				{
+					jobName: 'user.send_welcome_email',
+					jobFactory: (c) => c.make('sendWelcomeEmailJob'),
+				},
+			],
+		})
+
+		// 5. 註冊歡迎信 Handler (單例) - 現在 dispatch Job 而非直接發送
+		container.singleton('sendWelcomeEmailHandler', (c) => {
+			return new SendWelcomeEmail(
+				c.make('jobQueue') as IJobQueue,
+				c.make('logger') as ILogger,
+				c.make('translator') as ITranslator
+			)
+		})
+
+		// 6. 向 EventListenerRegistry 聲明事件監聽（用於中心化綁定）
+		EventListenerRegistry.register({
+			moduleName: 'User',
+			listeners: [
+				{
+					eventName: 'UserCreated',
+					handlerFactory: (c) => {
+						const handler = c.make('sendWelcomeEmailHandler') as SendWelcomeEmail
+						return (event) => handler.handle(event)
+					},
+				},
+			],
 		})
 	}
 
@@ -78,15 +115,8 @@ export class UserServiceProvider extends ModuleServiceProvider {
 			console.log(`👤 [User] Module loaded (ORM: ${orm})`)
 		}
 
-		// ✨ 訂閱用戶建立事件 (自動化業務流程)
-		try {
-			const dispatcher = core.container.make('eventDispatcher') as IEventDispatcher
-			const handler = core.container.make('sendWelcomeEmailHandler') as SendWelcomeEmail
-			
-			dispatcher.subscribe('UserCreated', (event) => handler.handle(event))
-			console.log('🔗 [User] Subscribed to UserCreated for Welcome Email')
-		} catch (error) {
-			console.warn('⚠️ [User] Could not subscribe to UserCreated events')
-		}
+		// ✨ 事件監聽與 Job 路由已由中心化 Registry 管理
+		// SharedServiceProvider.boot() 中的 EventListenerRegistry.bindAll() 會自動綁定所有監聽
+		// JobRegistry.bindAll() 會自動註冊所有 Job Handler
 	}
 }

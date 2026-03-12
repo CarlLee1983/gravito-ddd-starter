@@ -4,7 +4,10 @@
  */
 
 import { PlanetCore, defineConfig } from '@gravito/core'
+import { OrbitNebula } from '@gravito/nebula'
 import { buildConfig } from '../config/app/index'
+import { storageConfig, s3RawConfig } from '../config/app/storage'
+import { S3Store } from '@/Shared/Infrastructure/Storage/Drivers/S3Store'
 import { registerRoutes } from 'start/routes'
 import { initializeRegistry } from 'start/wiring/RepositoryRegistry'
 import { getCurrentORM } from 'start/wiring/RepositoryFactory'
@@ -38,7 +41,15 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	})
 	const core = new PlanetCore(config)
 
-	// Step 5: 在容器中註冊資料庫實例（供模組使用）
+	// Step 5: 安裝 Nebula 存儲軌道 (Orbit)
+	// 注入自定義 S3 驅動
+	if (storageConfig.disks?.s3?.driver === 'custom') {
+		storageConfig.disks.s3.store = new S3Store(s3RawConfig)
+	}
+	const nebula = new OrbitNebula(storageConfig)
+	core.addOrbit(nebula)
+
+	// Step 6: 在容器中註冊資料庫實例（供模組使用）
 	core.container.singleton('databaseAccess', () => db)
 
 	// Step 6: 註冊基礎設施適配器 (由 Gravito 框架模組驅動)

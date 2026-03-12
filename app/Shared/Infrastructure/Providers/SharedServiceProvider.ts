@@ -1,6 +1,11 @@
 /**
  * @file SharedServiceProvider.ts
  * @description 共享層基礎設施服務提供者
+ *
+ * 核心職責：
+ * - 註冊全域基礎設施服務（EventDispatcher、JobQueue、Worker）
+ * - 支援多種 driver（memory、redis、rabbitmq）
+ * - 啟動時綁定中心化的事件監聽與 Job 處理程序（EventListenerRegistry、JobRegistry）
  */
 
 import { ModuleServiceProvider, type IContainer } from '../IServiceProvider'
@@ -8,8 +13,11 @@ import { MemoryEventDispatcher } from '../Framework/MemoryEventDispatcher'
 import { RedisEventDispatcher } from '../Framework/RedisEventDispatcher'
 import { SystemWorker } from '../../Application/SystemWorker'
 import { GravitoLoggerAdapter } from '../Framework/GravitoLoggerAdapter'
+import { EventListenerRegistry } from '../EventListenerRegistry'
+import { JobRegistry } from '../JobRegistry'
 import type { IRedisService } from '../IRedisService'
 import type { RedisJobQueueAdapter } from '../Framework/RedisJobQueueAdapter'
+import type { IQueueWorker } from '../../Application/Jobs/IQueueWorker'
 
 /**
  * 共享服務提供者
@@ -45,8 +53,8 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 		if (driver === 'redis') {
 			container.singleton('systemWorker', (c) => {
 				const redis = c.make('redis') as IRedisService
-				const eventDispatcher = c.make('eventDispatcher') as RedisEventDispatcher
-				const jobQueue = c.make('jobQueue') as RedisJobQueueAdapter
+				const eventDispatcher = c.make('eventDispatcher')
+				const jobQueue = c.make('jobQueue')
 				return new SystemWorker(redis, eventDispatcher, jobQueue)
 			})
 		}
@@ -54,18 +62,40 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 
 	/**
 	 * 啟動邏輯
+	 *
+	 * 在此階段執行：
+	 * 1. 綁定所有已註冊的事件監聽器（EventListenerRegistry）
+	 * 2. 綁定所有已註冊的 Job 處理程序（JobRegistry）
+	 * 3. 啟動 Worker（若使用 redis）
 	 */
 	override boot(core: any): void {
 		console.log('📦 [Shared] Infrastructure services loaded')
 
+		// 1. 綁定所有已註冊的事件監聽器
+		try {
+			const eventDispatcher = core.container.make('eventDispatcher')
+			EventListenerRegistry.bindAll(eventDispatcher, core.container)
+		} catch (error) {
+			console.warn('⚠️ [Shared] Could not bind event listeners:', error instanceof Error ? error.message : error)
+		}
+
+		// 2. 綁定所有已註冊的 Job 處理程序
+		try {
+			const jobQueue = core.container.make('jobQueue')
+			JobRegistry.bindAll(jobQueue, core.container)
+		} catch (error) {
+			console.warn('⚠️ [Shared] Could not bind job handlers:', error instanceof Error ? error.message : error)
+		}
+
+		// 3. 啟動 Worker（若使用 redis）
 		const driver = process.env.EVENT_DRIVER || 'memory'
 		if (driver === 'redis') {
 			try {
-				const worker = core.container.make('systemWorker') as SystemWorker
+				const worker = core.container.make('systemWorker') as IQueueWorker
 				worker.start()
 				console.log('🔗 [Shared] System Worker started in background')
 			} catch (error) {
-				console.warn('⚠️ [Shared] Could not start System Worker')
+				console.warn('⚠️ [Shared] Could not start System Worker', error instanceof Error ? error.message : error)
 			}
 		}
 	}

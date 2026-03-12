@@ -2,6 +2,7 @@ import type { IStorageService } from '../IStorageService'
 import type { IStorageDisk } from '../IStorageDisk'
 import type { StorageConfig } from '../../../../config/app/storage'
 import { LocalDriver } from './Drivers/LocalDriver'
+import { S3Driver } from './Drivers/S3Driver'
 
 /**
  * StorageManager
@@ -35,8 +36,14 @@ export class StorageManager implements IStorageService {
         disk = new LocalDriver({ root: diskConfig.root });
         break;
       case 's3':
-        // 未來可以在這裡擴充 S3Driver
-        throw new Error(`Storage driver [s3] is not implemented yet.`);
+        disk = new S3Driver({
+          key: diskConfig.key,
+          secret: diskConfig.secret,
+          bucket: diskConfig.bucket,
+          region: diskConfig.region,
+          visibility: diskConfig.visibility,
+        });
+        break;
       default:
         throw new Error(`Storage driver [${(diskConfig as any).driver}] is not supported.`);
     }

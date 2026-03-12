@@ -50,8 +50,11 @@
     "generate:types": "bun orbit generate:types"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1007.0",
+    "@aws-sdk/s3-request-presigner": "^3.1007.0",
     "@gravito/atlas": "^2.4.0",
     "@gravito/core": "^2.0.4",
+    "@gravito/nebula": "^4.1.1",
     "@gravito/plasma": "^2.0.1",
     "@gravito/prism": "^3.1.1",
     "@gravito/sentinel": "^4.0.1",
