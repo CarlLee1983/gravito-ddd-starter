@@ -26,7 +26,8 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 				const redis = c.make('redis') as IRedisService
 				return new RedisEventDispatcher(redis)
 			}
-			return new MemoryEventDispatcher()
+				const logger = c.make('logger')
+			return new MemoryEventDispatcher(logger)
 		})
 
 		// 註冊統一 Worker (僅在 Redis 模式下有效)

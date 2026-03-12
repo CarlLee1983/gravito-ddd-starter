@@ -102,12 +102,16 @@ export class UserRepository implements IUserRepository {
 		// ✨ 若注入了分發器，則分發事件
 		if (this.eventDispatcher) {
 			const domainEvents = user.getUncommittedEvents()
+			console.log(`[UserRepository] Dispatching ${domainEvents.length} domain events`)
 
 			// 同時分派領域事件和轉換後的整合事件
 			const integrationEvents = domainEvents.map(event => this.toIntegrationEvent(event))
 
+			console.log(`[UserRepository] Dispatching ${integrationEvents.length} integration events`)
 			await this.eventDispatcher.dispatch([...domainEvents, ...integrationEvents])
 			user.markEventsAsCommitted()
+		} else {
+			console.warn(`[UserRepository] ⚠️ eventDispatcher not injected!`)
 		}
 
 		// ✨ 若注入了事件存儲，則持久化事件

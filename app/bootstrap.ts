@@ -47,6 +47,16 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	// Step 7: 註冊基礎設施共享服務 (如 EventDispatcher)
 	core.register(createGravitoServiceProvider(new SharedServiceProvider()))
 
+	// Step 7.5: 立即啟動 SharedServiceProvider 來註冊 eventDispatcher
+	// 因為 ModuleAutoWirer.wire() 需要存取 eventDispatcher，所以必須提前初始化
+	try {
+		const sharedProvider = new SharedServiceProvider()
+		sharedProvider.register(core.container)
+		console.log('🔧 [Bootstrap] EventDispatcher pre-registered for Module Auto-Wiring')
+	} catch (error) {
+		console.warn('⚠️ [Bootstrap] Could not pre-register EventDispatcher:', error)
+	}
+
 	// Step 8 & 9: ✨ 自動掃描並裝配所有模組 (Auto-Wiring)
 	await ModuleAutoWirer.wire(core, db)
 

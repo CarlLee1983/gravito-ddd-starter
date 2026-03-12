@@ -25,7 +25,7 @@ const testData: TestData = {
 	userId: '',
 	postId: '',
 	userEmail: `user-${Date.now()}@test.com`,
-	postTitle: 'Test Post'
+	postTitle: `Test Post - ${Date.now()}`
 }
 
 describe('🧪 User 和 Post 模組功能性測試 (使用容器)', () => {
@@ -271,7 +271,7 @@ describe('🧪 User 和 Post 模組功能性測試 (使用容器)', () => {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
-					title: 'Workflow Test Post',
+					title: `Workflow Test Post - ${Date.now()}`,
 					content: 'Testing complete workflow',
 					authorId: workflowUserId
 				})

@@ -61,7 +61,7 @@ export class WelcomePostAutomation {
 
 			// 自動為新用戶創建歡迎文章
 			await this.postService.execute({
-				id: `welcome-post-${userId}`,
+				id: crypto.randomUUID(),
 				title: `歡迎來到我的部落格，${userName}！`,
 				content: `親愛的 ${userName}，\n\n歡迎加入我們的社區！🎉\n\n這是您的第一篇文章，請盡情分享您的想法和經驗。\n\n祝您寫作愉快！`,
 				authorId: userId,

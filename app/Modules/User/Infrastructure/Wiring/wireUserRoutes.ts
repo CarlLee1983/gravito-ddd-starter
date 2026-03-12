@@ -37,8 +37,16 @@ export function wireUserRoutes(ctx: IRouteRegistrationContext): void {
 			// 從容器中取得資料庫實例
 			const db = ctx.container.make('databaseAccess') as IDatabaseAccess
 
+			// 嘗試從容器中取得 eventDispatcher
+			let eventDispatcher: any = undefined
+			try {
+				eventDispatcher = ctx.container.make('eventDispatcher')
+			} catch {
+				// eventDispatcher 尚未註冊，忽略
+			}
+
 			// 組裝 Repository 和 Services
-			const userRepository = new UserRepository(db)
+			const userRepository = new UserRepository(db, eventDispatcher)
 			createUserService = new CreateUserService(userRepository)
 			getUserService = new GetUserService(userRepository)
 		} catch (fallbackError) {

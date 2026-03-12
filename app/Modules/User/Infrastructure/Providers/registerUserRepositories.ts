@@ -24,8 +24,12 @@ import { getRegistry } from '@/wiring/RepositoryRegistry'
  */
 export function registerUserRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher): void {
 	const registry = getRegistry()
+	console.log(`[registerUserRepositories] eventDispatcher provided: ${eventDispatcher ? '✅ YES' : '❌ NO'}`)
 	const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
-		return new UserRepository(db, eventDispatcher)
+		console.log(`[UserRepository Factory] Called with eventDispatcher: ${eventDispatcher ? '✅ YES' : '❌ NO'} (from closure)`)
+		const repo = new UserRepository(db, eventDispatcher)
+		console.log(`[UserRepository Factory] UserRepository instance created, eventDispatcher injected: ${eventDispatcher ? 'YES' : 'NO'}`)
+		return repo
 	}
 
 	registry.register('user', factory)

@@ -41,9 +41,17 @@ export function wirePostRoutes(ctx: IRouteRegistrationContext): void {
 			// 從容器中取得資料庫實例
 			const db = ctx.container.make('databaseAccess') as IDatabaseAccess
 
+			// 嘗試從容器中取得 eventDispatcher
+			let eventDispatcher: any = undefined
+			try {
+				eventDispatcher = ctx.container.make('eventDispatcher')
+			} catch {
+				// eventDispatcher 尚未註冊，忽略
+			}
+
 			// 組裝基礎設施層
-			const postRepository = new PostRepository(db)
-			const userRepository = new UserRepository(db)
+			const postRepository = new PostRepository(db, eventDispatcher)
+			const userRepository = new UserRepository(db, eventDispatcher)
 			const authorService = new UserToPostAdapter(userRepository)
 
 			// 組裝應用層服務
