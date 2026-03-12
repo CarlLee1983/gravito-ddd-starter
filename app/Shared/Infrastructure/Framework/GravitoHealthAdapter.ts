@@ -40,7 +40,8 @@ class GravitoInfrastructureProbeAdapter implements IInfrastructureProbe {
 		if (!this.redis) return false
 
 		try {
-			return await this.redis.ping()
+			const result = await this.redis.ping()
+			return result === 'PONG' || result === true
 		} catch {
 			return false
 		}
@@ -50,8 +51,55 @@ class GravitoInfrastructureProbeAdapter implements IInfrastructureProbe {
 		if (!this.cache) return false
 
 		try {
-			return await this.cache.ping()
+			const result = await this.cache.ping()
+			return result === 'PONG' || result === true
 		} catch {
+			return false
+		}
+	}
+}
+
+/**
+ * 執行時探測器適配器
+ *
+ * 在請求時動態從容器解析服務，用於處理在啟動時尚未初始化的服務。
+ */
+class RuntimeInfrastructureProbeAdapter implements IInfrastructureProbe {
+	constructor(
+		private databaseCheck: IDatabaseConnectivityCheck,
+		private container: any,
+	) {}
+
+	async probeDatabase(): Promise<boolean> {
+		return this.databaseCheck.ping()
+	}
+
+	async probeRedis(): Promise<boolean> {
+		try {
+			const redisRaw = this.container.make('redis')
+			if (!redisRaw) return false
+
+			// Redis from Gravito (RedisClientContract) 有 ping() 方法
+			const result = await (redisRaw as any).ping()
+			return result === 'PONG' || result === 'OK' || result === true
+		} catch {
+			// Redis 服務未初始化或不可用
+			return false
+		}
+	}
+
+	async probeCache(): Promise<boolean> {
+		try {
+			const cacheRaw = this.container.make('cache')
+			if (!cacheRaw) return false
+
+			// Cache from Gravito (CacheManager) - 測試 set/get 操作
+			const testKey = '__health_check__'
+			await (cacheRaw as any).set(testKey, 'ok', 1)
+			const value = await (cacheRaw as any).get(testKey)
+			return value === 'ok'
+		} catch {
+			// Cache 服務未初始化或不可用
 			return false
 		}
 	}
@@ -74,43 +122,29 @@ class GravitoInfrastructureProbeAdapter implements IInfrastructureProbe {
  * registerHealthWithGravito(ctx)
  */
 export function registerHealthWithGravito(ctx: IRouteRegistrationContext): void {
-	// 從 Context 取得原始服務（可能為 undefined）
-	let rawRedis: RedisClientContract | undefined
-	let rawCache: CacheManager | undefined
-
-	try {
-		rawRedis = ctx.container.make('redis') as RedisClientContract | undefined
-	} catch {
-		rawRedis = undefined
-	}
-
-	try {
-		rawCache = ctx.container.make('cache') as CacheManager | undefined
-	} catch {
-		rawCache = undefined
-	}
-
-	// 適配為框架無關的介面（null 表示未設定）
-	const redis = rawRedis ? new GravitoRedisAdapter(rawRedis) : null
-	const cache = rawCache ? new GravitoCacheAdapter(rawCache) : null
+	// 注意：在此階段，redis/cache 服務可能尚未初始化
+	// 我們在 RuntimeInfrastructureProbeAdapter 中動態解析服務，以確保在請求時已初始化
 
 	// 組裝應用層（由 Gravito DB 適配器注入，Repository 與 ORM 解耦）
 	const repository = new MemoryHealthCheckRepository()
 	const databaseCheck = createGravitoDatabaseConnectivityCheck()
-	const probe = new GravitoInfrastructureProbeAdapter(databaseCheck, redis, cache)
-	const performHealthCheckService = new PerformHealthCheckService(repository, probe)
-	const controller = new HealthController(performHealthCheckService)
 
 	const router = ctx.createModuleRouter()
 
 	// 透過 IModuleRouter 註冊路由
-	router.get('/health', (ctx) => {
-		// 為了相容目前的 API，將適配器服務注入到 context
-		ctx.set('__redis', redis)
-		ctx.set('__cache', cache)
-		ctx.set('__databaseCheck', databaseCheck)
-		return controller.check(ctx)
+	// 每個請求都建立新的 PerformHealthCheckService，以便使用 RuntimeInfrastructureProbeAdapter
+	// 這樣可以在請求時動態解析已初始化的服務
+	router.get('/health', (hctx) => {
+		const probe = new RuntimeInfrastructureProbeAdapter(databaseCheck, ctx.container)
+		const performHealthCheckService = new PerformHealthCheckService(repository, probe)
+		const controller = new HealthController(performHealthCheckService)
+		return controller.check(hctx)
 	})
 
-	router.get('/health/history', (ctx) => controller.history(ctx))
+	router.get('/health/history', (hctx) => {
+		const probe = new RuntimeInfrastructureProbeAdapter(databaseCheck, ctx.container)
+		const performHealthCheckService = new PerformHealthCheckService(repository, probe)
+		const controller = new HealthController(performHealthCheckService)
+		return controller.history(hctx)
+	})
 }

@@ -30,17 +30,9 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 			return new StorageManager(config)
 		})
 
-		// 1. 註冊 Redis 適配器
-		container.singleton('redis', (c) => {
-			const rawRedis = (c as any).make('redis') as RedisClientContract | undefined
-			return rawRedis ? new GravitoRedisAdapter(rawRedis) : null
-		})
-
-		// 2. 註冊 Cache 適配器
-		container.singleton('cache', (c) => {
-			const rawCache = (c as any).make('cache') as CacheManager | undefined
-			return rawCache ? new GravitoCacheAdapter(rawCache) : null
-		})
+		// 註意：Redis 和 Cache 由 Gravito PlanetCore 通過 config 自動註冊
+		// 無需在此處二次包裝以避免循環依賴
+		// 在運行時（request handler）中直接從 Gravito 容器取得
 
 		// 3. 註冊 Logger 適配器 (Sentinel)
 		container.singleton('logger', () => {

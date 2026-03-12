@@ -21,6 +21,24 @@ export class GravitoCacheAdapter implements ICacheService {
 	constructor(private readonly cache: CacheManager) {}
 
 	/**
+	 * 測試快取服務連線
+	 * @returns 快取服務是否可用
+	 */
+	async ping(): Promise<string> {
+		try {
+			// 使用測試鍵來驗證快取服務是否可用
+			const testKey = '__cache_health_check__'
+			const testValue = 'ok'
+			await this.cache.set(testKey, testValue, 1) // 設定 1 秒有效期
+			const retrieved = await this.cache.get(testKey)
+			await this.cache.forget(testKey)
+			return retrieved === testValue ? 'PONG' : 'FAIL'
+		} catch {
+			throw new Error('Cache service unavailable')
+		}
+	}
+
+	/**
 	 * 取得指定鍵值的快取內容
 	 * @param key - 鍵名
 	 * @returns 快取值或 null
