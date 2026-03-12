@@ -13,9 +13,14 @@
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
+import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
 import { Post } from '../../Domain/Aggregates/Post'
 import { Title } from '../../Domain/ValueObjects/Title'
 import { Content } from '../../Domain/ValueObjects/Content'
+import { PostCreated } from '../../Domain/Events/PostCreated'
+import { PostPublished } from '../../Domain/Events/PostPublished'
+import { PostArchived } from '../../Domain/Events/PostArchived'
+import { PostTitleChanged } from '../../Domain/Events/PostTitleChanged'
 import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
 
 /**
@@ -60,9 +65,14 @@ export class PostRepository implements IPostRepository {
       await this.db.table('posts').insert(row)
     }
 
-    // ✨ 若注入了分發器，則分發積壓的領域事件
+    // ✨ 若注入了分發器，則分發領域事件和轉換後的整合事件
     if (this.eventDispatcher) {
-      await this.eventDispatcher.dispatch([...entity.getUncommittedEvents()])
+      const domainEvents = entity.getUncommittedEvents()
+
+      // 同時分派領域事件和轉換後的整合事件
+      const integrationEvents = domainEvents.map(event => this.toIntegrationEvent(event))
+
+      await this.eventDispatcher.dispatch([...domainEvents, ...integrationEvents])
       entity.markEventsAsCommitted()
     }
   }
@@ -184,5 +194,66 @@ export class PostRepository implements IPostRepository {
       created_at: post.createdAt.toISOString(),
       updated_at: new Date().toISOString(),
     }
+  }
+
+  /**
+   * 將領域事件轉換為整合事件 (ACL)
+   * 這是跨 Bounded Context 邊界的轉換層
+   *
+   * @param event - 領域事件
+   * @returns 整合事件
+   * @private
+   */
+  private toIntegrationEvent(event: any): IntegrationEvent {
+    if (event instanceof PostCreated) {
+      return toIntegrationEvent(
+        'PostCreated',
+        'Post', // 來源 Bounded Context
+        {
+          postId: event.postId,
+          title: event.title,
+          content: event.content,
+          authorId: event.authorId,
+          createdAt: event.createdAt.toISOString(),
+        },
+        event.postId
+      )
+    } else if (event instanceof PostPublished) {
+      return toIntegrationEvent(
+        'PostPublished',
+        'Post',
+        {
+          postId: event.postId,
+          authorId: event.authorId,
+          publishedAt: event.occurredAt.toISOString(),
+        },
+        event.postId
+      )
+    } else if (event instanceof PostArchived) {
+      return toIntegrationEvent(
+        'PostArchived',
+        'Post',
+        {
+          postId: event.postId,
+          authorId: event.authorId,
+          archivedAt: event.occurredAt.toISOString(),
+        },
+        event.postId
+      )
+    } else if (event instanceof PostTitleChanged) {
+      return toIntegrationEvent(
+        'PostTitleChanged',
+        'Post',
+        {
+          postId: event.postId,
+          oldTitle: event.oldTitle,
+          newTitle: event.newTitle,
+        },
+        event.postId
+      )
+    }
+
+    // 未知事件，傳遞原始事件
+    throw new Error(`Unknown Post event type: ${event.constructor.name}`)
   }
 }

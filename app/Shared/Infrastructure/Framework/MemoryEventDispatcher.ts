@@ -61,15 +61,17 @@ export class MemoryEventDispatcher implements IEventDispatcher {
 
 	/**
 	 * 提取事件名稱
+	 * - IntegrationEvent: 使用 eventType（擁有 sourceContext 屬性）
 	 * - DomainEvent: 使用 constructor.name
-	 * - IntegrationEvent: 使用 eventType
+	 *
+	 * 優先檢查 sourceContext 以避免序列化時的歧義
 	 *
 	 * @private
 	 */
 	private getEventName(event: Event): string {
-		if ('eventType' in event && typeof event.eventType === 'string') {
-			// IntegrationEvent
-			return event.eventType
+		// IntegrationEvent 獨有 sourceContext 屬性（更明確的識別）
+		if ('sourceContext' in event && typeof event.sourceContext === 'string') {
+			return (event as IntegrationEvent).eventType
 		}
 		// DomainEvent
 		return (event as DomainEvent).constructor.name

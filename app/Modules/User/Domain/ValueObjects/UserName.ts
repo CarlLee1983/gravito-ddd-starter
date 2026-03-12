@@ -46,7 +46,7 @@ export class UserName extends ValueObject<UserNameProps> {
     }
 
     // 驗證字元（允許字母、數字、空格、連字符、點）
-    const nameRegex = /^[a-zA-Z0-9\s\-\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]+$/
+    const nameRegex = /^[a-zA-Z0-9\s\-\.\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]+$/
     if (!nameRegex.test(trimmed)) {
       throw new Error(
         `用戶名稱包含不允許的字元。只允許字母、數字、空格、連字符、點和中文、日文字符`
