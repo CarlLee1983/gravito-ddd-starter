@@ -20,7 +20,7 @@ import { Content } from '@/Modules/Post/Domain/ValueObjects/Content'
 import { PostCreated } from '@/Modules/Post/Domain/Events/PostCreated'
 import { PostDTO } from '@/Modules/Post/Application/DTOs/PostDTO'
 import { CreatePostService } from '@/Modules/Post/Application/Services/CreatePostService'
-import { UserCreatedHandler } from '@/Modules/Post/Application/Handlers/UserCreatedHandler'
+import { WelcomePostAutomation } from '@/Modules/Post/Application/Handlers/WelcomePostAutomation'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { UserCreated } from '@/Modules/User/Domain/Events/UserCreated'
 import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
@@ -408,11 +408,11 @@ describe('Phase 3: CreatePostService Workflow', () => {
 
 // ============ 跨 Bounded Context 事件處理測試 ============
 
-describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
+describe('Phase 3: WelcomePostAutomation (Cross-Bounded Context)', () => {
   let mockRepository: IPostRepository
   let mockAuthorService: IAuthorService
   let mockLogger: ILogger
-  let handler: UserCreatedHandler
+  let automation: WelcomePostAutomation
 
   beforeEach(() => {
     mockRepository = {
@@ -438,7 +438,7 @@ describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
     } as any
 
     const createPostService = new CreatePostService(mockRepository, mockAuthorService)
-    handler = new UserCreatedHandler(createPostService, mockLogger)
+    automation = new WelcomePostAutomation(createPostService, mockLogger)
   })
 
   it('should handle UserCreated event and create welcome post', async () => {
@@ -460,7 +460,7 @@ describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
       },
       'user-1'
     )
-    await handler.handle(integrationEvent)
+    await automation.handle(integrationEvent)
 
     expect(savedPost).not.toBeNull()
     expect(savedPost?.title.value).toContain('歡迎來到我的部落格')
@@ -484,7 +484,7 @@ describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
 
     // Should not throw, only log error
     expect(async () => {
-      await handler.handle(integrationEvent)
+      await automation.handle(integrationEvent)
     }).not.toThrow()
   })
 
@@ -506,7 +506,7 @@ describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
       },
       'user-3'
     )
-    await handler.handle(integrationEvent)
+    await automation.handle(integrationEvent)
 
     expect(savedPost?.title.value).toContain('Alice Smith')
     expect(savedPost?.content.value).toContain('Alice Smith')

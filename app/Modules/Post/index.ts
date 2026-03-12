@@ -47,7 +47,7 @@ export { PostController } from './Presentation/Controllers/PostController'
 // Infrastructure
 export { PostRepository } from './Infrastructure/Repositories/PostRepository'
 export { PostServiceProvider } from './Infrastructure/Providers/PostServiceProvider'
-export { UserCreatedHandler } from './Application/Handlers/UserCreatedHandler'
+export { WelcomePostAutomation } from './Application/Handlers/WelcomePostAutomation'
 
 /**
  * 裝配器專用的模組定義物件

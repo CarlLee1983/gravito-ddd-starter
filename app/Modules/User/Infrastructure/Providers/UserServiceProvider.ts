@@ -20,8 +20,8 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
-import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
+import { resolveRepository } from '@/wiring/RepositoryResolver'
+import { getCurrentORM } from '@/wiring/RepositoryFactory'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'
@@ -46,12 +46,7 @@ export class UserServiceProvider extends ModuleServiceProvider {
 	 */
 	override register(container: IContainer): void {
 		// 1. 從 Registry 取得 Repository（ORM 選擇已由 Registry 處理）
-		container.singleton('userRepository', () => {
-			const registry = getRegistry()
-			const orm = getCurrentORM()
-			const db = orm !== 'memory' ? getDatabaseAccess() : undefined
-			return registry.create('user', orm, db)
-		})
+		container.singleton('userRepository', () => resolveRepository('user'))
 
 		// 2. Application Services（供 Controller 使用）
 		container.singleton('createUserService', (c) => {
@@ -77,8 +72,11 @@ export class UserServiceProvider extends ModuleServiceProvider {
 	 * @param core - 啟動上下文 (Gravito 核心實例)
 	 */
 	override boot(core: any): void {
-		const orm = getCurrentORM()
-		console.log(`👤 [User] Module loaded (ORM: ${orm})`)
+		// 開發環境輸出 ORM 信息用於調試
+		if (process.env.NODE_ENV === 'development') {
+			const orm = getCurrentORM()
+			console.log(`👤 [User] Module loaded (ORM: ${orm})`)
+		}
 
 		// ✨ 訂閱用戶建立事件 (自動化業務流程)
 		try {
