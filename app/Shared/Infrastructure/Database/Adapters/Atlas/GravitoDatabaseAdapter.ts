@@ -111,9 +111,10 @@ function initializeAtlasConnection(): void {
 	}
 
 	try {
-		// 禁用 Bun.sql native driver，使用 PostgresDriver 作為替代
-		// BunSQLDriver 不支持運行時動態 SQL
-		config.useNativeDriver = false
+		// 使用 Bun 原生 SQL 驅動連接 PostgreSQL
+		// 優勢：無需安裝額外的 pg 套件，由 Bun 原生支持
+		// 支持運行時動態 SQL
+		config.useNativeDriver = true
 
 		DB.addConnection('default', config)
 
