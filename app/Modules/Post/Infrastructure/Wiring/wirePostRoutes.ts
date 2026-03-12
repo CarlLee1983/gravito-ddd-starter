@@ -7,10 +7,14 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 import { PostController } from '../../Presentation/Controllers/PostController'
 import { registerPostRoutes } from '../../Presentation/Routes/Post.routes'
+import { PostRepository } from '../Repositories/PostRepository'
+import { UserToPostAdapter } from '../Adapters/UserToPostAdapter'
+import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
 
 /**
  * 註冊 Post 模組路由（供 IModuleDefinition.registerRoutes 使用）
@@ -22,14 +26,33 @@ export function wirePostRoutes(ctx: IRouteRegistrationContext): void {
 
 	let createPostService: CreatePostService
 	let getPostService: GetPostService
+
+	// 優先從容器中取得服務（若 PostServiceProvider 已註冊）
 	try {
 		createPostService = ctx.container.make('createPostService') as CreatePostService
 		getPostService = ctx.container.make('getPostService') as GetPostService
 	} catch (error) {
+		// 降級方案：如果容器中沒有服務，直接組裝
 		console.warn(
-			`⚠️ [Post] createPostService/getPostService not found in container, skipping Post routes: ${(error as Error).message}`
+			`⚠️ [Post] Services not found in container, attempting direct instantiation: ${(error as Error).message}`
 		)
-		return
+
+		try {
+			// 從容器中取得資料庫實例
+			const db = ctx.container.make('databaseAccess') as IDatabaseAccess
+
+			// 組裝基礎設施層
+			const postRepository = new PostRepository(db)
+			const userRepository = new UserRepository(db)
+			const authorService = new UserToPostAdapter(userRepository)
+
+			// 組裝應用層服務
+			createPostService = new CreatePostService(postRepository, authorService)
+			getPostService = new GetPostService(postRepository, authorService)
+		} catch (fallbackError) {
+			console.warn(`⚠️ [Post] Failed to instantiate services, skipping Post routes: ${(fallbackError as Error).message}`)
+			return
+		}
 	}
 
 	const controller = new PostController(createPostService, getPostService)

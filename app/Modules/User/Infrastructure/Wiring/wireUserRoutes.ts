@@ -7,10 +7,12 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { UserController } from '../../Presentation/Controllers/UserController'
 import { registerUserRoutes } from '../../Presentation/Routes/api'
+import { UserRepository } from '../Persistence/UserRepository'
 
 /**
  * 註冊 User 模組路由（供 IModuleDefinition.registerRoutes 使用）
@@ -25,9 +27,24 @@ export function wireUserRoutes(ctx: IRouteRegistrationContext): void {
 	try {
 		createUserService = ctx.container.make('createUserService') as CreateUserService
 		getUserService = ctx.container.make('getUserService') as GetUserService
-	} catch {
-		console.warn('⚠️ [User] createUserService/getUserService not found in container, skipping User routes')
-		return
+	} catch (error) {
+		// 降級方案：如果容器中沒有服務，直接組裝
+		console.warn(
+			`⚠️ [User] Services not found in container, attempting direct instantiation: ${(error as Error).message}`
+		)
+
+		try {
+			// 從容器中取得資料庫實例
+			const db = ctx.container.make('databaseAccess') as IDatabaseAccess
+
+			// 組裝 Repository 和 Services
+			const userRepository = new UserRepository(db)
+			createUserService = new CreateUserService(userRepository)
+			getUserService = new GetUserService(userRepository)
+		} catch (fallbackError) {
+			console.warn(`⚠️ [User] Failed to instantiate services, skipping User routes: ${(fallbackError as Error).message}`)
+			return
+		}
 	}
 
 	const controller = new UserController(createUserService, getUserService)
