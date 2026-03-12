@@ -55,10 +55,37 @@ services:
     networks:
       - gravito-network
 
+  rabbitmq:
+    image: rabbitmq:4-management
+    container_name: gravito-rabbitmq
+    restart: unless-stopped
+
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+
+    ports:
+      - "5672:5672"    # AMQP port
+      - "15672:15672"  # Management UI
+
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    volumes:
+      - gravito_rabbitmq_data:/var/lib/rabbitmq
+
+    networks:
+      - gravito-network
+
 volumes:
   gravito_postgres_data:
     driver: local
   gravito_redis_data:
+    driver: local
+  gravito_rabbitmq_data:
     driver: local
 
 networks:

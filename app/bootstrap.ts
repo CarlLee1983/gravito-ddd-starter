@@ -45,29 +45,22 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	core.register(createGravitoServiceProvider(new InfrastructureServiceProvider()))
 
 	// Step 7: 註冊基礎設施共享服務 (如 EventDispatcher)
+	// 透過 PlanetCore 的容器系統註冊 Provider
 	core.register(createGravitoServiceProvider(new SharedServiceProvider()))
 
-	// Step 7.5: 立即執行 SharedServiceProvider.register() 確保 eventDispatcher 在容器中
-	console.log('🔧 [Bootstrap] Step 7.5: 強制初始化 eventDispatcher...')
+	// Step 7.5: 確保關鍵服務（如 EventDispatcher）在自動佈線前已實例化
+	console.log('🔧 [Bootstrap] Step 7.5: 確保 eventDispatcher 已就緒...')
+	let eventDispatcher: any = undefined
 	try {
-		const sharedProvider = new SharedServiceProvider()
-		const containerAdapter = { singleton: (name: string, factory: any) => {
-			try {
-				core.container.make(name)
-			} catch {
-				core.container.singleton(name, factory)
-			}
-		}, bind: (name: string, factory: any) => core.container.bind(name, factory), make: (name: string) => core.container.make(name) }
-		sharedProvider.register(containerAdapter as any)
-		// 立即建立 eventDispatcher 實例
-		const eventDispatcher = core.container.make('eventDispatcher')
+		// 這裡透過容器 make 來觸發實例化，模組裝配 (Step 8) 需要它來處理領域事件
+		eventDispatcher = core.container.make('eventDispatcher')
 		console.log('✅ [Bootstrap] eventDispatcher 已初始化:', eventDispatcher?.constructor.name)
 	} catch (error) {
-		console.warn('⚠️ [Bootstrap] Step 7.5 失敗:', error instanceof Error ? error.message : error)
+		console.warn('⚠️ [Bootstrap] eventDispatcher 初始化警告 (可能尚未註冊):', error instanceof Error ? error.message : error)
 	}
 
 	// Step 8: ✨ 自動掃描並裝配所有模組 (Auto-Wiring)
-	await ModuleAutoWirer.wire(core, db)
+	await ModuleAutoWirer.wire(core, db, eventDispatcher)
 
 	// Step 9: 執行 ServiceProvider 的 boot() 初始化
 	await core.bootstrap()

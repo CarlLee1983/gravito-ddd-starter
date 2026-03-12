@@ -42,3 +42,6 @@ types/**/*.js.map
 # 生成的測試檔案
 coverage
 .nyc_output
+
+# SQLite 臨時資料庫檔案
+gravito_shop*

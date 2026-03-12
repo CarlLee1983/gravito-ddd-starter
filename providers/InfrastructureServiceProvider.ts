@@ -6,15 +6,13 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { GravitoRedisAdapter } from '@/Shared/Infrastructure/Framework/GravitoRedisAdapter'
-import { GravitoCacheAdapter } from '@/Shared/Infrastructure/Framework/GravitoCacheAdapter'
 import { GravitoLoggerAdapter } from '@/Shared/Infrastructure/Framework/GravitoLoggerAdapter'
 import { GravitoTranslatorAdapter } from '@/Shared/Infrastructure/Framework/GravitoTranslatorAdapter'
 import { GravitoMailAdapter } from '@/Shared/Infrastructure/Framework/GravitoMailAdapter'
 import { RedisJobQueueAdapter } from '@/Shared/Infrastructure/Framework/RedisJobQueueAdapter'
+import { RabbitMQJobQueueAdapter } from '@/Shared/Infrastructure/Framework/RabbitMQJobQueueAdapter'
 import { StorageManager } from '@/Shared/Infrastructure/Storage/StorageManager'
-import type { RedisClientContract } from '@gravito/plasma'
-import type { CacheManager } from '@gravito/stasis'
+import type { IRabbitMQService } from '@/Shared/Infrastructure/IRabbitMQService'
 
 /**
  * 基礎設施服務提供者
@@ -54,6 +52,19 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 
 		// 6. 註冊 JobQueue 適配器
 		container.singleton('jobQueue', (c) => {
+			const driver = process.env.EVENT_DRIVER || 'memory'
+
+			if (driver === 'rabbitmq') {
+				try {
+					const rabbitmq = c.make('rabbitmq') as IRabbitMQService
+					console.log('[InfrastructureServiceProvider] 使用 RabbitMQJobQueueAdapter')
+					return new RabbitMQJobQueueAdapter(rabbitmq)
+				} catch (error) {
+					console.warn('[InfrastructureServiceProvider] ⚠️ RabbitMQ 不可用，無法提供 JobQueue')
+					throw error
+				}
+			}
+
 			const redis = c.make('redis')
 			return new RedisJobQueueAdapter(redis)
 		})

@@ -65,4 +65,20 @@ export interface IRedisService {
 	 * @param key - 隊列名稱
 	 */
 	lpop(key: string): Promise<string | null>
+
+	/**
+	 * 取得列表範圍內的值
+	 * @param key - 列表鍵名
+	 * @param start - 開始索引 (包含，0-based)
+	 * @param stop - 結束索引 (包含，-1 表示最後一個元素)
+	 * @returns 指定範圍內的元素陣列
+	 */
+	lrange(key: string, start: number, stop: number): Promise<string[]>
+
+	/**
+	 * 取得列表長度
+	 * @param key - 列表鍵名
+	 * @returns 列表中的元素數量
+	 */
+	llen(key: string): Promise<number>
 }

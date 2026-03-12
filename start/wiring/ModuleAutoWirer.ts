@@ -25,9 +25,10 @@ export class ModuleAutoWirer {
 	 *
 	 * @param core - Gravito 核心實例
 	 * @param db - 由 DatabaseAccessBuilder 選定的資料庫適配器實例
+	 * @param eventDispatcher - 全域事件分派器實例
 	 * @returns {Promise<void>} 裝配完成
 	 */
-	static async wire(core: PlanetCore, db: IDatabaseAccess): Promise<void> {
+	static async wire(core: PlanetCore, db: IDatabaseAccess, eventDispatcher: any): Promise<void> {
 		// 1. 定義掃描模式：所有模組目錄下的 index.ts
 		const files = await glob('app/Modules/*/index.ts')
 		const modulesFound: string[] = []
@@ -62,18 +63,7 @@ export class ModuleAutoWirer {
 
 				// 第二步：註冊 Repository 工廠 (Infrastructure Layer)
 				if (moduleDef.registerRepositories) {
-					// 嘗試從容器中獲取 eventDispatcher (若已註冊)
-					let eventDispatcher: any = undefined
-					try {
-						console.log(`[AutoWirer] 嘗試取得 eventDispatcher 用於模組 ${moduleDef.name}...`)
-						eventDispatcher = core.container.make('eventDispatcher')
-						console.log(`[AutoWirer] eventDispatcher 取得成功: ${eventDispatcher?.constructor.name}`)
-					} catch (error) {
-						// 忽略未註冊的情況
-						console.warn(`[AutoWirer] eventDispatcher 未能取得: ${error instanceof Error ? error.message : error}`)
-					}
-
-					// 注入 db 與 eventDispatcher
+					// 直接注入 db 與傳入的 eventDispatcher
 					console.log(`[AutoWirer] 呼叫 ${moduleDef.name}.registerRepositories()，eventDispatcher: ${eventDispatcher ? '✅' : '❌'}`)
 					moduleDef.registerRepositories(db, eventDispatcher)
 				}
