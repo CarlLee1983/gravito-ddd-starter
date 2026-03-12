@@ -63,9 +63,11 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	async first(): Promise<Record<string, unknown> | null> {
 		try {
 			let query = (getDB() as any).table(this.tableName)
+			console.log(`[AtlasQueryBuilder] FIRST from table: ${this.tableName}`)
 
 			// 應用累積的 WHERE 條件
 			for (const cond of this.whereConditions) {
+				console.log(`[AtlasQueryBuilder] WHERE ${cond.column} ${cond.operator} ${cond.value}`)
 				query = this.applyWhere(query, cond)
 			}
 
@@ -78,9 +80,13 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 			// 強制限制為 1 筆記錄
 			query = query.limit(1)
 
-			const result = await query
-			// Atlas 返回 QueryResult 物件，需要提取 rows 屬性
-			const rows = Array.isArray(result) ? result : (result?.rows || [])
+			// 調用 .get() 來實際執行查詢
+			const result = await query.get()
+			console.log(`[AtlasQueryBuilder] FIRST result type: ${typeof result}, isArray: ${Array.isArray(result)}, length: ${result ? (Array.isArray(result) ? result.length : 'not-array') : 'null'}`)
+
+			// .get() 返回陣列，取第一個元素
+			const rows = Array.isArray(result) ? result : []
+			console.log(`[AtlasQueryBuilder] Returning ${rows.length ? 'one row' : 'no rows'}`)
 
 			return rows[0] || null
 		} catch (error) {
@@ -97,9 +103,11 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	async select(): Promise<Record<string, unknown>[]> {
 		try {
 			let query = (getDB() as any).table(this.tableName)
+			console.log(`[AtlasQueryBuilder] SELECT from table: ${this.tableName}`)
 
 			// 應用所有 WHERE 條件
 			for (const cond of this.whereConditions) {
+				console.log(`[AtlasQueryBuilder] WHERE ${cond.column} ${cond.operator} ${cond.value}`)
 				query = this.applyWhere(query, cond)
 			}
 
@@ -119,10 +127,14 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 				query = query.limit(this.limitValue)
 			}
 
-			const result = await query
-			// Atlas 返回 QueryResult 物件，需要提取 rows 屬性
-			// 若返回的已是陣列，直接回傳；若是物件，提取 rows
-			return Array.isArray(result) ? result : (result?.rows || [])
+			// 調用 .get() 來實際執行查詢
+			const result = await query.get()
+			console.log(`[AtlasQueryBuilder] SELECT result type: ${typeof result}, isArray: ${Array.isArray(result)}, count: ${Array.isArray(result) ? result.length : 'unknown'}`)
+
+			// .get() 返回陣列
+			const rows = Array.isArray(result) ? result : []
+			console.log(`[AtlasQueryBuilder] Returning ${rows.length} rows`)
+			return rows
 		} catch (error) {
 			console.error(`Error in select(): ${error}`)
 			return []

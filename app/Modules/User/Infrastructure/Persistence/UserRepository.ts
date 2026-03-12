@@ -64,7 +64,10 @@ export class UserRepository implements IUserRepository {
 	 */
 	async save(user: User): Promise<void> {
 		const row = this.toRow(user)
+		console.log(`[UserRepository] Saving user: ${user.id}, data:`, row)
+
 		const existing = await this.db.table('users').where('id', '=', user.id).first()
+		console.log(`[UserRepository] Existing user found:`, existing ? 'yes' : 'no')
 
 		if (existing) {
 			// 更新現有用戶（使用樂觀鎖）
@@ -89,9 +92,11 @@ export class UserRepository implements IUserRepository {
 				.where('id', '=', user.id)
 				.where('version', '=', currentVersion)
 				.update({ ...row, version: newVersion })
+			console.log(`[UserRepository] User updated: ${user.id}`)
 		} else {
 			// 新增用戶，初始版本為 0
 			await this.db.table('users').insert({ ...row, version: 0 })
+			console.log(`[UserRepository] User inserted: ${user.id}`)
 		}
 
 		// ✨ 若注入了分發器，則分發事件
@@ -179,7 +184,9 @@ export class UserRepository implements IUserRepository {
 	 * @returns 回傳 User 實體，若找不到則回傳 null
 	 */
 	async findById(id: string): Promise<User | null> {
+		console.log(`[UserRepository] Finding user by ID: ${id}`)
 		const row = await this.db.table('users').where('id', '=', id).first()
+		console.log(`[UserRepository] Found user:`, row ? 'yes' : 'no')
 		return row ? this.toDomain(row) : null
 	}
 
@@ -200,10 +207,12 @@ export class UserRepository implements IUserRepository {
 	 * @returns 回傳符合條件的 User 實體陣列
 	 */
 	async findAll(params?: { limit?: number; offset?: number }): Promise<User[]> {
+		console.log(`[UserRepository] Finding all users, params:`, params)
 		let query = this.db.table('users')
 		if (params?.offset) query = query.offset(params.offset)
 		if (params?.limit) query = query.limit(params.limit)
 		const rows = await query.select()
+		console.log(`[UserRepository] Found ${rows.length} users`)
 		return rows.map((row) => this.toDomain(row))
 	}
 

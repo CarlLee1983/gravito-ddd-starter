@@ -1,6 +1,31 @@
 version: '3.8'
 
 services:
+  redis:
+    image: redis:7-alpine
+    container_name: gravito-redis
+    restart: unless-stopped
+
+    # Redis 內部端口 6379 映射到主機 6380
+    # (避免與本地 Redis 6379 衝突)
+    ports:
+      - "6380:6379"
+
+    command: redis-server --appendonly yes
+
+    volumes:
+      # Redis 數據持久化
+      - gravito_redis_data:/data
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - gravito-network
+
   postgres:
     image: postgres:15-alpine
     container_name: gravito-postgres
@@ -32,6 +57,8 @@ services:
 
 volumes:
   gravito_postgres_data:
+    driver: local
+  gravito_redis_data:
     driver: local
 
 networks:

@@ -63,6 +63,19 @@ export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
 		get: (_, key: string) => ctx.req.header(key),
 	})
 
+	// 解析路由參數
+	const params = (() => {
+		try {
+			if (ctx.req.params && typeof ctx.req.params === 'function') {
+				return ctx.req.params() ?? {}
+			}
+			return (ctx.req as any).params ?? {}
+		} catch (err) {
+			console.error('[IHttpContext] Error extracting params:', err)
+			return {}
+		}
+	})()
+
 	return {
 		getBodyText: () => ctx.req.text(),
 		getJsonBody: async <T>() => {
@@ -76,8 +89,7 @@ export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
 			return JSON.parse(await req.text()) as T
 		},
 		getHeader: (name) => ctx.req.header(name),
-		params: ((ctx as unknown as { params?: Record<string, string | undefined> })
-			.params ?? {}) as Record<string, string | undefined>,
+		params,
 		query,
 		headers,
 		json: (data, statusCode) => ctx.json(data, statusCode as any),
