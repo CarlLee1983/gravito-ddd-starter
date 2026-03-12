@@ -1,38 +1,42 @@
 /**
  * Orbit 註冊表
  *
- * 集中管理 Gravito Orbits，新增模組時只需：
- * 1. 在下方 import 該 Orbit
- * 2. 在 getOrbits() 的對應區塊加入實例（必要時用 options 做條件載入）
+ * 📍 STATUS: Orbits 暫時禁用
+ *
+ * gravito-core 套件在 Bun 運行時環境中有模組結構問題，導致無法載入 Orbits。
+ * 詳見: ORBIT_ENABLEMENT_STATUS.md
+ *
+ * TODO: 待上游 gravito-core 發佈修正版本後，重新啟用此功能。
  */
 
 import type { GravitoOrbit } from '@gravito/core'
-import { OrbitAtlas } from '@gravito/atlas'
-import type { RedisManagerConfig } from '@gravito/plasma'
-// TODO: Orbits require fixes in gravito-core module structure
-// import { OrbitPlasma } from '@gravito/plasma'
-// import { OrbitStasis } from '@gravito/stasis'
 
 export type OrbitRegistrationOptions = {
 	/** 是否啟用資料庫（OrbitAtlas） */
 	useDatabase: boolean
 	/** Redis 設定（OrbitPlasma） */
-	redis: RedisManagerConfig
+	redis: Record<string, unknown>
 }
 
 /**
  * 依目前設定組出要載入的 Orbits 清單。
  * 執行順序：Prism → Atlas(可選) → Plasma → Stasis → Signal → 其他
+ *
+ * ⚠️ 當前全部禁用 - gravito-core 模組結構問題
  */
-export function getOrbits(options: OrbitRegistrationOptions): GravitoOrbit[] {
-	const { useDatabase } = options
+export function getOrbits(_options: OrbitRegistrationOptions): GravitoOrbit[] {
+	// TODO: 重新啟用 Orbits
+	// const { useDatabase } = options
+	// import { OrbitAtlas } from '@gravito/atlas'
+	// import { OrbitPlasma } from '@gravito/plasma'
+	// import { OrbitStasis } from '@gravito/stasis'
 
 	return [
 		// --- 核心：視圖、SSG
 		// OrbitPrism,
 
 		// --- 資料：DB（可選）
-		...(useDatabase ? [OrbitAtlas as unknown as GravitoOrbit] : []),
+		// ...(useDatabase ? [OrbitAtlas as unknown as GravitoOrbit] : []),
 
 		// --- 資料：Redis + Cache
 		// new OrbitPlasma({ ...redis, autoConnect: true }) as any,
