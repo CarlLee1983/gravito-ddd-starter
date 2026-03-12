@@ -21,11 +21,14 @@ import { PostCreated } from '@/Modules/Post/Domain/Events/PostCreated'
 import { PostDTO } from '@/Modules/Post/Application/DTOs/PostDTO'
 import { CreatePostService } from '@/Modules/Post/Application/Services/CreatePostService'
 import { UserCreatedHandler } from '@/Modules/Post/Application/Handlers/UserCreatedHandler'
+import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { UserCreated } from '@/Modules/User/Domain/Events/UserCreated'
 import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
 import type { IPostRepository } from '@/Modules/Post/Domain/Repositories/IPostRepository'
 import type { IAuthorService } from '@/Modules/Post/Domain/Services/IAuthorService'
 import type { ILogger } from '@/Shared/Infrastructure/ILogger'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 
 // ============ ValueObject 驗證測試 ============
 
@@ -574,5 +577,57 @@ describe('Phase 3: Complete Workflow', () => {
 
     const dto = PostDTO.fromEntity(post)
     expect(dto.content).toBe('')
+  })
+})
+
+// ============ PostRepository IntegrationEvent 轉換測試 ============
+
+describe('Phase 3: PostRepository IntegrationEvent Conversion (ACL)', () => {
+  it('should convert PostCreated domain event to IntegrationEvent', async () => {
+    const dispatchedEvents: any[] = []
+
+    const mockDispatcher: IEventDispatcher = {
+      dispatch: async (events: any[]) => {
+        dispatchedEvents.push(...events)
+      },
+      subscribe: () => {},
+    }
+
+    const mockDb: any = {
+      table: () => ({
+        where: () => ({
+          first: async () => null,
+          select: async () => [],
+          update: async () => {},
+          delete: async () => {},
+        }),
+        insert: async () => {},
+        offset: () => ({ limit: () => ({ select: async () => [] }) }),
+        limit: () => ({ select: async () => [] }),
+        count: async () => 0,
+      }),
+    }
+
+    const repository = new PostRepository(mockDb, mockDispatcher)
+
+    const title = Title.create('Integration Event Test')
+    const content = Content.create('Testing ACL conversion')
+    const post = Post.create('post-ie-test', title, content, 'author-ie-test')
+
+    await repository.save(post)
+
+    // 應該有 DomainEvent 和 IntegrationEvent
+    expect(dispatchedEvents.length).toBeGreaterThanOrEqual(2)
+
+    // 檢查是否包含 IntegrationEvent
+    const integrationEvents = dispatchedEvents.filter(e => 'sourceContext' in e)
+    expect(integrationEvents.length).toBeGreaterThan(0)
+
+    const postCreatedIE = integrationEvents.find(e => e.eventType === 'PostCreated')
+    expect(postCreatedIE).toBeDefined()
+    expect(postCreatedIE?.sourceContext).toBe('Post')
+    expect(postCreatedIE?.data.postId).toBe('post-ie-test')
+    expect(postCreatedIE?.data.title).toBe('Integration Event Test')
+    expect(postCreatedIE?.data.authorId).toBe('author-ie-test')
   })
 })
