@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: gravito-postgres
+    restart: unless-stopped
+
+    environment:
+      POSTGRES_DB: gravito_ddd
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+
+    ports:
+      - "5432:5432"
+
+    volumes:
+      # 數據持久化
+      - gravito_postgres_data:/var/lib/postgresql/data
+      # 初始化腳本（可選）
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init.sql
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d gravito_ddd"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - gravito-network
+
+volumes:
+  gravito_postgres_data:
+    driver: local
+
+networks:
+  gravito-network:
+    driver: bridge
