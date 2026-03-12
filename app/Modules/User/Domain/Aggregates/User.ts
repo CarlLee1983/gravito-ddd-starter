@@ -87,7 +87,8 @@ export class User extends AggregateRoot {
     const user = new User(id)
     user._name = name
     user._email = email
-    user._createdAt = createdAt
+    // 防禦性複製 Date 物件，防止外部代碼修改內部狀態
+    user._createdAt = new Date(createdAt.getTime())
     return user
   }
 
@@ -101,7 +102,8 @@ export class User extends AggregateRoot {
     if (event instanceof UserCreated) {
       this._name = UserName.create(event.name)
       this._email = Email.create(event.email)
-      this._createdAt = event.createdAt
+      // 防禦性複製 Date 物件，防止外部代碼修改內部狀態
+      this._createdAt = new Date(event.createdAt.getTime())
     } else if (event instanceof UserNameChanged) {
       this._name = UserName.create(event.newName)
     } else if (event instanceof UserEmailChanged) {

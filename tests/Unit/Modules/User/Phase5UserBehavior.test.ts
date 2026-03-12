@@ -86,8 +86,10 @@ describe('Phase 5: User 聚合根行為擴展', () => {
       const json = event.toJSON()
 
       expect(json.eventType).toBe('UserNameChanged')
-      expect(json.newName).toBe('Updated Name')
+      expect((json.data as any).newName).toBe('Updated Name')
       expect(json.aggregateId).toBe('user-1')
+      expect(json.eventId).toBeDefined()
+      expect(json.version).toBe(1)
     })
   })
 
@@ -142,8 +144,10 @@ describe('Phase 5: User 聚合根行為擴展', () => {
       const json = event.toJSON()
 
       expect(json.eventType).toBe('UserEmailChanged')
-      expect(json.newEmail).toBe('updated@test.com')
+      expect((json.data as any).newEmail).toBe('updated@test.com')
       expect(json.aggregateId).toBe('user-1')
+      expect(json.eventId).toBeDefined()
+      expect(json.version).toBe(1)
     })
   })
 

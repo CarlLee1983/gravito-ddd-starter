@@ -77,8 +77,10 @@ describe('Phase 5: Post 聚合根行為擴展', () => {
       const json = event.toJSON()
 
       expect(json.eventType).toBe('PostPublished')
-      expect(json.postId).toBe('post-1')
-      expect(json.authorId).toBe('author-1')
+      expect((json.data as any).postId).toBe('post-1')
+      expect((json.data as any).authorId).toBe('author-1')
+      expect(json.eventId).toBeDefined()
+      expect(json.version).toBe(1)
     })
   })
 
@@ -124,8 +126,10 @@ describe('Phase 5: Post 聚合根行為擴展', () => {
       const json = event.toJSON()
 
       expect(json.eventType).toBe('PostArchived')
-      expect(json.postId).toBe('post-1')
-      expect(json.authorId).toBe('author-1')
+      expect((json.data as any).postId).toBe('post-1')
+      expect((json.data as any).authorId).toBe('author-1')
+      expect(json.eventId).toBeDefined()
+      expect(json.version).toBe(1)
     })
   })
 
@@ -192,8 +196,10 @@ describe('Phase 5: Post 聚合根行為擴展', () => {
       const json = event.toJSON()
 
       expect(json.eventType).toBe('PostTitleChanged')
-      expect(json.oldTitle).toBe('Original Title')
-      expect(json.newTitle).toBe('Updated Title')
+      expect((json.data as any).oldTitle).toBe('Original Title')
+      expect((json.data as any).newTitle).toBe('Updated Title')
+      expect(json.eventId).toBeDefined()
+      expect(json.version).toBe(1)
     })
   })
 

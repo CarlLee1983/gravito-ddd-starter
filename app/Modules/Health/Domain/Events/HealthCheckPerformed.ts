@@ -32,13 +32,6 @@ export class HealthCheckPerformed extends DomainEvent {
       occurredAt: this.occurredAt.toISOString(),
       version: this.version,
       data: this.data,
-      status: this.status.value,
-      checks: {
-        database: this.checks.database,
-        redis: this.checks.redis,
-        cache: this.checks.cache,
-      },
-      performedAt: this.performedAt.toISOString(),
     }
   }
 }

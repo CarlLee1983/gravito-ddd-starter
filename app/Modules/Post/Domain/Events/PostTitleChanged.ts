@@ -40,12 +40,16 @@ export class PostTitleChanged extends DomainEvent {
    */
   toJSON() {
     return {
+      eventId: this.eventId,
       aggregateId: this.postId,
-      eventType: this.constructor.name,
-      postId: this.postId,
-      oldTitle: this.oldTitle,
-      newTitle: this.newTitle,
+      eventType: this.eventType,
       occurredAt: this.occurredAt.toISOString(),
+      version: this.version,
+      data: {
+        postId: this.postId,
+        oldTitle: this.oldTitle,
+        newTitle: this.newTitle,
+      },
     }
   }
 }

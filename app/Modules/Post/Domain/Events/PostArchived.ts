@@ -38,11 +38,15 @@ export class PostArchived extends DomainEvent {
    */
   toJSON() {
     return {
+      eventId: this.eventId,
       aggregateId: this.postId,
-      eventType: this.constructor.name,
-      postId: this.postId,
-      authorId: this.authorId,
+      eventType: this.eventType,
       occurredAt: this.occurredAt.toISOString(),
+      version: this.version,
+      data: {
+        postId: this.postId,
+        authorId: this.authorId,
+      },
     }
   }
 }

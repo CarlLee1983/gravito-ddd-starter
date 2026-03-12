@@ -37,10 +37,15 @@ export class UserNameChanged extends DomainEvent {
    */
   toJSON() {
     return {
+      eventId: this.eventId,
       aggregateId: this.userId,
-      eventType: this.constructor.name,
-      newName: this.newName,
+      eventType: this.eventType,
       occurredAt: this.occurredAt.toISOString(),
+      version: this.version,
+      data: {
+        userId: this.userId,
+        newName: this.newName,
+      },
     }
   }
 }

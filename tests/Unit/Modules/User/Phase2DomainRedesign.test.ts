@@ -460,3 +460,34 @@ describe('Phase 2: Complete Workflow', () => {
     expect(name.value).toBe('Immutable User')
   })
 })
+
+// ============ Date 防禦性複製驗證 ============
+
+describe('Date 防禦性複製', () => {
+  it('reconstitute() 應該防禦性複製 createdAt', () => {
+    const originalDate = new Date('2024-01-01T00:00:00Z')
+    const user = User.reconstitute('user-date', UserName.create('Alice'), Email.create('alice@test.com'), originalDate)
+
+    // 修改原始日期
+    originalDate.setFullYear(2025)
+
+    // 聚合根的日期應該保持不變
+    expect(user.createdAt.getFullYear()).toBe(2024)
+  })
+
+  it('applyEvent() 應該防禦性複製 createdAt', () => {
+    const eventDate = new Date('2024-06-15T12:00:00Z')
+    const event = new UserCreated('user-event', 'Bob', 'bob@test.com', eventDate)
+
+    const user = User.reconstitute('user-event', UserName.create('Bob'), Email.create('bob@test.com'), new Date())
+    user.applyEvent(event)
+
+    const storedDate = user.createdAt
+
+    // 嘗試修改返回的日期
+    storedDate.setFullYear(2025)
+
+    // 檢查 getter 返回的是複製，修改它不應該影響內部狀態
+    expect(user.createdAt.getFullYear()).toBe(2024)
+  })
+})

@@ -93,7 +93,8 @@ export class Post extends AggregateRoot {
     post._title = title
     post._content = content
     post._authorId = authorId
-    post._createdAt = createdAt
+    // 防禦性複製 Date 物件，防止外部代碼修改內部狀態
+    post._createdAt = new Date(createdAt.getTime())
     post._isPublished = isPublished
     post._isArchived = isArchived
     return post
@@ -110,7 +111,8 @@ export class Post extends AggregateRoot {
       this._title = Title.create(event.title)
       this._content = Content.create(event.content)
       this._authorId = event.authorId
-      this._createdAt = event.createdAt
+      // 防禦性複製 Date 物件，防止外部代碼修改內部狀態
+      this._createdAt = new Date(event.createdAt.getTime())
     } else if (event instanceof PostPublished) {
       this._isPublished = true
     } else if (event instanceof PostArchived) {

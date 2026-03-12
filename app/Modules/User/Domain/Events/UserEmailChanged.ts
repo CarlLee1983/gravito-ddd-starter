@@ -37,10 +37,15 @@ export class UserEmailChanged extends DomainEvent {
    */
   toJSON() {
     return {
+      eventId: this.eventId,
       aggregateId: this.userId,
-      eventType: this.constructor.name,
-      newEmail: this.newEmail,
+      eventType: this.eventType,
       occurredAt: this.occurredAt.toISOString(),
+      version: this.version,
+      data: {
+        userId: this.userId,
+        newEmail: this.newEmail,
+      },
     }
   }
 }

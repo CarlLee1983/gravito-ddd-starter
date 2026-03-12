@@ -35,6 +35,7 @@ export class UserCreated extends DomainEvent {
 			aggregateId: this.userId,
 			eventType: this.eventType,
 			occurredAt: this.occurredAt.toISOString(),
+			version: this.version,
 			data: {
 				name: this.name,
 				email: this.email,
