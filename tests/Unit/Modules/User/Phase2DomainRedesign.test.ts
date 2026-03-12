@@ -90,6 +90,16 @@ describe('Phase 2: UserName ValueObject', () => {
     expect(name.value).toBe('Mary-Jane Smith')
   })
 
+  it('should support names with dots explicitly', () => {
+    const name = UserName.create('J. Robert Smith')
+    expect(name.value).toBe('J. Robert Smith')
+  })
+
+  it('should support names with multiple dots', () => {
+    const name = UserName.create('Dr. J.R. Smith Jr.')
+    expect(name.value).toBe('Dr. J.R. Smith Jr.')
+  })
+
   it('should reject only spaces', () => {
     expect(() => UserName.create('   ')).toThrow('用戶名稱不能只包含空格')
   })
