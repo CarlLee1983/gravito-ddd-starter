@@ -100,8 +100,12 @@ function initializeAtlasConnection(): void {
 	}
 
 	try {
+		// 禁用 Bun.sql native driver，使用 PostgresDriver 作為替代
+		// BunSQLDriver 不支持運行時動態 SQL
+		config.useNativeDriver = false
+
 		DB.addConnection('default', config)
-		console.log(`✅ [Atlas] Connection 'default' added (${connection})`)
+		console.log(`✅ [Atlas] Connection 'default' added (${connection}, native driver disabled)`)
 	} catch (error) {
 		console.error(`❌ [Atlas] Failed to add connection:`, error)
 		throw error
@@ -132,10 +136,18 @@ export function createAtlasDatabaseAccess(): IDatabaseAccess {
  * @returns 實作連線檢查介面的物件
  */
 export function createGravitoDatabaseConnectivityCheck(): IDatabaseConnectivityCheck {
+	// 先初始化連接
+	initializeAtlasConnection()
+
 	return {
 		async ping(): Promise<boolean> {
 			try {
-				await getDB().raw('SELECT 1')
+				const DB = getDB()
+				if (!DB) {
+					return false
+				}
+				// 使用最簡單的查詢方式測試連接
+				await DB.table('sqlite_master').limit(1).select()
 				return true
 			} catch {
 				return false

@@ -78,9 +78,11 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 			// 強制限制為 1 筆記錄
 			query = query.limit(1)
 
-			const results = await query
+			const result = await query
+			// Atlas 返回 QueryResult 物件，需要提取 rows 屬性
+			const rows = Array.isArray(result) ? result : (result?.rows || [])
 
-			return results[0] || null
+			return rows[0] || null
 		} catch (error) {
 			console.error(`Error in first(): ${error}`)
 			return null
@@ -117,7 +119,10 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 				query = query.limit(this.limitValue)
 			}
 
-			return await query
+			const result = await query
+			// Atlas 返回 QueryResult 物件，需要提取 rows 屬性
+			// 若返回的已是陣列，直接回傳；若是物件，提取 rows
+			return Array.isArray(result) ? result : (result?.rows || [])
 		} catch (error) {
 			console.error(`Error in select(): ${error}`)
 			return []

@@ -50,7 +50,7 @@
     "generate:types": "bun orbit generate:types"
   },
   "dependencies": {
-    "@gravito/atlas": "^2.3.0",
+    "@gravito/atlas": "^2.4.0",
     "@gravito/core": "^2.0.4",
     "@gravito/plasma": "^2.0.1",
     "@gravito/prism": "^3.1.1",

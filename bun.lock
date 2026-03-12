@@ -5,7 +5,7 @@
     "": {
       "name": "gravito-ddd-starter",
       "dependencies": {
-        "@gravito/atlas": "^2.3.0",
+        "@gravito/atlas": "^2.3.1",
         "@gravito/core": "^2.0.4",
         "@gravito/plasma": "^2.0.1",
         "@gravito/prism": "^3.1.1",
@@ -42,7 +42,7 @@
     },
   },
   "overrides": {
-    "@gravito/atlas": "^2.3.0",
+    "@gravito/atlas": "^2.3.1",
     "@gravito/chromatic": "1.0.0",
     "@gravito/core": "^2.0.4",
     "@gravito/photon": "1.0.1",
@@ -211,7 +211,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.25.12", "", { "os": "win32", "cpu": "x64" }, "sha512-alJC0uCZpTFrSL0CCDjcgleBXPnCrEAhTBILpeAp7M/OFgoqtAetfBzX0xM00MUsVVPpVjlPuMbREqnZCXaTnA=="],
 
-    "@gravito/atlas": ["@gravito/atlas@2.3.0", "", { "dependencies": { "@gravito/core": "workspace:*", "@opentelemetry/api": "^1.9.0", "@opentelemetry/semantic-conventions": "^1.39.0", "lru-cache": "^11.0.2" }, "peerDependencies": { "better-sqlite3": "^11.0.0", "ioredis": "^5.8.2", "mongodb": "^6.0.0", "mysql2": "^3.9.0", "pg": "^8.11.0" }, "optionalPeers": ["better-sqlite3", "ioredis", "mongodb", "mysql2", "pg"], "bin": { "orbit": "src/cli.ts" } }, "sha512-F4CGIBVMKUvrl517JWmdaWwvTFx9sLDRJnCmc+zAYZhWuMJilXkoSH2nZNQrgwMYZp4OB8RCTC7ukAk1lwfhyA=="],
+    "@gravito/atlas": ["@gravito/atlas@2.4.0", "", { "dependencies": { "@gravito/core": "workspace:*", "@opentelemetry/api": "^1.9.0", "@opentelemetry/semantic-conventions": "^1.39.0", "lru-cache": "^11.0.2", "postgres": "^3.4.8" }, "peerDependencies": { "better-sqlite3": "^11.0.0", "ioredis": "^5.8.2", "mongodb": "^6.0.0", "mysql2": "^3.9.0", "pg": "^8.11.0" }, "optionalPeers": ["better-sqlite3", "ioredis", "mongodb", "mysql2", "pg"], "bin": { "orbit": "src/cli.ts" } }, "sha512-958HF/AkWxc4jGi6bU6xlSQbIMSlcVUtsXoxr6FFEJGBJm+OpzyT94a6nrBQRwqoowVDLQtQ9fezgJOInH0QkA=="],
 
     "@gravito/chromatic": ["@gravito/chromatic@1.0.0", "", {}, "sha512-5FPXxhnZEOe44QXR30mBTZ65H3c2uP2OmMnSTyMAl1toiL+a04pJGNCg/ukfhKDQeSAlF8jsqFW25aPQjgmprA=="],
 
@@ -903,6 +903,8 @@
 
     "postcss-value-parser": ["postcss-value-parser@4.2.0", "", {}, "sha512-1NNCs6uurfkVbeXG4S8JFT9t19m45ICnif8zWLd5oPSZ50QnwMfK+H3jv408d4jw/7Bttv5axS5IiHoLaVNHeQ=="],
 
+    "postgres": ["postgres@3.4.8", "", {}, "sha512-d+JFcLM17njZaOLkv6SCev7uoLaBtfK86vMUXhW1Z4glPWh4jozno9APvW/XKFJ3CCxVoC7OL38BqRydtu5nGg=="],
+
     "promise-limit": ["promise-limit@2.7.0", "", {}, "sha512-7nJ6v5lnJsXwGprnGXga4wx6d1POjvi5Qmf1ivTRxTjH4Z/9Czja/UCMLVmB9N93GeWOU93XaFaEt6jbuoagNw=="],
 
     "protobufjs": ["protobufjs@7.5.4", "", { "dependencies": { "@protobufjs/aspromise": "^1.1.2", "@protobufjs/base64": "^1.1.2", "@protobufjs/codegen": "^2.0.4", "@protobufjs/eventemitter": "^1.1.0", "@protobufjs/fetch": "^1.1.0", "@protobufjs/float": "^1.0.2", "@protobufjs/inquire": "^1.1.0", "@protobufjs/path": "^1.1.2", "@protobufjs/pool": "^1.1.0", "@protobufjs/utf8": "^1.1.0", "@types/node": ">=13.7.0", "long": "^5.0.0" } }, "sha512-CvexbZtbov6jW2eXAvLukXjXUW1TzFaivC46BpWc/3BpcCysb5Vffu+B3XHMm8lVEuy2Mm4XGex8hBSg1yapPg=="],
@@ -1068,6 +1070,8 @@
     "@clack/prompts/is-unicode-supported": ["is-unicode-supported@2.1.0", "", { "bundled": true }, "sha512-mE00Gnza5EEB3Ds0HfMyllZzbBrmLOX3vfWoj9A9PEnTfratQ/BcaJOuMhnkhjXvb2+FkY3VuHqtAGpTPmglFQ=="],
 
     "@esbuild-kit/core-utils/esbuild": ["esbuild@0.18.20", "", { "optionalDependencies": { "@esbuild/android-arm": "0.18.20", "@esbuild/android-arm64": "0.18.20", "@esbuild/android-x64": "0.18.20", "@esbuild/darwin-arm64": "0.18.20", "@esbuild/darwin-x64": "0.18.20", "@esbuild/freebsd-arm64": "0.18.20", "@esbuild/freebsd-x64": "0.18.20", "@esbuild/linux-arm": "0.18.20", "@esbuild/linux-arm64": "0.18.20", "@esbuild/linux-ia32": "0.18.20", "@esbuild/linux-loong64": "0.18.20", "@esbuild/linux-mips64el": "0.18.20", "@esbuild/linux-ppc64": "0.18.20", "@esbuild/linux-riscv64": "0.18.20", "@esbuild/linux-s390x": "0.18.20", "@esbuild/linux-x64": "0.18.20", "@esbuild/netbsd-x64": "0.18.20", "@esbuild/openbsd-x64": "0.18.20", "@esbuild/sunos-x64": "0.18.20", "@esbuild/win32-arm64": "0.18.20", "@esbuild/win32-ia32": "0.18.20", "@esbuild/win32-x64": "0.18.20" }, "bin": { "esbuild": "bin/esbuild" } }, "sha512-ceqxoedUrcayh7Y7ZX6NdbbDzGROiyVBgC4PriJThBKSVPWnnFHZAkfI1lJT8QFkOwH4qOS2SJkS4wvpGl8BpA=="],
+
+    "@gravito/stream/@gravito/atlas": ["@gravito/atlas@2.3.1", "", { "dependencies": { "@gravito/core": "workspace:*", "@opentelemetry/api": "^1.9.0", "@opentelemetry/semantic-conventions": "^1.39.0", "lru-cache": "^11.0.2", "postgres": "^3.4.8" }, "peerDependencies": { "better-sqlite3": "^11.0.0", "ioredis": "^5.8.2", "mongodb": "^6.0.0", "mysql2": "^3.9.0", "pg": "^8.11.0" }, "optionalPeers": ["better-sqlite3", "ioredis", "mongodb", "mysql2", "pg"], "bin": { "orbit": "src/cli.ts" } }, "sha512-xwXupsDrJ6oxXdgrET/dI1uPH9Lie8Vh2vEucytLnzZbUDsEMFKtP9VmGMgNAePPwmw7uvqo5BMUXU+hBXXvbg=="],
 
     "@tailwindcss/oxide-wasm32-wasi/@emnapi/core": ["@emnapi/core@1.8.1", "", { "dependencies": { "@emnapi/wasi-threads": "1.1.0", "tslib": "^2.4.0" }, "bundled": true }, "sha512-AvT9QFpxK0Zd8J0jopedNm+w/2fIzvtPKPjqyw9jwvBaReTTqPBk9Hixaz7KbjimP+QNz605/XnjFcDAL2pqBg=="],
 
