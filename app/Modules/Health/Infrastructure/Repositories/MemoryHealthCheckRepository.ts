@@ -10,8 +10,6 @@
  */
 
 import { HealthCheck } from '../../Domain/Aggregates/HealthCheck'
-import { HealthStatus } from '../../Domain/ValueObjects/HealthStatus'
-import { SystemChecks } from '../../Domain/ValueObjects/SystemChecks'
 import type { IHealthCheckRepository } from '../../Domain/Repositories/IHealthCheckRepository'
 
 /**
@@ -20,10 +18,12 @@ import type { IHealthCheckRepository } from '../../Domain/Repositories/IHealthCh
  * 在 DDD 架構中屬於「基礎設施層 (Infrastructure Layer)」，實現了 IHealthCheckRepository 介面。
  * 該實現將資料儲存在內存 (Map) 中，不具備持久化到硬碟的能力。
  *
- * Repository 職責：
- * - toDomain(): 將持久化資料轉換為 Domain Object
- * - toRow(): 將 Domain Object 轉換為可儲存的資料
- * - 管理領域事件分派（save 後提交事件）
+ * **特性**：
+ * - 直接儲存 Domain Object（HealthCheck），無需轉換
+ * - 自動清理舊記錄（保持最多 100 筆）
+ * - 不涉及數據庫 I/O，適合開發與測試環境
+ *
+ * **注**：toDomain/toRow 轉換僅在涉及 DB 的 Repository（如 DrizzleRepository）才需要
  */
 export class MemoryHealthCheckRepository implements IHealthCheckRepository {
   /** 儲存記錄的內存 Map */
@@ -153,44 +153,4 @@ export class MemoryHealthCheckRepository implements IHealthCheckRepository {
     return deleted
   }
 
-  /**
-   * 將資料庫行轉換為 Domain Object
-   *
-   * @param row - 儲存的資料行
-   * @returns HealthCheck 聚合根
-   * @private
-   */
-  private toDomain(row: any): HealthCheck {
-    const systemChecks = SystemChecks.create(
-      row.database,
-      row.redis ?? true,
-      row.cache ?? true
-    )
-    return HealthCheck.reconstitute(
-      row.id,
-      new HealthStatus(row.status),
-      systemChecks,
-      new Date(row.performedAt),
-      row.message
-    )
-  }
-
-  /**
-   * 將 Domain Object 轉換為可儲存的資料
-   *
-   * @param hc - HealthCheck 聚合根
-   * @returns 儲存的資料行
-   * @private
-   */
-  private toRow(hc: HealthCheck): any {
-    return {
-      id: hc.id,
-      status: hc.status.value,
-      database: hc.checks.database,
-      redis: hc.checks.redis,
-      cache: hc.checks.cache,
-      performedAt: hc.performedAt,
-      message: hc.message,
-    }
-  }
 }
