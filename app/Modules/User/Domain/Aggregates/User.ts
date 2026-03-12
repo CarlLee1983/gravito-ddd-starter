@@ -163,6 +163,6 @@ export class User extends AggregateRoot {
 
   /** 取得建立時間 */
   get createdAt(): Date {
-    return this._createdAt
+    return new Date(this._createdAt.getTime())
   }
 }

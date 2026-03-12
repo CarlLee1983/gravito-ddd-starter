@@ -27,7 +27,7 @@ export class UserEmailChanged extends DomainEvent {
     public readonly newEmail: string,
     occurredAt: Date = new Date(),
   ) {
-    super(occurredAt)
+    super(userId, 'UserEmailChanged', { newEmail }, 1, occurredAt)
   }
 
   /**

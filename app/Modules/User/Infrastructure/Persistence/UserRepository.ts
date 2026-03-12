@@ -28,6 +28,8 @@ import { User } from '../../Domain/Aggregates/User'
 import { Email } from '../../Domain/ValueObjects/Email'
 import { UserName } from '../../Domain/ValueObjects/UserName'
 import { UserCreated } from '../../Domain/Events/UserCreated'
+import { UserNameChanged } from '../../Domain/Events/UserNameChanged'
+import { UserEmailChanged } from '../../Domain/Events/UserEmailChanged'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 
 /**
@@ -94,6 +96,26 @@ export class UserRepository implements IUserRepository {
 					name: event.name,
 					email: event.email,
 					createdAt: event.createdAt.toISOString(),
+				},
+				event.userId
+			)
+		} else if (event instanceof UserNameChanged) {
+			return toIntegrationEvent(
+				'UserNameChanged',
+				'User',
+				{
+					userId: event.userId,
+					newName: event.newName,
+				},
+				event.userId
+			)
+		} else if (event instanceof UserEmailChanged) {
+			return toIntegrationEvent(
+				'UserEmailChanged',
+				'User',
+				{
+					userId: event.userId,
+					newEmail: event.newEmail,
 				},
 				event.userId
 			)

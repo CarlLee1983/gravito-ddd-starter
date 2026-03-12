@@ -30,7 +30,7 @@ export class PostTitleChanged extends DomainEvent {
     public readonly newTitle: string,
     occurredAt: Date = new Date(),
   ) {
-    super(occurredAt)
+    super(postId, 'PostTitleChanged', { oldTitle, newTitle }, 1, occurredAt)
   }
 
   /**

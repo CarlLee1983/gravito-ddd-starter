@@ -201,7 +201,7 @@ export class Post extends AggregateRoot {
 
   /** 取得建立時間 */
   get createdAt(): Date {
-    return this._createdAt
+    return new Date(this._createdAt.getTime())
   }
 
   /** 取得是否已發佈 */

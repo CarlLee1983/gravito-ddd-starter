@@ -27,7 +27,7 @@ export class PostPublished extends DomainEvent {
     public readonly authorId: string,
     occurredAt: Date = new Date(),
   ) {
-    super(occurredAt)
+    super(postId, 'PostPublished', { authorId }, 1, occurredAt)
   }
 
   /**

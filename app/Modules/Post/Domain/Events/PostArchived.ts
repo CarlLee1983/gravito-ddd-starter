@@ -28,7 +28,7 @@ export class PostArchived extends DomainEvent {
     public readonly authorId: string,
     occurredAt: Date = new Date(),
   ) {
-    super(occurredAt)
+    super(postId, 'PostArchived', { authorId }, 1, occurredAt)
   }
 
   /**

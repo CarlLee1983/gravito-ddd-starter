@@ -152,8 +152,18 @@ export class PostRepository implements IPostRepository {
     const title = Title.create(row.title as string)
     const content = Content.create(row.content as string)
     const createdAt = row.created_at instanceof Date ? row.created_at : new Date(row.created_at as string)
+    const isPublished = row.is_published === 1 || row.is_published === true
+    const isArchived = row.is_archived === 1 || row.is_archived === true
 
-    return Post.reconstitute(row.id as string, title, content, row.author_id as string, createdAt)
+    return Post.reconstitute(
+      row.id as string,
+      title,
+      content,
+      row.author_id as string,
+      createdAt,
+      isPublished,
+      isArchived
+    )
   }
 
   /**
@@ -169,6 +179,8 @@ export class PostRepository implements IPostRepository {
       title: post.title.value,
       content: post.content.value,
       author_id: post.authorId,
+      is_published: post.isPublished ? 1 : 0,
+      is_archived: post.isArchived ? 1 : 0,
       created_at: post.createdAt.toISOString(),
       updated_at: new Date().toISOString(),
     }

@@ -44,6 +44,10 @@ export const posts = sqliteTable('posts', {
   author_id: text('author_id')
     .notNull()
     .references(() => users.id, { onDelete: 'cascade' }),
+  /** 是否已發佈 (0=草稿, 1=已發佈) */
+  is_published: text('is_published').default('0'),
+  /** 是否已存檔 (0=正常, 1=已存檔) */
+  is_archived: text('is_archived').default('0'),
   /** 建立時間 */
   created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   /** 更新時間 */

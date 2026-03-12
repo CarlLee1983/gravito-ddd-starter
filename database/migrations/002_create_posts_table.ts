@@ -9,6 +9,8 @@ export async function up(db: AtlasOrbit): Promise<void> {
 		t.string('title').notNull()
 		t.text('content')
 		t.string('author_id').notNull()
+		t.boolean('is_published').default(false)
+		t.boolean('is_archived').default(false)
 		t.timestamps()
 	})
 }
