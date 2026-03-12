@@ -83,7 +83,7 @@ function initializeAtlasConnection(): void {
 		config.host = process.env.DB_HOST || '127.0.0.1'
 		config.port = Number(process.env.DB_PORT) || 5432
 		config.database = process.env.DB_DATABASE || 'gravito_ddd'
-		config.user = process.env.DB_USER || 'postgres'
+		config.username = process.env.DB_USER || 'postgres'
 		config.password = process.env.DB_PASSWORD || ''
 	}
 	// SQLite 配置
@@ -95,7 +95,7 @@ function initializeAtlasConnection(): void {
 		config.host = process.env.DB_HOST || '127.0.0.1'
 		config.port = Number(process.env.DB_PORT) || 3306
 		config.database = process.env.DB_DATABASE || 'gravito_ddd'
-		config.user = process.env.DB_USER || 'root'
+		config.username = process.env.DB_USER || 'root'
 		config.password = process.env.DB_PASSWORD || ''
 	}
 
