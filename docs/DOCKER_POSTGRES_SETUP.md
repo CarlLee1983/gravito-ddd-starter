@@ -16,6 +16,11 @@
 ✅ **環境配置**
 - `.env.postgres` - PostgreSQL 環境變數預設配置
 
+✅ **Atlas 原生驅動**
+- 使用 Bun 原生 SQL API 連接 PostgreSQL
+- 無需安裝額外的 `pg` 套件
+- 自動配置 `useNativeDriver=true`
+
 ## 🚀 快速開始
 
 ### 1. 啟動 PostgreSQL 服務

@@ -115,6 +115,8 @@ psql -h localhost -U postgres -d gravito_ddd -c "SELECT * FROM users;"
 ✅ 連接已驗證成功
 ✅ Atlas ping 測試通過
 ✅ 數據庫查詢已驗證
+✅ 使用 Bun 原生 SQL 驅動（無需 pg 套件）
+✅ API 端點正常工作
 
 ---
 
