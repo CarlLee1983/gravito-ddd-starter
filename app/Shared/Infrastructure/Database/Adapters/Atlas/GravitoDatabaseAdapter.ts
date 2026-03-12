@@ -45,6 +45,70 @@ class AtlasDatabaseAccess implements IDatabaseAccess {
 }
 
 /**
+ * 初始化 Atlas 資料庫連接配置
+ *
+ * 讀取環境變數並配置 Atlas DB 連接
+ * @internal
+ */
+function initializeAtlasConnection(): void {
+	const DB = getDB()
+
+	// 檢查是否已配置
+	if (!DB) {
+		return
+	}
+
+	// 檢查是否已有 default 連接
+	try {
+		if (DB.dialect && DB.dialect('default')) {
+			return
+		}
+	} catch {
+		// 連接不存在，繼續初始化
+	}
+
+	const enableDB = process.env.ENABLE_DB === 'true'
+	if (!enableDB) {
+		console.log('⚠️ [Atlas] Database disabled (ENABLE_DB=false)')
+		return
+	}
+
+	const connection = process.env.DB_CONNECTION || 'sqlite'
+	const config: Record<string, any> = {
+		driver: connection,
+	}
+
+	// PostgreSQL 配置
+	if (connection === 'postgres') {
+		config.host = process.env.DB_HOST || '127.0.0.1'
+		config.port = Number(process.env.DB_PORT) || 5432
+		config.database = process.env.DB_DATABASE || 'gravito_ddd'
+		config.user = process.env.DB_USER || 'postgres'
+		config.password = process.env.DB_PASSWORD || ''
+	}
+	// SQLite 配置
+	else if (connection === 'sqlite') {
+		config.database = process.env.DB_DATABASE || './database.sqlite'
+	}
+	// MySQL 配置
+	else if (connection === 'mysql') {
+		config.host = process.env.DB_HOST || '127.0.0.1'
+		config.port = Number(process.env.DB_PORT) || 3306
+		config.database = process.env.DB_DATABASE || 'gravito_ddd'
+		config.user = process.env.DB_USER || 'root'
+		config.password = process.env.DB_PASSWORD || ''
+	}
+
+	try {
+		DB.addConnection('default', config)
+		console.log(`✅ [Atlas] Connection 'default' added (${connection})`)
+	} catch (error) {
+		console.error(`❌ [Atlas] Failed to add connection:`, error)
+		throw error
+	}
+}
+
+/**
  * 建立 Atlas DatabaseAccess 實例的工廠函數
  *
  * 這是接線層建立 Atlas 適配器的標準入口，用於依賴注入。
@@ -55,6 +119,8 @@ class AtlasDatabaseAccess implements IDatabaseAccess {
  * const db = createAtlasDatabaseAccess()
  */
 export function createAtlasDatabaseAccess(): IDatabaseAccess {
+	// 確保 Atlas 連接已初始化
+	initializeAtlasConnection()
 	return new AtlasDatabaseAccess()
 }
 
