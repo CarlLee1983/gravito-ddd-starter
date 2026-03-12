@@ -31,13 +31,8 @@ export class HealthController {
 	 */
 	async check(ctx: IHttpContext): Promise<Response> {
 		try {
-			// 從 context 中獲取框架資源（由 Wiring 層注入）
-			const db = ctx.get<any>('__db')
-			const redis = ctx.get<any>('__redis')
-			const cache = ctx.get<any>('__cache')
-
 			// 執行健康檢查
-			const result = await this.service.execute(db, redis, cache)
+			const result = await this.service.execute()
 
 			// 根據狀態返回適當的 HTTP 狀態碼
 			const statusCode = result.status === 'unhealthy' ? 503 : 200

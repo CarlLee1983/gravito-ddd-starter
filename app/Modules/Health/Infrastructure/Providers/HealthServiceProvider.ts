@@ -8,6 +8,7 @@ import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/
 import type { IHealthCheckRepository } from '../../Domain/Repositories/IHealthCheckRepository'
 import { MemoryHealthCheckRepository } from '../Repositories/MemoryHealthCheckRepository'
 import { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
+import { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
 
 /**
  * HealthServiceProvider 類別
@@ -31,7 +32,7 @@ export class HealthServiceProvider extends ModuleServiceProvider {
 		// 2. 註冊 Application Service（每次解析時建立新實例）
 		container.bind('healthCheckService', (c: IContainer) => {
 			const repository = c.make('healthRepository') as IHealthCheckRepository
-			return new PerformHealthCheckService(repository)
+			return new PerformHealthCheckService(repository, c.make('infrastructureProbe') as IInfrastructureProbe)
 		})
 	}
 

@@ -10,12 +10,52 @@
 import type { RedisClientContract } from '@gravito/plasma'
 import type { CacheManager } from '@gravito/stasis'
 import type { IRouteRegistrationContext } from './ModuleDefinition'
+import type { IInfrastructureProbe } from '@/Modules/Health/Domain/Services/IInfrastructureProbe'
+import type { IDatabaseConnectivityCheck } from '../IDatabaseConnectivityCheck'
 import { GravitoRedisAdapter } from './GravitoRedisAdapter'
 import { GravitoCacheAdapter } from './GravitoCacheAdapter'
 import { createGravitoDatabaseConnectivityCheck } from '../Database/Adapters/Atlas'
 import { PerformHealthCheckService } from '@/Modules/Health/Application/Services/PerformHealthCheckService'
 import { HealthController } from '@/Modules/Health/Presentation/Controllers/HealthController'
 import { MemoryHealthCheckRepository } from '@/Modules/Health/Infrastructure/Repositories/MemoryHealthCheckRepository'
+
+/**
+ * 基礎設施探測器適配器
+ *
+ * 實現 IInfrastructureProbe Port，負責探測系統各組件的健康狀態。
+ * 將 Gravito 框架特定的 Adapter（Redis、Cache）和 Database 檢查統一封裝。
+ */
+class GravitoInfrastructureProbeAdapter implements IInfrastructureProbe {
+	constructor(
+		private databaseCheck: IDatabaseConnectivityCheck,
+		private redis: any | null,
+		private cache: any | null,
+	) {}
+
+	async probeDatabase(): Promise<boolean> {
+		return this.databaseCheck.ping()
+	}
+
+	async probeRedis(): Promise<boolean> {
+		if (!this.redis) return false
+
+		try {
+			return await this.redis.ping()
+		} catch {
+			return false
+		}
+	}
+
+	async probeCache(): Promise<boolean> {
+		if (!this.cache) return false
+
+		try {
+			return await this.cache.ping()
+		} catch {
+			return false
+		}
+	}
+}
 
 /**
  * 註冊 Health 模組與 Gravito 框架的整合
@@ -57,7 +97,8 @@ export function registerHealthWithGravito(ctx: IRouteRegistrationContext): void 
 	// 組裝應用層（由 Gravito DB 適配器注入，Repository 與 ORM 解耦）
 	const repository = new MemoryHealthCheckRepository()
 	const databaseCheck = createGravitoDatabaseConnectivityCheck()
-	const performHealthCheckService = new PerformHealthCheckService(repository)
+	const probe = new GravitoInfrastructureProbeAdapter(databaseCheck, redis, cache)
+	const performHealthCheckService = new PerformHealthCheckService(repository, probe)
 	const controller = new HealthController(performHealthCheckService)
 
 	const router = ctx.createModuleRouter()
