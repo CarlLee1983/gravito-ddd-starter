@@ -28,18 +28,8 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 				return new RedisEventDispatcher(redis)
 			}
 			// 直接使用 GravitoLoggerAdapter，避免依賴容器
-		const logger = new GravitoLoggerAdapter()
-		console.log(`[SharedServiceProvider] Creating MemoryEventDispatcher with logger:`, {
-			loggerType: typeof logger,
-			loggerClass: logger.constructor.name,
-			hasDebug: typeof logger.debug,
-		})
-		const dispatcher = new MemoryEventDispatcher(logger)
-		console.log(`[SharedServiceProvider] MemoryEventDispatcher created:`, {
-			dispatcherType: typeof dispatcher,
-			dispatcherClass: dispatcher.constructor.name,
-		})
-		return dispatcher
+			const logger = new GravitoLoggerAdapter()
+			return new MemoryEventDispatcher(logger)
 		})
 
 		// 註冊統一 Worker (僅在 Redis 模式下有效)

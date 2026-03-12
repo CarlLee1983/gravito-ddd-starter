@@ -6,12 +6,13 @@
  */
 
 import type { DomainEvent } from '../../Domain/DomainEvent'
-import type { IEventDispatcher, EventHandler } from '../IEventDispatcher'
+import type { IntegrationEvent } from '../../Domain/IntegrationEvent'
+import type { IEventDispatcher, EventHandler, Event } from '../IEventDispatcher'
 import type { IRedisService } from '../IRedisService'
 
 /**
  * Redis 事件分發器
- * 
+ *
  * 使用 Redis 列表作為消息隊列，實現非同步的事件處理。
  */
 export class RedisEventDispatcher implements IEventDispatcher {
@@ -27,18 +28,54 @@ export class RedisEventDispatcher implements IEventDispatcher {
 	/**
 	 * 分發事件：將事件序列化後推入 Redis 隊列
 	 */
-	async dispatch(events: DomainEvent | DomainEvent[]): Promise<void> {
+	async dispatch(events: Event | Event[]): Promise<void> {
 		const eventList = Array.isArray(events) ? events : [events]
 
 		for (const event of eventList) {
+			const eventName = this.getEventName(event)
+			const serialized = this.serializeEvent(event)
+
 			const payload = JSON.stringify({
-				name: event.constructor.name,
-				event: event.toJSON()
+				name: eventName,
+				event: serialized
 			})
 
 			await this.redis.rpush(this.queueKey, payload)
-			console.debug(`[RedisEventDispatcher] 事件已推入隊列: ${event.constructor.name}`)
+			console.debug(`[RedisEventDispatcher] 事件已推入隊列: ${eventName}`)
 		}
+	}
+
+	/**
+	 * 提取事件名稱
+	 * - IntegrationEvent: 使用 eventType（擁有 sourceContext 屬性）
+	 * - DomainEvent: 使用 constructor.name
+	 *
+	 * @private
+	 */
+	private getEventName(event: Event): string {
+		// IntegrationEvent 獨有 sourceContext 屬性
+		if ('sourceContext' in event && typeof event.sourceContext === 'string') {
+			return (event as IntegrationEvent).eventType
+		}
+		// DomainEvent
+		return (event as DomainEvent).constructor.name
+	}
+
+	/**
+	 * 序列化事件
+	 * - IntegrationEvent: 已是 plain object，直接序列化整體
+	 * - DomainEvent: 呼叫 toJSON() 取得序列化資料
+	 *
+	 * @private
+	 */
+	private serializeEvent(event: Event): Record<string, any> {
+		// IntegrationEvent 獨有 sourceContext 屬性
+		if ('sourceContext' in event && typeof event.sourceContext === 'string') {
+			// IntegrationEvent 已是 plain object，直接回傳
+			return event as Record<string, any>
+		}
+		// DomainEvent
+		return (event as DomainEvent).toJSON()
 	}
 
 	/**
