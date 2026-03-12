@@ -76,18 +76,35 @@ The `.cjs` file still exists in node_modules because it was published to npm wit
 
 ## Path Forward
 
-### Option A: Update Gravito-Core Publishing (Recommended)
+### Option A: Publish Individual Package Updates (Recommended)
 
-**Steps**:
-1. Merge fixes into gravito-core (described above)
-2. Publish new versions of @gravito/core, @gravito/stasis, @gravito/plasma to npm
-3. Update gravito-ddd to use new versions
-4. Uncomment Orbit imports in `config/app/orbits.ts`
+由於 gravito-core 中的模組各自發佈，需要分別更新版本:
+
+**Step 1: 為各套件發佈新版本**
+```bash
+# 在 gravito-core 目錄中
+cd /Users/carl/Dev/Carl/gravito-core/packages/core
+npm version patch  # 2.0.1 → 2.0.2
+npm publish
+
+cd /Users/carl/Dev/Carl/gravito-core/packages/stasis
+npm version patch  # 3.2.0 → 3.2.1
+npm publish
+
+cd /Users/carl/Dev/Carl/gravito-core/packages/plasma
+npm version patch  # 2.0.0 → 2.0.1
+npm publish
+```
 
 **Affected Packages**:
 - @gravito/core (v2.0.1 → v2.0.2)
 - @gravito/stasis (v3.2.0 → v3.2.1)
 - @gravito/plasma (v2.0.0 → v2.0.1)
+
+**Step 2: 在 gravito-ddd 中更新依賴**
+```bash
+bun install  # 自動取得新版本
+```
 
 ### Option B: Local Monorepo Setup
 
@@ -209,6 +226,11 @@ See also:
 1. ☐ Merge fixes into gravito-core main branch
 2. ☐ Create PR with changes
 3. ☐ Test with full workspace build
-4. ☐ Publish new npm versions
-5. ☐ Update gravito-ddd dependencies
-6. ☐ Uncomment and test Orbit imports
+4. ☐ 為各套件分別發佈新版本:
+   - ☐ npm publish @gravito/core@2.0.2
+   - ☐ npm publish @gravito/stasis@3.2.1
+   - ☐ npm publish @gravito/plasma@2.0.1
+5. ☐ Update gravito-ddd dependencies (`bun install`)
+6. ☐ Uncomment Orbit imports in `config/app/orbits.ts`
+7. ☐ Enable orbits in `app/bootstrap.ts` `defineConfig()`
+8. ☐ Test server startup with Redis/Cache probing
