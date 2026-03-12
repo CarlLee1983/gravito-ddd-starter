@@ -6,12 +6,12 @@
       "name": "gravito-ddd-starter",
       "dependencies": {
         "@gravito/atlas": "^2.3.0",
-        "@gravito/core": "^2.0.0",
-        "@gravito/plasma": "^2.0.0",
+        "@gravito/core": "^2.0.4",
+        "@gravito/plasma": "^2.0.1",
         "@gravito/prism": "^3.1.1",
         "@gravito/sentinel": "^4.0.1",
         "@gravito/signal": "^3.1.0",
-        "@gravito/stasis": "^3.2.0",
+        "@gravito/stasis": "^3.2.1",
         "@inertiajs/react": "^2.3.17",
         "@libsql/client": "^0.17.0",
         "clsx": "^2.1.1",
@@ -44,7 +44,7 @@
   "overrides": {
     "@gravito/atlas": "^2.3.0",
     "@gravito/chromatic": "1.0.0",
-    "@gravito/core": "^2.0.0",
+    "@gravito/core": "^2.0.4",
     "@gravito/photon": "1.0.1",
     "@gravito/scaffold": "4.1.0",
   },
@@ -215,11 +215,11 @@
 
     "@gravito/chromatic": ["@gravito/chromatic@1.0.0", "", {}, "sha512-5FPXxhnZEOe44QXR30mBTZ65H3c2uP2OmMnSTyMAl1toiL+a04pJGNCg/ukfhKDQeSAlF8jsqFW25aPQjgmprA=="],
 
-    "@gravito/core": ["@gravito/core@2.0.0", "", { "dependencies": { "zod": "^4.3.6" } }, "sha512-PiXFnZi2IsxKzIFlDLxOupC48mKKS+mN/G2ggGraaOzYaJVKQG3hwkH9f6fH4khVkyuAiPzbCttr1itilrtiog=="],
+    "@gravito/core": ["@gravito/core@2.0.4", "", { "dependencies": { "zod": "^4.3.6" } }, "sha512-GafjjYwNwF/AQW31r2W6fXfhlNpWhDFrxsf85QsXv3OBLSwd5KMMVBG2AONBl5e/CsTkV0j4lfClDcuDGd7pBQ=="],
 
     "@gravito/photon": ["@gravito/photon@1.0.1", "", { "dependencies": { "@hono/zod-openapi": "^1.2.0", "cborg": "^4.3.2", "hono": "^4.11.0", "zod": "^4.3.6" }, "peerDependencies": { "@opentelemetry/api": "^1.0.0" }, "optionalPeers": ["@opentelemetry/api"] }, "sha512-GEORohU0G+1ZP0J1XXOOD5juDMDpGLhqqvVcnkXt8e+vtWg0fA58L1CbAHA2phhT/83dc0W6d/ziC1/EfFxNUw=="],
 
-    "@gravito/plasma": ["@gravito/plasma@2.0.0", "", {}, "sha512-Gn+/7bjo0WKBpcbpNkTyXANOiLU4m2HJsPBaOL6jSAItyp1xxUQ4KrSd8b9DdPqS7W8US5kskb8fFq34QXfukA=="],
+    "@gravito/plasma": ["@gravito/plasma@2.0.1", "", { "dependencies": { "@gravito/core": "workspace:*" } }, "sha512-QbK/QR0VvMu6PIzmU3d4tkY5Uic8fg4FnO+k60qevoEFmMd1k8WohqZ4XwSkpMERXbaGt0rynvquKdghRTzk7g=="],
 
     "@gravito/prism": ["@gravito/prism@3.1.1", "", { "peerDependencies": { "@gravito/core": "^1.6.1", "@gravito/photon": "^1.0.1", "react": "^19.0.0", "react-dom": "^19.0.0", "vue": "^3.0.0" }, "optionalPeers": ["react", "react-dom", "vue"] }, "sha512-5RanoyxzjRN0/zk3UI9Nol+AxWnC72az6PDevhZrbrh29XUDSuxEchRRGIlIZGc62i1MCHYYMU/jGovj//pBEg=="],
 
@@ -231,7 +231,7 @@
 
     "@gravito/signal": ["@gravito/signal@3.1.0", "", { "dependencies": { "@aws-sdk/client-ses": "^3.953.0", "nodemailer": "^7.0.11" }, "peerDependencies": { "@gravito/core": "^2.0.0", "@gravito/prism": "^3.1.1", "@gravito/stream": "^2.1.0", "react": "^19.0.0", "react-dom": "^19.0.0", "vue": "^3.0.0" }, "optionalPeers": ["@gravito/prism", "react", "react-dom", "vue"] }, "sha512-FrgTkV+iyVbabCRR0jNIbJi2TbY2AC8iJ1goGDAc2Pbmdag1r/tSU0TSNAN5V+qXey4PDV0sgsraq+SkxillTQ=="],
 
-    "@gravito/stasis": ["@gravito/stasis@3.2.0", "", { "peerDependencies": { "@gravito/core": "^2.0.0", "@gravito/plasma": "^2.0.0" } }, "sha512-rAgLbtucyw1Z2/GM8+oQ5+g9jglSU9uarhI8LkybyabFZFr9JNY5Mb7UfpK15c9pgYstu7k7ygTbhPW2D469qA=="],
+    "@gravito/stasis": ["@gravito/stasis@3.2.1", "", { "peerDependencies": { "@gravito/core": "^2.0.0", "@gravito/plasma": "^2.0.0" } }, "sha512-+UTAkhTKEr4CFYjT23hyTCOFsbtLPHdXg5m3zNfL/qGbl/Zj3ZBFl2ljFp2NF3gTIBcj1m7h/UY2zJ4zol0b7A=="],
 
     "@gravito/stream": ["@gravito/stream@2.1.0", "", { "dependencies": { "@aws-sdk/client-sqs": "^3.955.0", "@gravito/atlas": "workspace:*", "@gravito/core": "workspace:*", "@grpc/grpc-js": "^1.14.3", "@grpc/proto-loader": "^0.8.0", "cborg": "^4.5.8", "cron-parser": "^5.4.0", "p-limit": "^5.0.0" } }, "sha512-1sjikI2i5E0TI+MWJguVzs3O+A7/kEN6vZMQugMIPG8cAi432Mxb2AzNKDTDEM/7Ml5BmLZv6jqmq6PGBTBexQ=="],
 
