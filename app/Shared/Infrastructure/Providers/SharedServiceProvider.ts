@@ -20,15 +20,24 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 	 */
 	override register(container: IContainer): void {
 		const driver = process.env.EVENT_DRIVER || 'memory'
+		console.log(`[SharedServiceProvider] 事件驅動模式: ${driver}`)
 
 		// 註冊領域事件分發器
 		container.singleton('eventDispatcher', (c) => {
 			if (driver === 'redis') {
-				const redis = c.make('redis') as IRedisService
-				return new RedisEventDispatcher(redis)
+				try {
+					const redis = c.make('redis') as IRedisService
+					console.log('[SharedServiceProvider] 使用 RedisEventDispatcher')
+					return new RedisEventDispatcher(redis)
+				} catch (error) {
+					console.warn('[SharedServiceProvider] ⚠️ Redis 不可用，降級為 Memory 模式:', error instanceof Error ? error.message : error)
+					const logger = new GravitoLoggerAdapter()
+					return new MemoryEventDispatcher(logger)
+				}
 			}
 			// 直接使用 GravitoLoggerAdapter，避免依賴容器
 			const logger = new GravitoLoggerAdapter()
+			console.log('[SharedServiceProvider] 使用 MemoryEventDispatcher')
 			return new MemoryEventDispatcher(logger)
 		})
 

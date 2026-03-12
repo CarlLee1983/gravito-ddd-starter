@@ -65,12 +65,16 @@ export class ModuleAutoWirer {
 					// 嘗試從容器中獲取 eventDispatcher (若已註冊)
 					let eventDispatcher: any = undefined
 					try {
+						console.log(`[AutoWirer] 嘗試取得 eventDispatcher 用於模組 ${moduleDef.name}...`)
 						eventDispatcher = core.container.make('eventDispatcher')
-					} catch {
+						console.log(`[AutoWirer] eventDispatcher 取得成功: ${eventDispatcher?.constructor.name}`)
+					} catch (error) {
 						// 忽略未註冊的情況
+						console.warn(`[AutoWirer] eventDispatcher 未能取得: ${error instanceof Error ? error.message : error}`)
 					}
-					
+
 					// 注入 db 與 eventDispatcher
+					console.log(`[AutoWirer] 呼叫 ${moduleDef.name}.registerRepositories()，eventDispatcher: ${eventDispatcher ? '✅' : '❌'}`)
 					moduleDef.registerRepositories(db, eventDispatcher)
 				}
 

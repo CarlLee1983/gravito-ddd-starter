@@ -80,13 +80,37 @@ export class PostServiceProvider extends ModuleServiceProvider {
 
 		// ✨ 訂閱 User 模組發出的事件，自動發布歡迎文章 (達成跨模組非同步通訊)
 		try {
-			const dispatcher = core.container.make('eventDispatcher') as IEventDispatcher
-			const automation = core.container.make('welcomePostAutomation') as WelcomePostAutomation
+			console.log('[Post.boot] 開始訂閱事件...')
+			let dispatcher: IEventDispatcher | undefined
+			try {
+				dispatcher = core.container.make('eventDispatcher') as IEventDispatcher
+				console.log('[Post.boot] eventDispatcher 已取得:', dispatcher?.constructor.name)
+			} catch (dispatcherError) {
+				console.error('[Post.boot] 無法取得 eventDispatcher:', dispatcherError instanceof Error ? dispatcherError.message : dispatcherError)
+				throw dispatcherError
+			}
 
-			dispatcher.subscribe('UserCreated', (event) => automation.handle(event))
-			console.log('🔗 [Post] Subscribed to UserCreated events for welcome post automation')
+			let automation: WelcomePostAutomation | undefined
+			try {
+				automation = core.container.make('welcomePostAutomation') as WelcomePostAutomation
+				console.log('[Post.boot] welcomePostAutomation 已取得:', automation?.constructor.name)
+			} catch (automationError) {
+				console.error('[Post.boot] 無法取得 welcomePostAutomation:', automationError instanceof Error ? automationError.message : automationError)
+				throw automationError
+			}
+
+			if (dispatcher && automation) {
+				dispatcher.subscribe('UserCreated', (event) => {
+					console.log('[WelcomePostAutomation] 收到 UserCreated 事件:', {
+						eventType: (event as any).eventType || (event as any).constructor.name,
+						eventId: (event as any).eventId,
+					})
+					return automation.handle(event)
+				})
+				console.log('🔗 [Post] Subscribed to UserCreated events for welcome post automation')
+			}
 		} catch (error) {
-			console.warn('⚠️ [Post] Could not subscribe to UserCreated events: eventDispatcher not found')
+			console.error('❌ [Post.boot] 訂閱事件失敗:', error instanceof Error ? error.message : String(error))
 		}
 	}
 }

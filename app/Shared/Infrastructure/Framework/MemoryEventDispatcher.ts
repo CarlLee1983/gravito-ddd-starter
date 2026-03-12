@@ -39,6 +39,12 @@ export class MemoryEventDispatcher implements IEventDispatcher {
 			const eventName = this.getEventName(event)
 			const handlers = this.handlers.get(eventName) || []
 
+			console.log('[MemoryEventDispatcher.dispatch] 分發事件:', {
+				eventName,
+				handlerCount: handlers.length,
+				eventType: (event as any).eventType || (event as any).constructor.name,
+			})
+
 			if (handlers.length === 0) {
 				this.logger.debug(`[EventDispatcher] 無人訂閱事件: ${eventName}`)
 				continue
@@ -48,8 +54,10 @@ export class MemoryEventDispatcher implements IEventDispatcher {
 			await Promise.all(
 				handlers.map(async (handler) => {
 					try {
+						console.log('[MemoryEventDispatcher] 執行訂閱者處理函式:', eventName)
 						await handler(event)
 					} catch (error) {
+						console.error('[MemoryEventDispatcher] 處理函式執行失敗:', eventName, error)
 						this.logger.error(`[EventDispatcher] 處理事件 ${eventName} 時發生錯誤`, error instanceof Error ? error : new Error(String(error)))
 					}
 				})
