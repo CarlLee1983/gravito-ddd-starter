@@ -37,7 +37,7 @@ export type OrbitRegistrationOptions = {
  * ⏳ OrbitPlasma + OrbitStasis 暫時禁用（Bun FFI 相容性）
  * 應用程式可以透過自訂的 ServiceProvider 直接註冊 Redis/Cache 服務
  */
-export function getOrbits(options: OrbitRegistrationOptions): GravitoOrbit[] {
+export function getOrbits(_options: OrbitRegistrationOptions): GravitoOrbit[] {
 	// FFI 相容性問題 - 所有 Orbits 暫時禁用
 	// 應用程式應在 ServiceProvider 中手動註冊所需服務
 	return []

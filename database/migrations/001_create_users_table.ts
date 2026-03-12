@@ -8,6 +8,7 @@ export async function up(db: AtlasOrbit): Promise<void> {
 		t.id()
 		t.string('name').notNull()
 		t.string('email').notNull().unique()
+		t.integer('version').default(0).notNull()
 		t.timestamps()
 	})
 }

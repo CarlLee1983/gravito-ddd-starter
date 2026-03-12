@@ -30,6 +30,9 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 			return new StorageManager(config)
 		})
 
+		// 註意：databaseAccess 由 bootstrap 在 ModuleAutoWirer 之前注入
+		// 無需在此處註冊 databaseAccess，應由 bootstrap 完成
+
 		// 註意：Redis 和 Cache 由 Gravito PlanetCore 通過 config 自動註冊
 		// 無需在此處二次包裝以避免循環依賴
 		// 在運行時（request handler）中直接從 Gravito 容器取得

@@ -9,6 +9,7 @@ import { resolveRepository } from '@/wiring/RepositoryResolver'
 import { getCurrentORM } from '@/wiring/RepositoryFactory'
 import { WelcomePostAutomation } from '../../Application/Handlers/WelcomePostAutomation'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
+import { GetPostService } from '../../Application/Services/GetPostService'
 import { UserToPostAdapter } from '../Adapters/UserToPostAdapter'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 import type { ILogger } from '@/Shared/Infrastructure/ILogger'
@@ -39,9 +40,17 @@ export class PostServiceProvider extends ModuleServiceProvider {
 			return new UserToPostAdapter(userRepository)
 		})
 
-		// 註冊應用層服務
+		// 註冊應用層寫入服務
 		container.singleton('createPostService', (c) => {
 			return new CreatePostService(
+				c.make('postRepository'),
+				c.make('authorService')
+			)
+		})
+
+		// 註冊應用層讀取服務（CQRS 讀側）
+		container.singleton('getPostService', (c) => {
+			return new GetPostService(
 				c.make('postRepository'),
 				c.make('authorService')
 			)

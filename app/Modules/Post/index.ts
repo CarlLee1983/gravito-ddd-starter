@@ -6,7 +6,7 @@
 import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
 import { PostServiceProvider } from './Infrastructure/Providers/PostServiceProvider'
 import { registerPostRepositories } from './Infrastructure/Providers/registerPostRepositories'
-import { registerPostWithGravito } from '@/Shared/Infrastructure/Framework/GravitoPostAdapter'
+import { wirePostRoutes } from './Infrastructure/Wiring/wirePostRoutes'
 
 // Domain - Aggregates
 export { Post } from './Domain/Aggregates/Post'
@@ -57,5 +57,5 @@ export const PostModule: IModuleDefinition = {
 	name: 'Post',
 	provider: PostServiceProvider,
 	registerRepositories: registerPostRepositories,
-	registerRoutes: registerPostWithGravito
+	registerRoutes: wirePostRoutes
 }

@@ -11,12 +11,10 @@
  */
 
 import type { IRouteRegistrationContext } from './ModuleDefinition'
-import { createAtlasDatabaseAccess } from '../Database/Adapters/Atlas'
-import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { PostController } from '@/Modules/Post/Presentation/Controllers/PostController'
 import { registerPostRoutes } from '@/Modules/Post/Presentation/Routes/Post.routes'
-import { UserToPostAdapter } from '@/Modules/Post/Infrastructure/Adapters/UserToPostAdapter'
-import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
+import { CreatePostService } from '@/Modules/Post/Application/Services/CreatePostService'
+import { GetPostService } from '@/Modules/Post/Application/Services/GetPostService'
 
 /**
  * 註冊 Post 模組與 Gravito 框架的整合
@@ -30,20 +28,22 @@ import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRe
  * @param ctx - 框架無關的註冊用 Context（容器 + 建立路由器）
  */
 export function registerPostWithGravito(ctx: IRouteRegistrationContext): void {
-	// 建立資料庫訪問實例（目前固定使用 Atlas adapter，未來可根據配置動態決定）
-	const db = createAtlasDatabaseAccess()
-
-	// 組裝基礎設施層：各模組專屬 Repository
-	const postRepository = new PostRepository(db)
-	const userRepository = new UserRepository(db)
-
-	// 組裝 ACL 層：將 User 領域適配為 Post 領域所需的作者服務（實作 IAuthorService Port）
-	const authorService = new UserToPostAdapter(userRepository)
-
-	// 組裝表現層：Controller（依賴 Repository 與作者服務 Port）
-	const controller = new PostController(postRepository, authorService)
-
 	const router = ctx.createModuleRouter()
+
+	let createPostService: CreatePostService
+	let getPostService: GetPostService
+
+	// 優先從容器中取得應用層服務（由 PostServiceProvider 註冊）
+	try {
+		createPostService = ctx.container.make('createPostService') as CreatePostService
+		getPostService = ctx.container.make('getPostService') as GetPostService
+	} catch (error) {
+		console.warn(`⚠️ [Post] Services not found in container, skipping Post routes: ${(error as Error).message}`)
+		return
+	}
+
+	// 組裝表現層：Controller（依賴應用層服務）
+	const controller = new PostController(createPostService, getPostService)
 
 	// 透過統一的模組路由介面註冊所有端點
 	registerPostRoutes(router, controller)

@@ -38,13 +38,16 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	})
 	const core = new PlanetCore(config)
 
-	// Step 5: 註冊基礎設施適配器 (由 Gravito 框架模組驅動)
+	// Step 5: 在容器中註冊資料庫實例（供模組使用）
+	core.container.singleton('databaseAccess', () => db)
+
+	// Step 6: 註冊基礎設施適配器 (由 Gravito 框架模組驅動)
 	core.register(createGravitoServiceProvider(new InfrastructureServiceProvider()))
 
-	// Step 6: 註冊基礎設施共享服務 (如 EventDispatcher)
+	// Step 7: 註冊基礎設施共享服務 (如 EventDispatcher)
 	core.register(createGravitoServiceProvider(new SharedServiceProvider()))
 
-	// Step 7 & 8: ✨ 自動掃描並裝配所有模組 (Auto-Wiring)
+	// Step 8 & 9: ✨ 自動掃描並裝配所有模組 (Auto-Wiring)
 	await ModuleAutoWirer.wire(core, db)
 
 	// Step 9: 執行 ServiceProvider 的 boot() 初始化
