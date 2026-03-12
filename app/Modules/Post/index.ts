@@ -34,6 +34,12 @@ export { GetPostService } from './Application/Services/GetPostService'
 // Application - DTOs
 export { PostDTO, type PostJSONData } from './Application/DTOs/PostDTO'
 
+// Application - ReadModels (CQRS)
+export type { PostReadModel } from './Application/ReadModels/PostReadModel'
+
+// Application - Queries (CQRS)
+export type { IPostQueryService } from './Application/Queries/IPostQueryService'
+
 // Presentation
 export { registerPostRoutes } from './Presentation/Routes/Post.routes'
 export { PostController } from './Presentation/Controllers/PostController'

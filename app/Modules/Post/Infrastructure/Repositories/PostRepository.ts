@@ -13,6 +13,7 @@
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
+import type { IEventStore } from '@/Shared/Infrastructure/IEventStore'
 import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
 import { Post } from '../../Domain/Aggregates/Post'
 import { Title } from '../../Domain/ValueObjects/Title'
@@ -22,6 +23,7 @@ import { PostPublished } from '../../Domain/Events/PostPublished'
 import { PostArchived } from '../../Domain/Events/PostArchived'
 import { PostTitleChanged } from '../../Domain/Events/PostTitleChanged'
 import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
+import { OptimisticLockException } from '@/Shared/Application/OptimisticLockException'
 
 /**
  * PostRepository 類別
@@ -35,10 +37,12 @@ export class PostRepository implements IPostRepository {
    *
    * @param db - 資料庫存取介面實例 (Port)
    * @param eventDispatcher - 領域事件分發器實例（可選）
+   * @param eventStore - 事件存儲實例（可選）
    */
   constructor(
     private readonly db: IDatabaseAccess,
-    private readonly eventDispatcher?: IEventDispatcher
+    private readonly eventDispatcher?: IEventDispatcher,
+    private readonly eventStore?: IEventStore
   ) {}
 
   // ============================================
@@ -47,22 +51,48 @@ export class PostRepository implements IPostRepository {
 
   /**
    * 保存文章聚合根 (新增或更新)
+   * 支援樂觀鎖版本控制與事件存儲
    *
    * **Repository 責任**：
    * 1. 在儲存時，標記聚合的事件為已提交（因為內存不需持久化層）
    * 2. 若有 EventDispatcher，應分派未提交的事件
+   * 3. 若有 EventStore，應持久化事件
    *
    * @param entity - 文章聚合根（包含未提交事件）
+   * @throws OptimisticLockException - 版本衝突時拋出
    * @returns Promise<void>
    */
   async save(entity: Post): Promise<void> {
     const row = this.toRow(entity)
-    const exists = await this.findById(entity.id)
+    const existing = await this.findById(entity.id)
 
-    if (exists) {
-      await this.db.table('posts').where('id', '=', entity.id).update(row)
+    if (existing) {
+      // 更新現有文章（使用樂觀鎖）
+      const dbRow = await this.db.table('posts').where('id', '=', entity.id).first()
+      const currentVersion = (dbRow?.version as number) ?? 0
+      const newVersion = currentVersion + 1
+
+      // 驗證版本衝突：檢查是否還有符合舊版本條件的記錄
+      const beforeUpdate = await this.db
+        .table('posts')
+        .where('id', '=', entity.id)
+        .where('version', '=', currentVersion)
+        .first()
+
+      if (!beforeUpdate) {
+        // 版本不匹配，表示已被其他操作更新
+        throw new OptimisticLockException('Post', entity.id, currentVersion)
+      }
+
+      // 條件更新：WHERE id = ? AND version = ?
+      await this.db
+        .table('posts')
+        .where('id', '=', entity.id)
+        .where('version', '=', currentVersion)
+        .update({ ...row, version: newVersion })
     } else {
-      await this.db.table('posts').insert(row)
+      // 新增文章，初始版本為 0
+      await this.db.table('posts').insert({ ...row, version: 0 })
     }
 
     // ✨ 若注入了分發器，則分發領域事件和轉換後的整合事件
@@ -74,6 +104,26 @@ export class PostRepository implements IPostRepository {
 
       await this.eventDispatcher.dispatch([...domainEvents, ...integrationEvents])
       entity.markEventsAsCommitted()
+    }
+
+    // ✨ 若注入了事件存儲，則持久化事件
+    if (this.eventStore && entity.getUncommittedEvents().length > 0) {
+      const currentCount = await this.eventStore.countByAggregateId(entity.id)
+      const domainEvents = entity.getUncommittedEvents()
+
+      const storedEvents = domainEvents.map((event, index) => ({
+        id: crypto.randomUUID(),
+        eventId: event.eventId,
+        aggregateId: entity.id,
+        aggregateType: 'Post',
+        eventType: event.constructor.name,
+        eventData: JSON.stringify(event.toJSON()),
+        eventVersion: 1,
+        aggregateVersion: currentCount + index + 1,
+        occurredAt: event.occurredAt.toISOString(),
+      }))
+
+      await this.eventStore.append(storedEvents)
     }
   }
 

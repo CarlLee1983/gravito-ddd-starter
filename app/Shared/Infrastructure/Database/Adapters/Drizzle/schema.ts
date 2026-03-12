@@ -23,6 +23,8 @@ export const users = sqliteTable('users', {
   name: text('name').notNull(),
   /** 電子郵件 (唯一值) */
   email: text('email').notNull().unique(),
+  /** 樂觀鎖版本號 (用於併發控制) */
+  version: integer('version').notNull().default(0),
   /** 建立時間 */
   created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   /** 更新時間 */
@@ -48,6 +50,8 @@ export const posts = sqliteTable('posts', {
   is_published: integer('is_published').default(0),
   /** 是否已存檔 (0=正常, 1=已存檔) */
   is_archived: integer('is_archived').default(0),
+  /** 樂觀鎖版本號 (用於併發控制) */
+  version: integer('version').notNull().default(0),
   /** 建立時間 */
   created_at: text('created_at').default(sql`CURRENT_TIMESTAMP`),
   /** 更新時間 */
@@ -67,4 +71,29 @@ export const healthChecks = sqliteTable('health_checks', {
   timestamp: text('timestamp').default(sql`CURRENT_TIMESTAMP`),
   /** 詳細資訊 (JSON 字串) */
   details: text('details'),
+})
+
+/**
+ * Event Store 資料表
+ * 儲存所有 Domain Events，用於事件溯源和稽核。
+ */
+export const eventStore = sqliteTable('event_store', {
+  /** 內部主鍵 (UUID) */
+  id: text('id').primaryKey(),
+  /** 事件 ID (DomainEvent.eventId) */
+  event_id: text('event_id').notNull().unique(),
+  /** 聚合根 ID */
+  aggregate_id: text('aggregate_id').notNull(),
+  /** 聚合根類型 ('User' | 'Post' | ...) */
+  aggregate_type: text('aggregate_type').notNull(),
+  /** 事件類型名稱 */
+  event_type: text('event_type').notNull(),
+  /** 事件資料 (JSON 序列化) */
+  event_data: text('event_data').notNull(),
+  /** 事件 Schema 版本 */
+  event_version: integer('event_version').notNull().default(1),
+  /** 聚合根事件序號 (遞增) */
+  aggregate_version: integer('aggregate_version').notNull(),
+  /** 事件發生時間 (ISO 8601) */
+  occurred_at: text('occurred_at').notNull(),
 })

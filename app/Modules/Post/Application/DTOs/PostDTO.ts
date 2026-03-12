@@ -25,6 +25,10 @@ export interface PostJSONData {
   content: string
   /** 作者識別碼 */
   authorId: string
+  /** 是否已發佈 */
+  isPublished: boolean
+  /** 是否已存檔 */
+  isArchived: boolean
   /** 建立時間 (ISO 格式字串) */
   createdAt: string
 }
@@ -44,6 +48,10 @@ export class PostDTO {
   content: string = ''
   /** 作者識別碼 */
   authorId: string = ''
+  /** 是否已發佈 */
+  isPublished: boolean = false
+  /** 是否已存檔 */
+  isArchived: boolean = false
   /** 建立時間 */
   createdAt: Date = new Date()
 
@@ -59,6 +67,8 @@ export class PostDTO {
     dto.title = entity.title.value
     dto.content = entity.content.value
     dto.authorId = entity.authorId
+    dto.isPublished = entity.isPublished
+    dto.isArchived = entity.isArchived
     dto.createdAt = entity.createdAt
     return dto
   }
@@ -74,6 +84,8 @@ export class PostDTO {
       title: this.title,
       content: this.content,
       authorId: this.authorId,
+      isPublished: this.isPublished,
+      isArchived: this.isArchived,
       createdAt: this.createdAt.toISOString(),
     }
   }

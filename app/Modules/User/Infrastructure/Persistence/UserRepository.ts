@@ -23,6 +23,7 @@
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
+import type { IEventStore } from '@/Shared/Infrastructure/IEventStore'
 import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
 import { User } from '../../Domain/Aggregates/User'
 import { Email } from '../../Domain/ValueObjects/Email'
@@ -31,6 +32,7 @@ import { UserCreated } from '../../Domain/Events/UserCreated'
 import { UserNameChanged } from '../../Domain/Events/UserNameChanged'
 import { UserEmailChanged } from '../../Domain/Events/UserEmailChanged'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
+import { OptimisticLockException } from '@/Shared/Application/OptimisticLockException'
 
 /**
  * 用戶倉儲類別，封裝所有用戶相關的資料存取邏輯
@@ -40,10 +42,12 @@ export class UserRepository implements IUserRepository {
 	 * 建構子
 	 * @param db - 資料庫存取介面實例
 	 * @param eventDispatcher - 領域事件分發器實例
+	 * @param eventStore - 事件存儲實例（選擇性）
 	 */
 	constructor(
 		private readonly db: IDatabaseAccess,
-		private readonly eventDispatcher?: IEventDispatcher
+		private readonly eventDispatcher?: IEventDispatcher,
+		private readonly eventStore?: IEventStore
 	) {}
 
 	// ============================================
@@ -52,8 +56,10 @@ export class UserRepository implements IUserRepository {
 
 	/**
 	 * 保存用戶（新增或更新）
+	 * 支援樂觀鎖版本控制與事件存儲
 	 *
 	 * @param user - User 領域實體
+	 * @throws OptimisticLockException - 版本衝突時拋出
 	 * @returns 非同步作業
 	 */
 	async save(user: User): Promise<void> {
@@ -61,9 +67,31 @@ export class UserRepository implements IUserRepository {
 		const existing = await this.db.table('users').where('id', '=', user.id).first()
 
 		if (existing) {
-			await this.db.table('users').where('id', '=', user.id).update(row)
+			// 更新現有用戶（使用樂觀鎖）
+			const currentVersion = (existing.version as number) ?? 0
+			const newVersion = currentVersion + 1
+
+			// 驗證版本衝突：檢查是否還有符合舊版本條件的記錄
+			const beforeUpdate = await this.db
+				.table('users')
+				.where('id', '=', user.id)
+				.where('version', '=', currentVersion)
+				.first()
+
+			if (!beforeUpdate) {
+				// 版本不匹配，表示已被其他操作更新
+				throw new OptimisticLockException('User', user.id, currentVersion)
+			}
+
+			// 條件更新：WHERE id = ? AND version = ?
+			await this.db
+				.table('users')
+				.where('id', '=', user.id)
+				.where('version', '=', currentVersion)
+				.update({ ...row, version: newVersion })
 		} else {
-			await this.db.table('users').insert(row)
+			// 新增用戶，初始版本為 0
+			await this.db.table('users').insert({ ...row, version: 0 })
 		}
 
 		// ✨ 若注入了分發器，則分發事件
@@ -75,6 +103,26 @@ export class UserRepository implements IUserRepository {
 
 			await this.eventDispatcher.dispatch([...domainEvents, ...integrationEvents])
 			user.markEventsAsCommitted()
+		}
+
+		// ✨ 若注入了事件存儲，則持久化事件
+		if (this.eventStore && user.getUncommittedEvents().length > 0) {
+			const currentCount = await this.eventStore.countByAggregateId(user.id)
+			const domainEvents = user.getUncommittedEvents()
+
+			const storedEvents = domainEvents.map((event, index) => ({
+				id: crypto.randomUUID(),
+				eventId: event.eventId,
+				aggregateId: user.id,
+				aggregateType: 'User',
+				eventType: event.constructor.name,
+				eventData: JSON.stringify(event.toJSON()),
+				eventVersion: 1,
+				aggregateVersion: currentCount + index + 1,
+				occurredAt: event.occurredAt.toISOString(),
+			}))
+
+			await this.eventStore.append(storedEvents)
 		}
 	}
 

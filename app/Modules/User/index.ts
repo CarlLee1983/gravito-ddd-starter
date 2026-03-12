@@ -30,6 +30,12 @@ export { GetUserService } from './Application/Services/GetUserService'
 // Application - DTOs
 export { UserDTO, type UserJSONData } from './Application/DTOs/UserDTO'
 
+// Application - ReadModels (CQRS)
+export type { UserReadModel } from './Application/ReadModels/UserReadModel'
+
+// Application - Queries (CQRS)
+export type { IUserQueryService } from './Application/Queries/IUserQueryService'
+
 // Infrastructure
 export { UserRepository } from './Infrastructure/Persistence/UserRepository'
 export { UserServiceProvider } from './Infrastructure/Providers/UserServiceProvider'
