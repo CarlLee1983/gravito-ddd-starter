@@ -43,9 +43,12 @@ export class CreateUserService {
     name: string
     email: string
   }): Promise<UserDTO> {
+    console.log('[CreateUserService.execute] 開始建立用戶:', { id: input.id, name: input.name })
+
     // 1. 建立 ValueObject（執行業務規則驗證）
     const email = Email.create(input.email)
     const name = UserName.create(input.name)
+    console.log('[CreateUserService] ValueObjects 已建立')
 
     // 2. 檢查電子郵件是否已被使用
     const existingUser = await this.repository.findByEmail(email)
@@ -55,11 +58,16 @@ export class CreateUserService {
 
     // 3. 建立聚合根（產生 UserCreated 事件）
     const user = User.create(input.id, name, email)
+    console.log('[CreateUserService] User 聚合根已建立，未提交事件:', user.getUncommittedEvents().length)
 
     // 4. 保存到倉儲（Repository 負責分派事件）
+    console.log('[CreateUserService] 開始呼叫 repository.save()...')
     await this.repository.save(user)
+    console.log('[CreateUserService] repository.save() 完成')
 
     // 5. 轉換為 DTO 供表現層使用
-    return UserDTO.fromEntity(user)
+    const dto = UserDTO.fromEntity(user)
+    console.log('[CreateUserService.execute] 用戶建立完成:', { userId: dto.id })
+    return dto
   }
 }
