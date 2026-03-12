@@ -9,6 +9,9 @@
 import type { GravitoOrbit } from '@gravito/core'
 import { OrbitAtlas } from '@gravito/atlas'
 import type { RedisManagerConfig } from '@gravito/plasma'
+// TODO: Orbits require fixes in gravito-core module structure
+// import { OrbitPlasma } from '@gravito/plasma'
+// import { OrbitStasis } from '@gravito/stasis'
 
 export type OrbitRegistrationOptions = {
 	/** 是否啟用資料庫（OrbitAtlas） */
