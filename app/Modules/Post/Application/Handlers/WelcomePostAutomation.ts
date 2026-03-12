@@ -59,10 +59,10 @@ export class WelcomePostAutomation {
 			const userId = event.data.userId as string
 			const userName = event.data.name as string
 
-			// 自動為新用戶創建歡迎文章
+			// 自動為新用戶創建歡迎文章（加入 userId 保證標題唯一性）
 			await this.postService.execute({
 				id: crypto.randomUUID(),
-				title: `歡迎來到我的部落格，${userName}！`,
+				title: `${userName} 的歡迎文章 (${userId.substring(0, 8)})`,
 				content: `親愛的 ${userName}，\n\n歡迎加入我們的社區！🎉\n\n這是您的第一篇文章，請盡情分享您的想法和經驗。\n\n祝您寫作愉快！`,
 				authorId: userId,
 			})

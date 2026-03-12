@@ -7,6 +7,7 @@ import { ModuleServiceProvider, type IContainer } from '../IServiceProvider'
 import { MemoryEventDispatcher } from '../Framework/MemoryEventDispatcher'
 import { RedisEventDispatcher } from '../Framework/RedisEventDispatcher'
 import { SystemWorker } from '../../Application/SystemWorker'
+import { GravitoLoggerAdapter } from '../Framework/GravitoLoggerAdapter'
 import type { IRedisService } from '../IRedisService'
 import type { RedisJobQueueAdapter } from '../Framework/RedisJobQueueAdapter'
 
@@ -26,8 +27,19 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 				const redis = c.make('redis') as IRedisService
 				return new RedisEventDispatcher(redis)
 			}
-				const logger = c.make('logger')
-			return new MemoryEventDispatcher(logger)
+			// 直接使用 GravitoLoggerAdapter，避免依賴容器
+		const logger = new GravitoLoggerAdapter()
+		console.log(`[SharedServiceProvider] Creating MemoryEventDispatcher with logger:`, {
+			loggerType: typeof logger,
+			loggerClass: logger.constructor.name,
+			hasDebug: typeof logger.debug,
+		})
+		const dispatcher = new MemoryEventDispatcher(logger)
+		console.log(`[SharedServiceProvider] MemoryEventDispatcher created:`, {
+			dispatcherType: typeof dispatcher,
+			dispatcherClass: dispatcher.constructor.name,
+		})
+		return dispatcher
 		})
 
 		// 註冊統一 Worker (僅在 Redis 模式下有效)

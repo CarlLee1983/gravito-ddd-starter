@@ -18,8 +18,16 @@ import type { ILogger } from '../ILogger'
  */
 export class MemoryEventDispatcher implements IEventDispatcher {
 	private handlers: Map<string, EventHandler[]> = new Map()
+	private logger: ILogger
 
-	constructor(private logger: ILogger) {}
+	constructor(logger?: ILogger) {
+		this.logger = logger || {
+			debug: (msg: string) => console.debug(`[DEBUG] ${msg}`),
+			info: (msg: string) => console.info(`[INFO] ${msg}`),
+			warn: (msg: string) => console.warn(`[WARN] ${msg}`),
+			error: (msg: string, err?: any) => console.error(`[ERROR] ${msg}`, err),
+		} as any
+	}
 
 	/**
 	 * 分發事件（DomainEvent 或 IntegrationEvent）
