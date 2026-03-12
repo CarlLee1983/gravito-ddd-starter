@@ -6,7 +6,7 @@
 import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
 import { UserServiceProvider } from './Infrastructure/Providers/UserServiceProvider'
 import { registerUserRepositories } from './Infrastructure/Providers/registerUserRepositories'
-import { registerUser } from '@/wiring/index'
+import { wireUserRoutes } from './Infrastructure/Wiring/wireUserRoutes'
 
 // Domain - Aggregates
 export { User } from './Domain/Aggregates/User'
@@ -52,5 +52,5 @@ export const UserModule: IModuleDefinition = {
 	name: 'User',
 	provider: UserServiceProvider,
 	registerRepositories: registerUserRepositories,
-	registerRoutes: registerUser
+	registerRoutes: wireUserRoutes
 }

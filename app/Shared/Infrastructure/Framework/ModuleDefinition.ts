@@ -7,10 +7,21 @@
  * - 職責：規定每個獨立模組必須提供的組裝資訊，包括 DI 註冊、倉庫註冊與路由裝配。
  */
 
-import type { PlanetCore } from '@gravito/core'
 import type { IDatabaseAccess } from '../IDatabaseAccess'
 import type { ModuleServiceProvider } from '../IServiceProvider'
 import type { IEventDispatcher } from '../IEventDispatcher'
+import type { IModuleRouter } from '../../Presentation/IModuleRouter'
+
+/**
+ * 路由註冊用 Context（框架無關）
+ * 模組內不應依賴 @gravito/core，改由此介面取得容器與路由器。
+ */
+export interface IRouteRegistrationContext {
+	/** 從 DI 解析服務（僅需 make，框架無關） */
+	container: { make(name: string): unknown }
+	/** 建立模組用路由實例 */
+	createModuleRouter(): IModuleRouter
+}
 
 /**
  * 模組定義介面
@@ -34,9 +45,9 @@ export interface IModuleDefinition {
 
 	/**
 	 * 路由與表現層註冊函式 (選填)
-	 * 用於裝配 Controller 並在框架中註冊路由
+	 * 用於裝配 Controller 並在框架中註冊路由（僅依賴 IRouteRegistrationContext，不依賴具體框架）
 	 *
-	 * @param core - Gravito 核心實例
+	 * @param ctx - 框架無關的註冊用 Context（容器 + 建立路由器）
 	 */
-	registerRoutes?: (core: PlanetCore) => void
+	registerRoutes?: (ctx: IRouteRegistrationContext) => void
 }

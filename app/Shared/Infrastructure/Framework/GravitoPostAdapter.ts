@@ -10,9 +10,7 @@
  * 所有業務邏輯層完全無框架耦合。
  */
 
-import type { PlanetCore } from '@gravito/core'
-
-import { createGravitoModuleRouter } from './GravitoModuleRouter'
+import type { IRouteRegistrationContext } from './ModuleDefinition'
 import { createAtlasDatabaseAccess } from '../Database/Adapters/Atlas'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { PostController } from '@/Modules/Post/Presentation/Controllers/PostController'
@@ -29,9 +27,9 @@ import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRe
  * 3. 透過 UserToPostAdapter 實作 IAuthorService Port，隔離不同領域。
  * 4. 注入 Controller，確保應用層與表現層解耦。
  *
- * @param core - Gravito 核心實例
+ * @param ctx - 框架無關的註冊用 Context（容器 + 建立路由器）
  */
-export function registerPostWithGravito(core: PlanetCore): void {
+export function registerPostWithGravito(ctx: IRouteRegistrationContext): void {
 	// 建立資料庫訪問實例（目前固定使用 Atlas adapter，未來可根據配置動態決定）
 	const db = createAtlasDatabaseAccess()
 
@@ -45,8 +43,7 @@ export function registerPostWithGravito(core: PlanetCore): void {
 	// 組裝表現層：Controller（依賴 Repository 與作者服務 Port）
 	const controller = new PostController(postRepository, authorService)
 
-	// 建立框架無關的路由介面
-	const router = createGravitoModuleRouter(core)
+	const router = ctx.createModuleRouter()
 
 	// 透過統一的模組路由介面註冊所有端點
 	registerPostRoutes(router, controller)

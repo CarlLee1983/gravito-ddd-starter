@@ -27,6 +27,7 @@
     "types": ["bun-types"],
     "paths": {
       "@/*": ["./app/*"],
+      "@/wiring/*": ["./start/wiring/*"],
       "start/*": ["./start/*"],
       "providers/*": ["./providers/*"],
       "~/*": ["./resources/js/*"],

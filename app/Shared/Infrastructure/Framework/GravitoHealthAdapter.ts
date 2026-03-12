@@ -7,10 +7,9 @@
  * - 職責：作為核心系統與 Gravito 特定服務（如 Redis, Cache）的對接點，組裝健康檢查相關的服務與控制器。
  */
 
-import type { PlanetCore } from '@gravito/core'
 import type { RedisClientContract } from '@gravito/plasma'
 import type { CacheManager } from '@gravito/stasis'
-import { createGravitoModuleRouter } from './GravitoModuleRouter'
+import type { IRouteRegistrationContext } from './ModuleDefinition'
 import { GravitoRedisAdapter } from './GravitoRedisAdapter'
 import { GravitoCacheAdapter } from './GravitoCacheAdapter'
 import { createGravitoDatabaseConnectivityCheck } from '../Database/Adapters/Atlas'
@@ -22,35 +21,32 @@ import { MemoryHealthCheckRepository } from '@/Modules/Health/Infrastructure/Rep
  * 註冊 Health 模組與 Gravito 框架的整合
  *
  * 責任：
- * 1. 從 PlanetCore 取得 Redis/Cache（可能為 undefined）
+ * 1. 從 Context 取得 Redis/Cache（可能為 undefined）
  * 2. 適配為框架無關的 IRedisService/ICacheService
  * 3. 組裝 PerformHealthCheckService + HealthController
  * 4. 透過 IModuleRouter 註冊路由
  *
- * 這是唯一知道 Gravito 如何組織服務的地方。
- * 所有底層模組完全無框架耦合。
+ * 適配器僅依賴 IRouteRegistrationContext，不直接依賴 PlanetCore。
  *
- * @param core - Gravito 核心 PlanetCore 實例
+ * @param ctx - 框架無關的註冊用 Context（容器 + 建立路由器）
  *
  * @example
- * registerHealthWithGravito(core)
+ * registerHealthWithGravito(ctx)
  */
-export function registerHealthWithGravito(core: PlanetCore): void {
-	// 從 PlanetCore 取得原始服務（可能為 undefined）
+export function registerHealthWithGravito(ctx: IRouteRegistrationContext): void {
+	// 從 Context 取得原始服務（可能為 undefined）
 	let rawRedis: RedisClientContract | undefined
 	let rawCache: CacheManager | undefined
 
 	try {
-		rawRedis = core.container.make<RedisClientContract | undefined>('redis')
+		rawRedis = ctx.container.make('redis') as RedisClientContract | undefined
 	} catch {
-		// Redis 未註冊時忽略
 		rawRedis = undefined
 	}
 
 	try {
-		rawCache = core.container.make<CacheManager | undefined>('cache')
+		rawCache = ctx.container.make('cache') as CacheManager | undefined
 	} catch {
-		// Cache 未註冊時忽略
 		rawCache = undefined
 	}
 
@@ -64,8 +60,7 @@ export function registerHealthWithGravito(core: PlanetCore): void {
 	const performHealthCheckService = new PerformHealthCheckService(repository)
 	const controller = new HealthController(performHealthCheckService)
 
-	// 建立框架無關的路由介面
-	const router = createGravitoModuleRouter(core)
+	const router = ctx.createModuleRouter()
 
 	// 透過 IModuleRouter 註冊路由
 	router.get('/health', (ctx) => {

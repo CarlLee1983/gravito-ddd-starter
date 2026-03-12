@@ -10,7 +10,11 @@ import { glob } from 'glob'
 import type { PlanetCore } from '@gravito/core'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Framework/GravitoServiceProviderAdapter'
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Framework/GravitoModuleRouter'
+import type {
+	IModuleDefinition,
+	IRouteRegistrationContext,
+} from '@/Shared/Infrastructure/Framework/ModuleDefinition'
 
 /**
  * 模組自動裝配器類別
@@ -70,9 +74,13 @@ export class ModuleAutoWirer {
 					moduleDef.registerRepositories(db, eventDispatcher)
 				}
 
-				// 第三步：裝配 Presentation 層 (Controllers & Routes)
+				// 第三步：裝配 Presentation 層 (Controllers & Routes)，傳入框架無關的 Context
 				if (moduleDef.registerRoutes) {
-					moduleDef.registerRoutes(core)
+					const routeCtx: IRouteRegistrationContext = {
+						container: core.container,
+						createModuleRouter: () => createGravitoModuleRouter(core),
+					}
+					moduleDef.registerRoutes(routeCtx)
 				}
 
 				modulesFound.push(moduleDef.name)

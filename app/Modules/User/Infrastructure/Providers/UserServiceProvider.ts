@@ -22,7 +22,10 @@
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
 import { getRegistry } from '@/wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
+import { CreateUserService } from '../../Application/Services/CreateUserService'
+import { GetUserService } from '../../Application/Services/GetUserService'
 import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'
+import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 import type { IMailer } from '@/Shared/Infrastructure/IMailer'
 import type { ILogger } from '@/Shared/Infrastructure/ILogger'
@@ -50,7 +53,15 @@ export class UserServiceProvider extends ModuleServiceProvider {
 			return registry.create('user', orm, db)
 		})
 
-		// 2. 註冊歡迎信 Handler (單例)
+		// 2. Application Services（供 Controller 使用）
+		container.singleton('createUserService', (c) => {
+			return new CreateUserService(c.make('userRepository') as IUserRepository)
+		})
+		container.singleton('getUserService', (c) => {
+			return new GetUserService(c.make('userRepository') as IUserRepository)
+		})
+
+		// 3. 註冊歡迎信 Handler (單例)
 		container.singleton('sendWelcomeEmailHandler', (c) => {
 			return new SendWelcomeEmail(
 				c.make('mailer') as IMailer,
