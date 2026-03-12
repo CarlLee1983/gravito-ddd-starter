@@ -9,6 +9,7 @@
 import type { DomainEvent } from '../../Domain/DomainEvent'
 import type { IntegrationEvent } from '../../Domain/IntegrationEvent'
 import type { IEventDispatcher, Event, EventHandler } from '../IEventDispatcher'
+import type { ILogger } from '../ILogger'
 
 /**
  * 內存事件分發器
@@ -17,6 +18,8 @@ import type { IEventDispatcher, Event, EventHandler } from '../IEventDispatcher'
  */
 export class MemoryEventDispatcher implements IEventDispatcher {
 	private handlers: Map<string, EventHandler[]> = new Map()
+
+	constructor(private logger: ILogger) {}
 
 	/**
 	 * 分發事件（DomainEvent 或 IntegrationEvent）
@@ -29,7 +32,7 @@ export class MemoryEventDispatcher implements IEventDispatcher {
 			const handlers = this.handlers.get(eventName) || []
 
 			if (handlers.length === 0) {
-				console.debug(`[EventDispatcher] 無人訂閱事件: ${eventName}`)
+				this.logger.debug(`[EventDispatcher] 無人訂閱事件: ${eventName}`)
 				continue
 			}
 
@@ -39,7 +42,7 @@ export class MemoryEventDispatcher implements IEventDispatcher {
 					try {
 						await handler(event)
 					} catch (error) {
-						console.error(`[EventDispatcher] 處理事件 ${eventName} 時發生錯誤:`, error)
+						this.logger.error(`[EventDispatcher] 處理事件 ${eventName} 時發生錯誤`, error instanceof Error ? error : new Error(String(error)))
 					}
 				})
 			)

@@ -10,6 +10,7 @@
  */
 
 import type { IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
+import type { ILogger } from '@/Shared/Infrastructure/ILogger'
 import { CreatePostService } from '../Services/CreatePostService'
 
 /**
@@ -33,8 +34,12 @@ export class UserCreatedHandler {
    * 建立 UserCreatedHandler 實例
    *
    * @param postService - Post 模組的建立文章應用服務
+   * @param logger - 日誌服務
    */
-  constructor(private postService: CreatePostService) {}
+  constructor(
+    private postService: CreatePostService,
+    private logger: ILogger
+  ) {}
 
   /**
    * 處理 UserCreated 整合事件
@@ -61,12 +66,12 @@ export class UserCreatedHandler {
         authorId: userId,
       })
 
-      console.log(`✨ [Post Module] 為用戶 ${userId} (${userName}) 建立了歡迎文章`)
+      this.logger.info(`✨ [Post Module] 為用戶 ${userId} (${userName}) 建立了歡迎文章`)
     } catch (error) {
       // 記錄錯誤但不中斷流程（防腐層應對）
       // 建立歡迎文章失敗不應該阻止用戶建立
       const userId = event.data.userId || 'unknown'
-      console.error(`⚠️  [Post Module] 為用戶 ${userId} 建立歡迎文章失敗: ${error instanceof Error ? error.message : String(error)}`)
+      this.logger.error(`[Post Module] 為用戶 ${userId} 建立歡迎文章失敗`, error instanceof Error ? error : new Error(String(error)))
     }
   }
 }

@@ -25,6 +25,7 @@ import { UserCreated } from '@/Modules/User/Domain/Events/UserCreated'
 import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
 import type { IPostRepository } from '@/Modules/Post/Domain/Repositories/IPostRepository'
 import type { IAuthorService } from '@/Modules/Post/Domain/Services/IAuthorService'
+import type { ILogger } from '@/Shared/Infrastructure/ILogger'
 
 // ============ ValueObject 驗證測試 ============
 
@@ -407,6 +408,7 @@ describe('Phase 3: CreatePostService Workflow', () => {
 describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
   let mockRepository: IPostRepository
   let mockAuthorService: IAuthorService
+  let mockLogger: ILogger
   let handler: UserCreatedHandler
 
   beforeEach(() => {
@@ -425,8 +427,15 @@ describe('Phase 3: UserCreatedHandler (Cross-Bounded Context)', () => {
       findAuthor: async (id: string) => ({ id, name: 'New User', email: 'user@example.com' }),
     }
 
+    mockLogger = {
+      info: () => {},
+      error: () => {},
+      debug: () => {},
+      warn: () => {},
+    } as any
+
     const createPostService = new CreatePostService(mockRepository, mockAuthorService)
-    handler = new UserCreatedHandler(createPostService)
+    handler = new UserCreatedHandler(createPostService, mockLogger)
   })
 
   it('should handle UserCreated event and create welcome post', async () => {
