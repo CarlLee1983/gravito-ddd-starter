@@ -1,8 +1,8 @@
 /**
  * @file SessionTokenValidator.ts
- * @description Session 模块对 ITokenValidator Port 的实现
+ * @description Session 模組對 ITokenValidator Port 的實現
  *
- * 将 ValidateSessionService（Domain Logic）适配到 ITokenValidator Port。
+ * 將 ValidateSessionService（Domain Logic）適配到 ITokenValidator Port。
  */
 
 import type { ITokenValidator, TokenValidationResult } from '@/Shared/Infrastructure/Ports/Auth/ITokenValidator'
@@ -10,30 +10,30 @@ import { ValidateSessionService } from '../../Application/Services/ValidateSessi
 import { SessionExpiredException } from '../../Domain/Exceptions/SessionExpiredException'
 
 /**
- * Session 模块的 Token 验证器
+ * Session 模組的 Token 驗證器
  *
- * 此类是一个适配器（Adapter Pattern），将应用层的 ValidateSessionService
- * 适配到基础设施层的 ITokenValidator Port。
+ * 此類是一個適配器（Adapter Pattern），將應用層的 ValidateSessionService
+ * 適配到基礎設施層的 ITokenValidator Port。
  *
- * 职责：
- * - 接收来自 JwtGuardMiddleware 的 Token 字符串
- * - 委派给 ValidateSessionService 进行验证
- * - 捕获特定异常并返回 null（表示验证失败）
- * - 返回标准的 TokenValidationResult
+ * 職責：
+ * - 接收來自 JwtGuardMiddleware 的 Token 字串
+ * - 委派給 ValidateSessionService 進行驗證
+ * - 捕獲特定異常並返回 null（表示驗證失敗）
+ * - 返回標準的 TokenValidationResult
  */
 export class SessionTokenValidator implements ITokenValidator {
   /**
-   * 构造函数
+   * 建構子
    *
-   * @param validateSessionService - 应用层的验证服务
+   * @param validateSessionService - 應用層的驗證服務
    */
   constructor(private validateSessionService: ValidateSessionService) {}
 
   /**
-   * 验证 Bearer Token
+   * 驗證 Bearer Token
    *
-   * @param token - JWT Token 字符串
-   * @returns 验证成功返回用户 ID 和 Session ID；失败返回 null
+   * @param token - JWT Token 字串
+   * @returns 驗證成功返回用戶 ID 和 Session ID；失敗返回 null
    */
   async validate(token: string): Promise<TokenValidationResult | null> {
     try {
@@ -43,13 +43,13 @@ export class SessionTokenValidator implements ITokenValidator {
         sessionId: result.sessionId,
       }
     } catch (error) {
-      // 若验证失败（包括过期、撤销、无效签名等），返回 null
-      // 这样 JwtGuardMiddleware 可以统一处理失败情况
+      // 若驗證失敗（包括過期、撤銷、無效簽名等），返回 null
+      // 這樣 JwtGuardMiddleware 可以統一處理失敗情況
       if (error instanceof SessionExpiredException) {
         return null
       }
-      // 其他异常也返回 null（而不是重新抛出）
-      // 这样 Middleware 可以安全处理任何验证失败的情况
+      // 其他異常也返回 null（而不是重新拋出）
+      // 這樣 Middleware 可以安全處理任何驗證失敗的情況
       return null
     }
   }
