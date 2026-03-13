@@ -29,6 +29,7 @@ export { GetUserService } from './Application/Services/GetUserService'
 
 // Application - DTOs
 export { UserDTO, type UserJSONData } from './Application/DTOs/UserDTO'
+export type { AuthorDTO } from './Application/DTOs/AuthorDTO'
 
 // Application - ReadModels (CQRS)
 export type { UserReadModel } from './Application/ReadModels/UserReadModel'

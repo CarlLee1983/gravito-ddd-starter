@@ -4,7 +4,7 @@
  * @module src/Modules/Post/Application/DTOs
  */
 
-import type { AuthorDTO } from '@/Shared/Application/DTOs/AuthorDTO'
+import type { AuthorDTO } from '@/Modules/User'
 
 /**
  * PostDTO 介面
