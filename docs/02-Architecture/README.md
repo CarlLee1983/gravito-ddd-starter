@@ -8,12 +8,12 @@
 
 | 文檔 | 重點 |
 |------|------|
-| **[ARCHITECTURE.md](./ARCHITECTURE.md)** | ⭐ **必讀**：四層架構、依賴方向、數據流 |
-| **[ARCHITECTURE_DECISIONS.md](./ARCHITECTURE_DECISIONS.md)** | 為什麼這樣設計、核心決策 |
-| **[ABSTRACTION_RULES.md](./ABSTRACTION_RULES.md)** | DO/DON'T：層級分離規則 |
-| **[DEPENDENCY_INJECTION_ARCHITECTURE.md](./DEPENDENCY_INJECTION_ARCHITECTURE.md)** | DI 容器設計和模組組裝 |
-| **[ARCHITECTURE_PATTERNS.md](./ARCHITECTURE_PATTERNS.md)** | 進階模式：CQRS、Event Sourcing、Saga |
-| **[SCALABLE_ORM_ARCHITECTURE.md](./SCALABLE_ORM_ARCHITECTURE.md)** | ORM 無感知設計的可擴展性 |
+| **[CORE_DESIGN.md](./CORE_DESIGN.md)** | ⭐ **必讀**：四層架構、依賴方向、數據流、模組結構 |
+| **[EVENT_SYSTEM.md](./EVENT_SYSTEM.md)** | 事件驅動架構：領域事件、整合事件、重試機制與 DLQ |
+| **[../03-DDD-Design/DDD_PATTERNS.md](../03-DDD-Design/DDD_PATTERNS.md)** | DDD 模式：實體、聚合、值物件、進階模式 (CQRS/ES/Saga) |
+| **[../05-Database-ORM/ORM_TRANSPARENT_DESIGN.md](../05-Database-ORM/ORM_TRANSPARENT_DESIGN.md)** | ORM 透明設計：IDatabaseAccess 與多 ORM 適配 |
+| **[../06-Adapters-Wiring/ADAPTER_GUIDE.md](../06-Adapters-Wiring/ADAPTER_GUIDE.md)** | 適配器與接線：Port & Adapter 模式實踐 |
+| **[../06-Adapters-Wiring/WIRING_SYSTEM.md](../06-Adapters-Wiring/WIRING_SYSTEM.md)** | 自動裝配系統：DI 容器與模組初始化流程 |
 
 ---
 
@@ -21,57 +21,56 @@
 
 ### 初次接觸 (30 min)
 
-1. **[ARCHITECTURE.md](./ARCHITECTURE.md)** (20 min)
+1. **[CORE_DESIGN.md](./CORE_DESIGN.md)** (20 min)
    - 四層架構圖
-   - 層級責任
-   - 依賴方向
-   - 數據流
+   - 層級責任與模組結構
+   - 依賴方向與數據流
 
-2. **[ABSTRACTION_RULES.md](./ABSTRACTION_RULES.md)** (10 min)
-   - DO/DON'T 清單
-   - 常見違反規則
+2. **[../03-DDD-Design/DDD_PATTERNS.md](../03-DDD-Design/DDD_PATTERNS.md)** (10 min)
+   - 核心 DDD 概念
+   - 實體與值物件定義
 
 ### 深入理解 (40 min)
 
-3. **[ARCHITECTURE_DECISIONS.md](./ARCHITECTURE_DECISIONS.md)** (20 min)
-   - 為什麼是四層？
-   - 為什麼 DDD？
-   - 為什麼完全抽象 ORM？
+3. **[EVENT_SYSTEM.md](./EVENT_SYSTEM.md)** (20 min)
+   - 事件驅動架構全景
+   - 失敗重試策略與死信隊列 (DLQ)
+   - 三種分發器 (Memory/Redis/RabbitMQ) 詳解
 
-4. **[DEPENDENCY_INJECTION_ARCHITECTURE.md](./DEPENDENCY_INJECTION_ARCHITECTURE.md)** (20 min)
-   - 模組如何組裝
-   - 容器如何工作
-   - 依賴如何注入
+4. **[../06-Adapters-Wiring/WIRING_SYSTEM.md](../06-Adapters-Wiring/WIRING_SYSTEM.md)** (20 min)
+   - 模組如何自動組裝
+   - DI 容器工作原理
+   - 依賴注入架構
 
 ### 進階主題 (可選)
 
-5. **[ARCHITECTURE_PATTERNS.md](./ARCHITECTURE_PATTERNS.md)**
-   - CQRS 何時使用
-   - Event Sourcing 設計
+5. **[../03-DDD-Design/DDD_PATTERNS.md](../03-DDD-Design/DDD_PATTERNS.md)** (進階章節)
+   - 何時使用 CQRS
+   - Event Sourcing 基礎
    - Saga 協調模式
 
-6. **[SCALABLE_ORM_ARCHITECTURE.md](./SCALABLE_ORM_ARCHITECTURE.md)**
-   - ORM 切換機制
-   - 擴展性考慮
+6. **[../05-Database-ORM/ORM_TRANSPARENT_DESIGN.md](../05-Database-ORM/ORM_TRANSPARENT_DESIGN.md)**
+   - ORM 切換機制與實現
+   - 資料庫訪問層抽象化
 
 ---
 
 ## 🎯 按需求查詢
 
-### "我想理解為什麼選擇這個架構"
-→ [ARCHITECTURE_DECISIONS.md](./ARCHITECTURE_DECISIONS.md)
+### "我想理解整體架構與分層規則"
+→ [CORE_DESIGN.md](./CORE_DESIGN.md)
 
-### "我想知道分層規則是什麼"
-→ [ABSTRACTION_RULES.md](./ABSTRACTION_RULES.md)
+### "我想知道事件系統如何運作"
+→ [EVENT_SYSTEM.md](./EVENT_SYSTEM.md)
 
-### "我想理解模組如何組裝"
-→ [DEPENDENCY_INJECTION_ARCHITECTURE.md](./DEPENDENCY_INJECTION_ARCHITECTURE.md)
+### "我想理解模組如何自動裝配"
+→ [../06-Adapters-Wiring/WIRING_SYSTEM.md](../06-Adapters-Wiring/WIRING_SYSTEM.md)
 
 ### "我想知道何時需要 CQRS 或 Event Sourcing"
-→ [ARCHITECTURE_PATTERNS.md](./ARCHITECTURE_PATTERNS.md)
+→ [../03-DDD-Design/DDD_PATTERNS.md](../03-DDD-Design/DDD_PATTERNS.md)
 
 ### "我想建立新模組"
-→ [../04-Module-Development/MODULE_GUIDE.md](../04-Module-Development/MODULE_GUIDE.md)
+→ [../04-Module-Development/DEVELOPMENT_GUIDE.md](../04-Module-Development/DEVELOPMENT_GUIDE.md)
 
 ---
 
@@ -83,11 +82,11 @@
 │         ↓ DTO (Data Transfer Objects)            │
 ├─────────────────────────────────────────────────┤
 │ Application Layer (Use Cases, Services)          │
-│   ↓ Domain Model                                 │
+│   ↓ Domain Model + DCI Contexts                  │
 ├─────────────────────────────────────────────────┤
 │ Domain Layer (Aggregates, Entities, Services)    │
 │  - Business logic (核心商業邏輯)                 │
-│  - No external dependencies                      │
+│  - No external dependencies (無外部依賴)         │
 │     ↓ Interfaces                                 │
 ├─────────────────────────────────────────────────┤
 │ Infrastructure Layer (Repositories, ORM)         │
@@ -100,51 +99,39 @@
 ## 💡 核心設計原則
 
 ### 1. 依賴反轉 (Dependency Inversion)
-- Domain 層定義介面
-- Infrastructure 層實現介面
-- Application 層依賴抽象，不知道實現
+- Domain 層定義介面 (Port)
+- Infrastructure 層實現介面 (Adapter)
+- Application 層依賴抽象，實現框架無關
 
 ### 2. ORM 透明度
-- Repository 只依賴 `IDatabaseAccess`
-- 無感知使用 ORM（Memory、Drizzle、Atlas）
-- 一個 env 變數切換所有 ORM
+- 業務邏輯與 Repository 只依賴 `IDatabaseAccess`
+- 支援多 ORM（Memory、Drizzle、Atlas）熱抽換
+- 透過環境變數一鍵切換持久化技術
 
-### 3. 跨模組解耦
-- Port & Adapter 模式（ACL 防腐層）
-- 一個模組改動不影響其他模組
-- 每個模組都可以獨立測試
+### 3. 跨模組解耦 (ACL 防腐層)
+- 模組間透過領域事件或 ACL 進行通訊
+- 防止一個模組的變更污染另一個模組
+- 每個模組都是獨立的 Bounded Context
 
-### 4. 簡潔性
-- 簡單 CRUD → 直接 Repository（無 CQRS）
-- 複雜業務 → 完整 DDD + Domain Service
-- 避免過度設計
-
-### 5. Infrastructure 層最佳實踐（新增 2026-03-13）
-- **Port 介面分類** - 按功能分離到 `Ports/` 目錄
-  - `Ports/Core/` - 日誌、健康檢查等核心介面
-  - `Ports/Database/` - ORM 無關數據庫訪問
-  - `Ports/Messaging/` - 事件分發和消息隊列
-  - `Ports/Services/` - Redis、快取等應用服務
-  - `Ports/Storage/` - 文件存儲（S3 等）
-- **完全不使用 console.log** - 統一使用 ILogger 介面
-- **改進查詢錯誤處理** - 異常不再被靜默吞掉
-- **Repository 層消除重複** - 統一基類和工廠實現
+### 4. 基礎設施層最佳實踐 (2026-03-13 更新)
+- **Port 介面分類** - 嚴格按功能分離到 `Ports/` 目錄
+- **統一日誌** - 禁止使用 `console.log`，必須使用 `ILogger`
+- **異常透明化** - 確保底層錯誤能正確傳播至應用層
+- **DRY Repository** - 透過 `BaseEventSourcedRepository` 消除重複代碼
 
 ---
 
 ## 🔗 相關資源
 
 **深入 DDD**:
-- [DDD 實施檢查清單](../03-DDD-Design/DDD_IMPLEMENTATION_CHECKLIST.md)
-- [ACL 防腐層](../03-DDD-Design/ACL_ANTI_CORRUPTION_LAYER.md)
+- [DDD 模式與進階設計](../03-DDD-Design/DDD_PATTERNS.md)
 
 **ORM & 數據庫**:
 - [ORM 透明設計](../05-Database-ORM/ORM_TRANSPARENT_DESIGN.md)
-- [數據庫指南](../05-Database-ORM/DATABASE.md)
+- [ORM 使用指南](../05-Database-ORM/ORM_GUIDE.md)
 
 **模組開發**:
-- [模組開發指南](../04-Module-Development/MODULE_GUIDE.md)
-- [新模組檢查清單](../04-Module-Development/NEW_MODULE_CHECKLIST.md)
+- [模組開發與開發指南](../04-Module-Development/DEVELOPMENT_GUIDE.md)
 
 ---
 

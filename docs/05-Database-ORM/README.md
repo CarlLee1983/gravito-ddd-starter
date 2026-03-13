@@ -8,39 +8,25 @@
 
 | 文檔 | 重點 |
 |------|------|
-| **[DATABASE.md](./DATABASE.md)** | ⭐ 遷移、播種、查詢的完整指南 |
-| **[ORM_TRANSPARENT_DESIGN.md](./ORM_TRANSPARENT_DESIGN.md)** | 為什麼能無感知切換 ORM |
-| **[ORM_MIGRATION_GUIDE.md](./ORM_MIGRATION_GUIDE.md)** | 從 Memory → Drizzle → Atlas 的遷移 |
-| **[ATLAS_ADAPTER_GUIDE.md](./ATLAS_ADAPTER_GUIDE.md)** | Atlas ORM 完整實施指南 |
-| **[DRIZZLE_ADAPTER_ROADMAP.md](./DRIZZLE_ADAPTER_ROADMAP.md)** | Drizzle ORM 實施指南 |
-| **[ORM_SWAPPING_EXAMPLES.md](./ORM_SWAPPING_EXAMPLES.md)** | 實際案例：ORM 切換 |
-| **[UNIFIED_ORM_SWAPPING.md](./UNIFIED_ORM_SWAPPING.md)** | 統一的 ORM 切換機制 |
+| **[ORM_GUIDE.md](./ORM_GUIDE.md)** | ⭐ **核心指南**：資料庫遷移、播種與常用查詢指令 |
+| **[ORM_TRANSPARENT_DESIGN.md](./ORM_TRANSPARENT_DESIGN.md)** | 核心原理：為什麼能實現無感知 ORM 切換 |
+| **[ORM_SWAPPING_EXAMPLES.md](./ORM_SWAPPING_EXAMPLES.md)** | 實戰案例：切換過程中的常見問題與解決方案 |
 
 ---
 
 ## 🎯 快速導航
 
 ### "我想用 Memory ORM 開發"
-→ 完成！默認就是 Memory
-→ [DATABASE.md](./DATABASE.md) 查詢指令
+→ 完成！系統預設在未指定 ORM 時使用 Memory。
+→ 參考 [ORM_GUIDE.md](./ORM_GUIDE.md) 的開發流程。
 
-### "我想切換到 Drizzle（SQLite）"
-→ [ORM_MIGRATION_GUIDE.md](./ORM_MIGRATION_GUIDE.md)
-```bash
-ORM=drizzle bun run start
-```
+### "我想切換到 Drizzle (SQLite/LibSQL)"
+→ 在 `.env` 設定 `ORM=drizzle`。
+→ 參考 [ORM_GUIDE.md](./ORM_GUIDE.md) 執行 `migrate` 指令。
 
-### "我想用 Atlas（完整版）"
-→ [ATLAS_ADAPTER_GUIDE.md](./ATLAS_ADAPTER_GUIDE.md)
-```bash
-ORM=atlas bun run start
-```
-
-### "我想理解為什麼能無感知切換 ORM"
-→ [ORM_TRANSPARENT_DESIGN.md](./ORM_TRANSPARENT_DESIGN.md)
-
-### "我有具體的遷移問題"
-→ [ORM_SWAPPING_EXAMPLES.md](./ORM_SWAPPING_EXAMPLES.md)
+### "我想使用 Atlas (PostgreSQL/MySQL)"
+→ 在 `.env` 設定 `ORM=atlas` 並配置 `DB_CONNECTION`。
+→ 參考 [ORM_GUIDE.md](./ORM_GUIDE.md) 的資料庫配置章節。
 
 ---
 
@@ -48,131 +34,71 @@ ORM=atlas bun run start
 
 | 特性 | Memory | Drizzle | Atlas |
 |------|--------|---------|-------|
-| **適用場景** | 開發/測試 | 生產（SQLite） | 生產（完整） |
-| **設置難度** | 零配置 | 低 | 中 |
-| **性能** | - | 高 | 非常高 |
-| **遷移支援** | ✅ | ✅ | ✅ |
-| **價格** | 免費 | 免費 | 免費 |
-| **推薦度** | ⭐⭐⭐ | ⭐⭐⭐ | ⭐⭐ |
+| **適用場景** | 單元測試 / 快速開發 | 生產環境 (小型/SQLite) | 生產環境 (中大型/SQL) |
+| **配置難度** | 零配置 | 極低 | 低 (需設定 DB 連接) |
+| **性能** | 極高 (RAM) | 高 | 極高 |
+| **持久化** | ❌ 否 | ✅ 是 | ✅ 是 |
+| **功能完整性** | 基本 CRUD | 完整 SQL | 完整 SQL + 動態模型 |
 
 ---
 
-## 🚀 典型流程
+## 🚀 典型開發生命週期
 
-### 開發階段
-```bash
-# 使用 Memory ORM（無配置）
-ORM=memory bun run dev
-
-# 建立模組、寫代碼、測試
-bun run make:module Product
-bun test
-```
-
-### 驗證階段
-```bash
-# 切換到 Drizzle 驗證
-ORM=drizzle bun run migrate
-ORM=drizzle bun test
-
-# 代碼無需改動！
-```
-
-### 上線階段
-```bash
-# 選擇 Atlas 或 Drizzle
-ORM=atlas bun run migrate
-ORM=atlas bun run start
-```
+1. **開發階段**：使用 `ORM=memory` 專注於業務邏輯編寫。
+2. **測試階段**：使用 `ORM=memory` 運行快速單元測試。
+3. **整合階段**：切換至 `ORM=drizzle` 驗證 SQL Schema 與遷移邏輯。
+4. **生產階段**：根據需求選擇 `ORM=atlas` (PostgreSQL) 或 `ORM=drizzle` (SQLite)。
 
 ---
 
-## 🔑 核心概念
+## 🔑 核心抽象介面 (Port)
 
-### IDatabaseAccess 介面
-所有 Repository 依賴的抽象層：
+系統定義了 `IDatabaseAccess` 介面，所有 Repository 僅依賴此介面，不直接依賴 ORM：
 
 ```typescript
-interface IQueryBuilder {
-  where(field, operator, value): IQueryBuilder
-  limit(n): IQueryBuilder
-  select(): Promise<any[]>
-  insert(data): Promise<void>
-  // ... 更多方法
-}
-
-interface IDatabaseAccess {
-  table(name: string): IQueryBuilder
+// app/Shared/Infrastructure/Ports/Database/IDatabaseAccess.ts
+export interface IQueryBuilder {
+  where(column: string, operator: string, value: unknown): IQueryBuilder
+  first(): Promise<Record<string, unknown> | null>
+  select(): Promise<Record<string, unknown>[]>
+  insert(data: Record<string, unknown>): Promise<void>
   // ...
 }
 ```
 
-### ORM 實現
-- **MemoryDatabaseAccess** - 使用 Map 儲存
-- **DrizzleQueryBuilder** - 轉換為 Drizzle API
-- **AtlasQueryBuilder** - 轉換為 Atlas API
-
 ---
 
-## 📚 常見 Migration 指令
+## 📚 常用指令
 
 ```bash
-# 執行遷移
+# 執行資料庫遷移
 bun run migrate
 
-# 查看遷移狀態
-bun run migrate:status
-
-# 回滾
-bun run migrate:rollback
-
-# 清空重新遷移
-bun run migrate:fresh
-
-# 播種（插入初始數據）
+# 執行資料種子 (Seeder)
 bun run seed
 
-# 完整重置（遷移 + 播種）
+# 重置資料庫 (Fresh Migrate + Seed)
 bun run db:fresh
+
+# 檢查資料庫狀態
+bun orbit doctor
 ```
-
-詳見 [DATABASE.md](./DATABASE.md)
-
----
-
-## 💡 為什麼能無感知切換？
-
-1. **單一入口點**
-   - `DatabaseAccessBuilder` 根據 `env.ORM` 決定實現
-
-2. **統一介面**
-   - Repository 只依賴 `IDatabaseAccess`
-   - 不知道底層是 Memory、Drizzle 還是 Atlas
-
-3. **工廠模式**
-   - 每個 ORM 實現相同的 `IQueryBuilder` 介面
-   - 只是 SQL 生成方式不同
 
 ---
 
 ## 🔗 相關資源
 
-**DDD 相關**:
-- [Repository 抽象](../03-DDD-Design/REPOSITORY_ABSTRACTION_TEMPLATE.md)
-- [DDD 檢查清單](../03-DDD-Design/DDD_IMPLEMENTATION_CHECKLIST.md)
+**DDD 實踐**:
+- [領域層 Repository 介面定義](../02-Architecture/CORE_DESIGN.md)
+- [Repository 基類實作](../02-Architecture/EVENT_SYSTEM.md)
 
-**模組開發**:
-- [模組開發指南](../04-Module-Development/MODULE_GUIDE.md)
-- [模組生成](../04-Module-Development/MODULE_GENERATION.md)
-
-**架構**:
-- [ORM 透明設計](./ORM_TRANSPARENT_DESIGN.md)
-- [可擴展架構](../02-Architecture/SCALABLE_ORM_ARCHITECTURE.md)
+**架構接線**:
+- [資料庫訪問建構器 (DatabaseAccessBuilder)](../06-Adapters-Wiring/WIRING_SYSTEM.md)
 
 ---
 
 **快速導航**:
 ← [模組開發](../04-Module-Development/)
-→ [適配器&接線](../06-Adapters-Wiring/)
+→ [架構設計](../02-Architecture/)
 
-最後更新: 2026-03-11
+最後更新: 2026-03-13
