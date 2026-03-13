@@ -6,6 +6,7 @@
  */
 
 import type { DeadLetterEntry } from './EventFailurePolicy'
+import type { ILogger } from '../Ports/Services/ILogger'
 
 /**
  * 死信隊列介面
@@ -46,13 +47,19 @@ export interface IDeadLetterQueue {
  */
 export class MemoryDeadLetterQueue implements IDeadLetterQueue {
 	private entries: Map<string, DeadLetterEntry> = new Map()
+	private logger: ILogger = {
+		info: (msg: string) => console.info(`[MemoryDeadLetterQueue] ${msg}`),
+		warn: (msg: string) => console.warn(`[MemoryDeadLetterQueue] ${msg}`),
+		error: (msg: string, err?: any) => console.error(`[MemoryDeadLetterQueue] ${msg}`, err),
+		debug: (msg: string) => console.debug(`[MemoryDeadLetterQueue] ${msg}`),
+	}
 
 	async add(entry: Omit<DeadLetterEntry, 'id'>): Promise<void> {
 		const id = `dlq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 		this.entries.set(id, { ...entry, id } as DeadLetterEntry)
 
-		console.warn(`[DeadLetterQueue] 添加失敗事件: ${entry.eventName} (ID: ${id})`)
-		console.warn(`[DeadLetterQueue] 原因: ${entry.error}`)
+		this.logger.warn(`添加失敗事件: ${entry.eventName} (ID: ${id})`)
+		this.logger.warn(`原因: ${entry.error}`)
 	}
 
 	async list(eventName?: string): Promise<DeadLetterEntry[]> {
@@ -93,6 +100,12 @@ export class MemoryDeadLetterQueue implements IDeadLetterQueue {
 export class RedisDeadLetterQueue implements IDeadLetterQueue {
 	private readonly queueKey = 'dead_letter_queue'
 	private readonly indexKey = 'dead_letter_index' // 用於統計
+	private logger: ILogger = {
+		info: (msg: string) => console.info(`[RedisDeadLetterQueue] ${msg}`),
+		warn: (msg: string) => console.warn(`[RedisDeadLetterQueue] ${msg}`),
+		error: (msg: string, err?: any) => console.error(`[RedisDeadLetterQueue] ${msg}`, err),
+		debug: (msg: string) => console.debug(`[RedisDeadLetterQueue] ${msg}`),
+	}
 
 	constructor(private readonly redis: any) {}
 
@@ -111,7 +124,7 @@ export class RedisDeadLetterQueue implements IDeadLetterQueue {
 		// 設置 TTL (7 天後自動刪除)
 		await this.redis.expire(key, 7 * 24 * 60 * 60)
 
-		console.warn(`[RedisDeadLetterQueue] 添加失敗事件: ${entry.eventName} (ID: ${id})`)
+		this.logger.warn(`添加失敗事件: ${entry.eventName} (ID: ${id})`)
 	}
 
 	async list(eventName?: string): Promise<DeadLetterEntry[]> {

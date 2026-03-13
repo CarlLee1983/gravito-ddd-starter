@@ -4,12 +4,12 @@
  */
 
 import type { IRabbitMQService, QueueOptions } from '../../Ports/Messaging/IRabbitMQService'
+import type { ILogger } from '../../Ports/Services/ILogger'
 
-// Simple logger implementation
-const logger = {
-  info: (msg: string) => console.log(`[RabbitMQAdapter] ${msg}`),
-  warn: (msg: string) => console.warn(`[RabbitMQAdapter] ⚠️  ${msg}`),
-  error: (msg: string, err?: any) => console.error(`[RabbitMQAdapter] ❌ ${msg}`, err),
+const logger: ILogger = {
+  info: (msg: string) => console.info(`[RabbitMQAdapter] ${msg}`),
+  warn: (msg: string) => console.warn(`[RabbitMQAdapter] ${msg}`),
+  error: (msg: string, err?: any) => console.error(`[RabbitMQAdapter] ${msg}`, err),
   debug: (msg: string) => console.debug(`[RabbitMQAdapter] ${msg}`),
 }
 

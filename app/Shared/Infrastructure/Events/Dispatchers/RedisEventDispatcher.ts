@@ -13,6 +13,7 @@
 
 import type { Event } from '../../Ports/Messaging/IEventDispatcher'
 import type { IRedisService } from '../../Ports/Messaging/IRedisService'
+import type { ILogger } from '../../Ports/Services/ILogger'
 import { BaseEventDispatcher } from './BaseEventDispatcher'
 
 /**
@@ -23,6 +24,12 @@ import { BaseEventDispatcher } from './BaseEventDispatcher'
  */
 export class RedisEventDispatcher extends BaseEventDispatcher {
 	private readonly queueKey = 'domain_events_queue'
+	private defaultLogger: ILogger = {
+		debug: (msg: string) => console.debug(`[RedisEventDispatcher] ${msg}`),
+		info: (msg: string) => console.info(`[RedisEventDispatcher] ${msg}`),
+		warn: (msg: string) => console.warn(`[RedisEventDispatcher] ${msg}`),
+		error: (msg: string, err?: any) => console.error(`[RedisEventDispatcher] ${msg}`, err),
+	}
 
 	/**
 	 * 建構子
@@ -30,6 +37,7 @@ export class RedisEventDispatcher extends BaseEventDispatcher {
 	 */
 	constructor(private readonly redis: IRedisService) {
 		super()
+		this.setLogger(this.defaultLogger)
 	}
 
 	/**
@@ -52,7 +60,7 @@ export class RedisEventDispatcher extends BaseEventDispatcher {
 			})
 
 			await this.redis.rpush(this.queueKey, payload)
-			console.debug(`[RedisEventDispatcher] 事件已推入隊列: ${eventName}`)
+			this.logger?.debug(`事件已推入隊列: ${eventName}`)
 		}
 	}
 
@@ -66,7 +74,7 @@ export class RedisEventDispatcher extends BaseEventDispatcher {
 	 * 使用基類的 executeHandlers（包含失敗重試邏輯）
 	 */
 	public async executeHandlers(eventName: string, eventData: any): Promise<void> {
-		console.log(`[RedisEventDispatcher] 執行 ${eventName} 的所有 Handler`)
+		this.logger?.info(`執行 ${eventName} 的所有 Handler`)
 		await super.executeHandlers(eventName, eventData)
 	}
 }

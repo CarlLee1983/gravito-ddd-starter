@@ -6,12 +6,12 @@
 
 import type { IEventStore, StoredEvent } from '../../Ports/Database/IEventStore'
 import type { IRabbitMQService } from '../../Ports/Messaging/IRabbitMQService'
+import type { ILogger } from '../../Ports/Services/ILogger'
 
-// Simple logger implementation
-const logger = {
-  info: (msg: string) => console.log(`[RabbitMQEventStore] ${msg}`),
-  warn: (msg: string) => console.warn(`[RabbitMQEventStore] ⚠️  ${msg}`),
-  error: (msg: string, err?: any) => console.error(`[RabbitMQEventStore] ❌ ${msg}`, err),
+const logger: ILogger = {
+  info: (msg: string) => console.info(`[RabbitMQEventStore] ${msg}`),
+  warn: (msg: string) => console.warn(`[RabbitMQEventStore] ${msg}`),
+  error: (msg: string, err?: any) => console.error(`[RabbitMQEventStore] ${msg}`, err),
   debug: (msg: string) => console.debug(`[RabbitMQEventStore] ${msg}`),
 }
 

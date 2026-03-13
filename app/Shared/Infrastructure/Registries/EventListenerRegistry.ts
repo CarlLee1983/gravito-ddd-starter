@@ -38,6 +38,7 @@
 
 import type { IEventDispatcher, EventHandler } from '../Ports/Messaging/IEventDispatcher'
 import type { IContainer } from '../Ports/Core/IServiceProvider'
+import type { ILogger } from '../Ports/Services/ILogger'
 
 /**
  * 事件監聽器定義
@@ -71,6 +72,12 @@ export class EventListenerRegistry {
 	 * 值：Module 的事件監聽器列表
 	 */
 	private static readonly listeners = new Map<string, IModuleListeners>()
+	private static readonly logger: ILogger = {
+		info: (msg: string) => console.info(`[EventListenerRegistry] ${msg}`),
+		warn: (msg: string) => console.warn(`[EventListenerRegistry] ${msg}`),
+		error: (msg: string, err?: any) => console.error(`[EventListenerRegistry] ${msg}`, err),
+		debug: (msg: string) => console.debug(`[EventListenerRegistry] ${msg}`),
+	}
 
 	/**
 	 * 由 Module 呼叫，向 Registry 註冊其事件監聽器
@@ -99,8 +106,8 @@ export class EventListenerRegistry {
 		}
 
 		if (process.env.NODE_ENV === 'development') {
-			console.log(
-				`[EventListenerRegistry] Registered ${moduleListeners.listeners.length} listeners for module: ${moduleListeners.moduleName}`
+			this.logger.info(
+				`Registered ${moduleListeners.listeners.length} listeners for module: ${moduleListeners.moduleName}`
 			)
 		}
 	}
@@ -132,21 +139,21 @@ export class EventListenerRegistry {
 					totalBound++
 
 					if (process.env.NODE_ENV === 'development') {
-						console.log(
-							`  ✓ [${moduleName}] Bound listener for event: ${listener.eventName}`
+						this.logger.info(
+							`[${moduleName}] Bound listener for event: ${listener.eventName}`
 						)
 					}
 				} catch (error) {
-					console.warn(
-						`⚠️  [${moduleName}] Failed to bind listener for event: ${listener.eventName}`,
-						error instanceof Error ? error.message : error
+					this.logger.warn(
+						`[${moduleName}] Failed to bind listener for event: ${listener.eventName}: ` +
+						(error instanceof Error ? error.message : error)
 					)
 				}
 			}
 		}
 
-		console.log(
-			`🔗 [EventListenerRegistry] Successfully bound ${totalBound} event listeners`
+		this.logger.info(
+			`Successfully bound ${totalBound} event listeners`
 		)
 	}
 

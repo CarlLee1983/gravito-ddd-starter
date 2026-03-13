@@ -5,12 +5,12 @@
 
 import type { IJobQueue, JobHandler } from '../../Ports/Messaging/IJobQueue'
 import type { IRabbitMQService } from '../../Ports/Messaging/IRabbitMQService'
+import type { ILogger } from '../../Ports/Services/ILogger'
 
-// Simple logger implementation
-const logger = {
-  info: (msg: string) => console.log(`[RabbitMQJobQueueAdapter] ${msg}`),
-  warn: (msg: string) => console.warn(`[RabbitMQJobQueueAdapter] ⚠️  ${msg}`),
-  error: (msg: string, err?: any) => console.error(`[RabbitMQJobQueueAdapter] ❌ ${msg}`, err),
+const logger: ILogger = {
+  info: (msg: string) => console.info(`[RabbitMQJobQueueAdapter] ${msg}`),
+  warn: (msg: string) => console.warn(`[RabbitMQJobQueueAdapter] ${msg}`),
+  error: (msg: string, err?: any) => console.error(`[RabbitMQJobQueueAdapter] ${msg}`, err),
   debug: (msg: string) => console.debug(`[RabbitMQJobQueueAdapter] ${msg}`),
 }
 

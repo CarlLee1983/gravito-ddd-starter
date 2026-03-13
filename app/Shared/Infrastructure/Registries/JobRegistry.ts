@@ -38,6 +38,7 @@
 import type { IJobQueue, JobHandler } from '../Ports/Messaging/IJobQueue'
 import type { IContainer } from '../Ports/Core/IServiceProvider'
 import type { BaseJob, JobPayload } from '../../Application/Jobs/BaseJob'
+import type { ILogger } from '../Ports/Services/ILogger'
 
 /**
  * Job 處理程序定義
@@ -71,6 +72,12 @@ export class JobRegistry {
 	 * 值：Module 的 Job 定義列表
 	 */
 	private static readonly jobs = new Map<string, IModuleJobs>()
+	private static readonly logger: ILogger = {
+		info: (msg: string) => console.info(`[JobRegistry] ${msg}`),
+		warn: (msg: string) => console.warn(`[JobRegistry] ${msg}`),
+		error: (msg: string, err?: any) => console.error(`[JobRegistry] ${msg}`, err),
+		debug: (msg: string) => console.debug(`[JobRegistry] ${msg}`),
+	}
 
 	/**
 	 * 由 Module 呼叫，向 Registry 註冊其 Job 定義
@@ -99,8 +106,8 @@ export class JobRegistry {
 		}
 
 		if (process.env.NODE_ENV === 'development') {
-			console.log(
-				`[JobRegistry] Registered ${moduleJobs.jobs.length} jobs for module: ${moduleJobs.moduleName}`
+			this.logger.info(
+				`Registered ${moduleJobs.jobs.length} jobs for module: ${moduleJobs.moduleName}`
 			)
 		}
 	}
@@ -146,20 +153,20 @@ export class JobRegistry {
 					totalBound++
 
 					if (process.env.NODE_ENV === 'development') {
-						console.log(
-							`  ✓ [${moduleName}] Registered job handler for: ${jobDef.jobName}`
+						this.logger.info(
+							`[${moduleName}] Registered job handler for: ${jobDef.jobName}`
 						)
 					}
 				} catch (error) {
-					console.warn(
-						`⚠️  [${moduleName}] Failed to register job handler for: ${jobDef.jobName}`,
-						error instanceof Error ? error.message : error
+					this.logger.warn(
+						`[${moduleName}] Failed to register job handler for: ${jobDef.jobName}: ` +
+						(error instanceof Error ? error.message : error)
 					)
 				}
 			}
 		}
 
-		console.log(`🔗 [JobRegistry] Successfully bound ${totalBound} job handlers`)
+		this.logger.info(`Successfully bound ${totalBound} job handlers`)
 	}
 
 	/**

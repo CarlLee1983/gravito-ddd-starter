@@ -25,16 +25,17 @@ import { BaseEventDispatcher } from './BaseEventDispatcher'
  * 使用基類提供的失敗重試機制和死信隊列支持。
  */
 export class MemoryEventDispatcher extends BaseEventDispatcher {
-	private logger: ILogger
+	private internalLogger: ILogger
 
 	constructor(logger?: ILogger) {
 		super()
-		this.logger = logger || {
+		this.internalLogger = logger || {
 			debug: (msg: string) => console.debug(`[DEBUG] ${msg}`),
 			info: (msg: string) => console.info(`[INFO] ${msg}`),
 			warn: (msg: string) => console.warn(`[WARN] ${msg}`),
 			error: (msg: string, err?: any) => console.error(`[ERROR] ${msg}`, err),
 		} as any
+		this.setLogger(this.internalLogger)
 	}
 
 	/**
@@ -49,17 +50,14 @@ export class MemoryEventDispatcher extends BaseEventDispatcher {
 			const eventName = this.getEventName(event)
 			const handlerCount = this.handlers.get(eventName)?.length || 0
 
-			console.log('[MemoryEventDispatcher.dispatch] 分發事件:', {
-				eventName,
-				handlerCount,
-			})
+			this.internalLogger.info(`分發事件: ${eventName} (${handlerCount} handlers)`)
 
 			// 使用基類的 executeHandlers（包含失敗重試邏輯）
 			try {
 				await this.executeHandlers(eventName, event)
 			} catch (error) {
 				// 記錄到日誌，但不中斷其他事件的分發
-				this.logger.error(`[MemoryEventDispatcher] 分發事件 ${eventName} 失敗`, error)
+				this.internalLogger.error(`分發事件 ${eventName} 失敗`, error)
 				throw error // 重新拋出，讓調用者決定是否中斷
 			}
 		}

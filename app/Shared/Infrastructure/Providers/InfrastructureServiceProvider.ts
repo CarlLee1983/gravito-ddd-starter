@@ -15,6 +15,7 @@ import { RedisJobQueueAdapter } from '../Adapters/Redis/RedisJobQueueAdapter'
 import { StorageManager } from '../Storage/StorageManager'
 import type { RedisClientContract } from '@gravito/plasma'
 import type { CacheManager } from '@gravito/stasis'
+import type { ILogger } from '../Ports/Services/ILogger'
 
 /**
  * 基礎設施服務提供者
@@ -70,6 +71,12 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 	 * 啟動後的檢查
 	 */
 	override boot(_context: any): void {
-		console.log('🧱 [Infrastructure] Framework adapters integrated (Logging, i18n, Mail, Queue)')
+		const logger: ILogger = {
+			info: (msg: string) => console.info(`[Infrastructure] ${msg}`),
+			warn: (msg: string) => console.warn(`[Infrastructure] ${msg}`),
+			error: (msg: string, err?: any) => console.error(`[Infrastructure] ${msg}`, err),
+			debug: (msg: string) => console.debug(`[Infrastructure] ${msg}`),
+		}
+		logger.info('Framework adapters integrated (Logging, i18n, Mail, Queue)')
 	}
 }

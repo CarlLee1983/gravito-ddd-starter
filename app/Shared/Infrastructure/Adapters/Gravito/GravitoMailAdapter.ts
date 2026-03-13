@@ -4,13 +4,21 @@
  */
 
 import type { IMailer, MailOptions } from '../../Ports/Services/IMailer'
+import type { ILogger } from '../../Ports/Services/ILogger'
 
 export class GravitoMailAdapter implements IMailer {
+	private logger: ILogger = {
+		info: (msg: string) => console.info(`[GravitoMailAdapter] ${msg}`),
+		warn: (msg: string) => console.warn(`[GravitoMailAdapter] ${msg}`),
+		error: (msg: string, err?: any) => console.error(`[GravitoMailAdapter] ${msg}`, err),
+		debug: (msg: string) => console.debug(`[GravitoMailAdapter] ${msg}`),
+	}
+
 	/**
 	 * 直接發送
 	 */
 	async send(options: MailOptions): Promise<void> {
-		console.info(`[MAIL] Sending email to ${options.to} with subject: ${options.subject}`)
+		this.logger.info(`Sending email to ${options.to} with subject: ${options.subject}`)
 		// TODO: 整合 @gravito/signal
 	}
 
@@ -18,7 +26,7 @@ export class GravitoMailAdapter implements IMailer {
 	 * 排隊發送
 	 */
 	async queue(options: MailOptions): Promise<void> {
-		console.info(`[MAIL] Queueing email to ${options.to} with subject: ${options.subject}`)
+		this.logger.info(`Queueing email to ${options.to} with subject: ${options.subject}`)
 		// TODO: 整合 @gravito/signal
 	}
 }

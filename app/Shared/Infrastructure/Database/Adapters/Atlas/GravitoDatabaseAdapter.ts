@@ -9,6 +9,7 @@
 
 import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
 import { AtlasQueryBuilder } from './AtlasQueryBuilder'
 import * as Atlas from '@gravito/atlas'
 
@@ -45,6 +46,19 @@ class AtlasDatabaseAccess implements IDatabaseAccess {
 }
 
 /**
+ * 取得 Logger 實例
+ * @internal
+ */
+function getLogger(): ILogger {
+	return {
+		info: (msg: string) => console.info(`[Atlas] ${msg}`),
+		warn: (msg: string) => console.warn(`[Atlas] ${msg}`),
+		error: (msg: string, err?: any) => console.error(`[Atlas] ${msg}`, err),
+		debug: (msg: string) => console.debug(`[Atlas] ${msg}`),
+	}
+}
+
+/**
  * 初始化 Atlas 資料庫連接配置
  *
  * 讀取環境變數並配置 Atlas DB 連接
@@ -52,6 +66,7 @@ class AtlasDatabaseAccess implements IDatabaseAccess {
  */
 function initializeAtlasConnection(): void {
 	const DB = getDB()
+	const logger = getLogger()
 
 	// 檢查是否已配置
 	if (!DB) {
@@ -69,7 +84,7 @@ function initializeAtlasConnection(): void {
 
 	const enableDB = process.env.ENABLE_DB === 'true'
 	if (!enableDB) {
-		console.log('⚠️ [Atlas] Database disabled (ENABLE_DB=false)')
+		logger.info('Database disabled (ENABLE_DB=false)')
 		return
 	}
 
@@ -120,18 +135,18 @@ function initializeAtlasConnection(): void {
 
 		// 詳細的日誌輸出
 		if (connection === 'postgres') {
-			console.log(`✅ [Atlas] PostgreSQL 連接已配置`)
-			console.log(`   Host: ${config.host}:${config.port}`)
-			console.log(`   Database: ${config.database}`)
-			console.log(`   User: ${config.username}`)
+			logger.info(`PostgreSQL 連接已配置`)
+			logger.info(`   Host: ${config.host}:${config.port}`)
+			logger.info(`   Database: ${config.database}`)
+			logger.info(`   User: ${config.username}`)
 			if (Object.keys(config.pool || {}).length > 0) {
-				console.log(`   Pool: ${JSON.stringify(config.pool)}`)
+				logger.info(`   Pool: ${JSON.stringify(config.pool)}`)
 			}
 		} else {
-			console.log(`✅ [Atlas] Connection 'default' added (${connection}, native driver disabled)`)
+			logger.info(`Connection 'default' added (${connection}, native driver disabled)`)
 		}
 	} catch (error) {
-		console.error(`❌ [Atlas] Failed to add connection:`, error)
+		logger.error(`Failed to add connection:`, error)
 		throw error
 	}
 }
@@ -204,30 +219,31 @@ export function createGravitoDatabaseConnectivityCheck(): IDatabaseConnectivityC
  * @internal
  */
 function logPostgresPingError(error: unknown): void {
-	console.error(`\n❌ [Atlas] PostgreSQL 連接失敗`)
-	console.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
-	console.error(`📍 連接配置：`)
-	console.error(`   Host: ${process.env.DB_HOST || '127.0.0.1'}`)
-	console.error(`   Port: ${process.env.DB_PORT || 5432}`)
-	console.error(`   Database: ${process.env.DB_DATABASE || 'gravito_ddd'}`)
-	console.error(`   User: ${process.env.DB_USER || 'postgres'}`)
+	const logger = getLogger()
+	logger.error(`\nPostgreSQL 連接失敗`)
+	logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
+	logger.error(`連接配置：`)
+	logger.error(`   Host: ${process.env.DB_HOST || '127.0.0.1'}`)
+	logger.error(`   Port: ${process.env.DB_PORT || 5432}`)
+	logger.error(`   Database: ${process.env.DB_DATABASE || 'gravito_ddd'}`)
+	logger.error(`   User: ${process.env.DB_USER || 'postgres'}`)
 
 	const errorMsg = error instanceof Error ? error.message : String(error)
-	console.error(`\n❌ 錯誤原因：`)
-	console.error(`   ${errorMsg}`)
+	logger.error(`\n錯誤原因：`)
+	logger.error(`   ${errorMsg}`)
 
-	console.error(`\n💡 快速修復步驟：`)
-	console.error(`   1. 檢查 PostgreSQL 是否運行：`)
-	console.error(`      • macOS: brew services list | grep postgres`)
-	console.error(`      • Linux: systemctl status postgresql`)
-	console.error(`      • Docker: docker ps | grep postgres`)
-	console.error(`\n   2. 檢查連接設定：`)
-	console.error(`      • psql -h ${process.env.DB_HOST || '127.0.0.1'} -U ${process.env.DB_USER || 'postgres'} -d ${process.env.DB_DATABASE || 'gravito_ddd'}`)
-	console.error(`\n   3. 檢查監聽埠：`)
-	console.error(`      • macOS/Linux: lsof -i :${process.env.DB_PORT || 5432}`)
-	console.error(`\n   4. 使用 SQLite 進行開發（臨時方案）：`)
-	console.error(`      • export DB_CONNECTION=sqlite`)
-	console.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n`)
+	logger.error(`\n快速修復步驟：`)
+	logger.error(`   1. 檢查 PostgreSQL 是否運行：`)
+	logger.error(`      • macOS: brew services list | grep postgres`)
+	logger.error(`      • Linux: systemctl status postgresql`)
+	logger.error(`      • Docker: docker ps | grep postgres`)
+	logger.error(`\n   2. 檢查連接設定：`)
+	logger.error(`      • psql -h ${process.env.DB_HOST || '127.0.0.1'} -U ${process.env.DB_USER || 'postgres'} -d ${process.env.DB_DATABASE || 'gravito_ddd'}`)
+	logger.error(`\n   3. 檢查監聽埠：`)
+	logger.error(`      • macOS/Linux: lsof -i :${process.env.DB_PORT || 5432}`)
+	logger.error(`\n   4. 使用 SQLite 進行開發（臨時方案）：`)
+	logger.error(`      • export DB_CONNECTION=sqlite`)
+	logger.error(`━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`)
 }
 
 /**
@@ -235,6 +251,7 @@ function logPostgresPingError(error: unknown): void {
  * @internal
  */
 function logPingError(reason: string): void {
-	console.warn(`⚠️ [Atlas] 連接檢查失敗: ${reason}`)
+	const logger = getLogger()
+	logger.warn(`連接檢查失敗: ${reason}`)
 }
 

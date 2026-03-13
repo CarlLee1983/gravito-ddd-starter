@@ -13,6 +13,7 @@ import type { DomainEvent } from '../../../Domain/DomainEvent'
 import type { IntegrationEvent } from '../../../Domain/IntegrationEvent'
 import type { IEventDispatcher, Event, EventHandler } from '../../Ports/Messaging/IEventDispatcher'
 import type { IDeadLetterQueue } from '../Policy/DeadLetterQueue'
+import type { ILogger } from '../../Ports/Services/ILogger'
 import { calculateDelay, shouldRetry, DEFAULT_RETRY_POLICY, type RetryPolicy } from '../Policy/EventFailurePolicy'
 
 /**
@@ -24,6 +25,7 @@ export abstract class BaseEventDispatcher implements IEventDispatcher {
 	protected handlers: Map<string, EventHandler[]> = new Map()
 	protected retryPolicy: RetryPolicy = DEFAULT_RETRY_POLICY
 	protected deadLetterQueue?: IDeadLetterQueue
+	protected logger?: ILogger
 
 	/**
 	 * 設置重試策略
@@ -39,6 +41,14 @@ export abstract class BaseEventDispatcher implements IEventDispatcher {
 	 */
 	setDeadLetterQueue(dlq: IDeadLetterQueue): void {
 		this.deadLetterQueue = dlq
+	}
+
+	/**
+	 * 設置 Logger
+	 * @param logger - Logger 實現
+	 */
+	setLogger(logger: ILogger): void {
+		this.logger = logger
 	}
 
 	/**
@@ -61,7 +71,7 @@ export abstract class BaseEventDispatcher implements IEventDispatcher {
 		const handlers = this.handlers.get(eventName) || []
 
 		if (handlers.length === 0) {
-			console.debug(`[BaseEventDispatcher] 無人訂閱事件: ${eventName}`)
+			this.logger?.debug(`無人訂閱事件: ${eventName}`)
 			return
 		}
 
@@ -73,7 +83,7 @@ export abstract class BaseEventDispatcher implements IEventDispatcher {
 		// 檢查是否有失敗的 Handler
 		const failures = results.filter((r) => r.status === 'rejected')
 		if (failures.length > 0) {
-			console.error(`[BaseEventDispatcher] ${failures.length}/${handlers.length} 個 handler 執行失敗`)
+			this.logger?.error(`${failures.length}/${handlers.length} 個 handler 執行失敗`)
 		}
 	}
 
@@ -98,13 +108,12 @@ export abstract class BaseEventDispatcher implements IEventDispatcher {
 			try {
 				// 執行 Handler
 				await handler(eventData)
-				console.log(`[BaseEventDispatcher] ${eventName}/${handlerName} 執行成功 (嘗試 ${attempt})`)
+				this.logger?.info(`${eventName}/${handlerName} 執行成功 (嘗試 ${attempt})`)
 				return // 成功，結束重試
 			} catch (error) {
 				lastError = error instanceof Error ? error : new Error(String(error))
-				console.warn(
-					`[BaseEventDispatcher] ${eventName}/${handlerName} 執行失敗 (嘗試 ${attempt}/${this.retryPolicy.maxRetries}):`,
-					lastError.message
+				this.logger?.warn(
+					`${eventName}/${handlerName} 執行失敗 (嘗試 ${attempt}/${this.retryPolicy.maxRetries}): ${lastError.message}`
 				)
 
 				// 判斷是否應該重試

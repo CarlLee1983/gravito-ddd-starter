@@ -14,15 +14,8 @@
 
 import type { Event, EventHandler } from '../../Ports/Messaging/IEventDispatcher'
 import type { IRabbitMQService } from '../../Ports/Messaging/IRabbitMQService'
+import type { ILogger } from '../../Ports/Services/ILogger'
 import { BaseEventDispatcher } from './BaseEventDispatcher'
-
-// Simple logger implementation
-const logger = {
-	info: (msg: string) => console.log(`[RabbitMQEventDispatcher] ${msg}`),
-	warn: (msg: string) => console.warn(`[RabbitMQEventDispatcher] ⚠️  ${msg}`),
-	error: (msg: string, err?: any) => console.error(`[RabbitMQEventDispatcher] ❌ ${msg}`, err),
-	debug: (msg: string) => console.debug(`[RabbitMQEventDispatcher] ${msg}`),
-}
 
 /**
  * RabbitMQ 事件分發器
@@ -33,9 +26,16 @@ const logger = {
 export class RabbitMQEventDispatcher extends BaseEventDispatcher {
 	private pendingBindings: Array<{ eventName: string }> = []
 	private isConsuming = false
+	private defaultLogger: ILogger = {
+		info: (msg: string) => console.info(`[RabbitMQEventDispatcher] ${msg}`),
+		warn: (msg: string) => console.warn(`[RabbitMQEventDispatcher] ${msg}`),
+		error: (msg: string, err?: any) => console.error(`[RabbitMQEventDispatcher] ${msg}`, err),
+		debug: (msg: string) => console.debug(`[RabbitMQEventDispatcher] ${msg}`),
+	}
 
 	constructor(private readonly rabbitmq: IRabbitMQService) {
 		super()
+		this.setLogger(this.defaultLogger)
 	}
 
   /**
@@ -55,9 +55,9 @@ export class RabbitMQEventDispatcher extends BaseEventDispatcher {
           event: serialized,
           timestamp: new Date().toISOString(),
         })
-        logger.debug(`Event published: ${eventName} (routing key: ${routingKey})`)
+        this.logger?.debug(`Event published: ${eventName} (routing key: ${routingKey})`)
       } catch (error) {
-        logger.error(`Failed to publish event ${eventName}:`, error)
+        this.logger?.error(`Failed to publish event ${eventName}:`, error)
         throw error
       }
     }
@@ -88,7 +88,7 @@ export class RabbitMQEventDispatcher extends BaseEventDispatcher {
 	 * 使用基類的 executeHandlers（包含失敗重試邏輯）
 	 */
 	public async executeHandlers(eventName: string, eventData: any): Promise<void> {
-		logger.info(`執行 ${eventName} 的所有 Handler`)
+		this.logger?.info(`執行 ${eventName} 的所有 Handler`)
 		await super.executeHandlers(eventName, eventData)
 	}
 

@@ -10,6 +10,7 @@
  */
 
 import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
 import { getDrizzleInstance } from './config'
 
 /**
@@ -24,6 +25,13 @@ import { getDrizzleInstance } from './config'
  * const isConnected = await check.ping()
  */
 export function createDrizzleConnectivityCheck(): IDatabaseConnectivityCheck {
+  const logger: ILogger = {
+    info: (msg: string) => console.info(`[DrizzleConnectivityCheck] ${msg}`),
+    warn: (msg: string) => console.warn(`[DrizzleConnectivityCheck] ${msg}`),
+    error: (msg: string, err?: any) => console.error(`[DrizzleConnectivityCheck] ${msg}`, err),
+    debug: (msg: string) => console.debug(`[DrizzleConnectivityCheck] ${msg}`),
+  }
+
   return {
     /**
      * 執行簡單查詢以驗證連線
@@ -38,7 +46,7 @@ export function createDrizzleConnectivityCheck(): IDatabaseConnectivityCheck {
 
         return true
       } catch (error) {
-        console.error('Database connectivity check failed:', error)
+        logger.error('Database connectivity check failed', error)
         return false
       }
     },

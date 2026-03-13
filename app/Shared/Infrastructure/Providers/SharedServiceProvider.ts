@@ -22,29 +22,31 @@ import type { IQueueWorker } from '../../Application/Jobs/IQueueWorker'
  * 共享服務提供者
  */
 export class SharedServiceProvider extends ModuleServiceProvider {
+	private logger = new GravitoLoggerAdapter()
+
 	/**
 	 * 註冊全域單例服務
 	 */
 	override register(container: IContainer): void {
 		const driver = process.env.EVENT_DRIVER || 'memory'
-		console.log(`[SharedServiceProvider] 事件驅動模式: ${driver}`)
+		this.logger.info(`事件驅動模式: ${driver}`)
 
 		// 註冊領域事件分發器
 		container.singleton('eventDispatcher', (c) => {
 			if (driver === 'redis') {
 				try {
 					const redis = c.make('redis') as IRedisService
-					console.log('[SharedServiceProvider] 使用 RedisEventDispatcher')
+					this.logger.info('使用 RedisEventDispatcher')
 					return new RedisEventDispatcher(redis)
 				} catch (error) {
-					console.warn('[SharedServiceProvider] ⚠️ Redis 不可用，降級為 Memory 模式:', error instanceof Error ? error.message : error)
+					this.logger.warn('Redis 不可用，降級為 Memory 模式: ' + (error instanceof Error ? error.message : error))
 					const logger = new GravitoLoggerAdapter()
 					return new MemoryEventDispatcher(logger)
 				}
 			}
 			// 直接使用 GravitoLoggerAdapter，避免依賴容器
 			const logger = new GravitoLoggerAdapter()
-			console.log('[SharedServiceProvider] 使用 MemoryEventDispatcher')
+			this.logger.info('使用 MemoryEventDispatcher')
 			return new MemoryEventDispatcher(logger)
 		})
 
@@ -68,14 +70,14 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 	 * 3. 啟動 Worker（若使用 redis）
 	 */
 	override boot(core: any): void {
-		console.log('📦 [Shared] Infrastructure services loaded')
+		this.logger.info('[Shared] Infrastructure services loaded')
 
 		// 1. 綁定所有已註冊的事件監聽器
 		try {
 			const eventDispatcher = core.container.make('eventDispatcher')
 			EventListenerRegistry.bindAll(eventDispatcher, core.container)
 		} catch (error) {
-			console.warn('⚠️ [Shared] Could not bind event listeners:', error instanceof Error ? error.message : error)
+			this.logger.warn('[Shared] Could not bind event listeners: ' + (error instanceof Error ? error.message : error))
 		}
 
 		// 2. 綁定所有已註冊的 Job 處理程序
@@ -83,7 +85,7 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 			const jobQueue = core.container.make('jobQueue')
 			JobRegistry.bindAll(jobQueue, core.container)
 		} catch (error) {
-			console.warn('⚠️ [Shared] Could not bind job handlers:', error instanceof Error ? error.message : error)
+			this.logger.warn('[Shared] Could not bind job handlers: ' + (error instanceof Error ? error.message : error))
 		}
 
 		// 3. 啟動 Worker（若使用 redis）
@@ -92,9 +94,9 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 			try {
 				const worker = core.container.make('systemWorker') as IQueueWorker
 				worker.start()
-				console.log('🔗 [Shared] System Worker started in background')
+				this.logger.info('[Shared] System Worker started in background')
 			} catch (error) {
-				console.warn('⚠️ [Shared] Could not start System Worker', error instanceof Error ? error.message : error)
+				this.logger.warn('[Shared] Could not start System Worker: ' + (error instanceof Error ? error.message : error))
 			}
 		}
 	}
