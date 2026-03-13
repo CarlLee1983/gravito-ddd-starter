@@ -119,6 +119,11 @@
 - **異常透明化** - 確保底層錯誤能正確傳播至應用層
 - **DRY Repository** - 透過 `BaseEventSourcedRepository` 消除重複代碼
 
+### 5. Port/Adapter 設計優化 (2026-03-13 新增)
+- **ITokenSigner Port** - Application 層透過 Port 進行 JWT 簽發/驗證，完全不依賴 `jose`
+- **IInfrastructureProbe Port** - Health Domain 層使用通用 `probeByName()` API，與技術棧無關
+- **通用化命名** - Port 介面避免暴露技術特定名詞（redis、database、cache），支持動態擴展
+
 ---
 
 ## 🔗 相關資源

@@ -82,6 +82,11 @@ gravito-ddd-starter/
 - ✅ **Auto-Wiring**: `ModuleAutoWirer` scans `app/Modules/*/index.ts` for zero-manual registration.
 - ✅ **Standardized Logging**: `ILogger` port replaces all `console.log` for production readiness.
 
+**Latest Improvements (2026-03-13)**:
+- ✨ **ITokenSigner Port**: JWT signing/verification abstraction - Application layer no longer depends on `jose` library. Seamlessly swap JWT implementations.
+- ✨ **IInfrastructureProbe Generalization**: Infrastructure probes now use generic `probeByName()` and `getProbeableComponents()` - Health domain completely decoupled from specific tech (redis, database, cache).
+- 🌐 **Session Module Comments**: All comments converted to Traditional Chinese (繁體中文) for project consistency.
+
 ## 📚 Documentation
 
 ### 🚀 Getting Started

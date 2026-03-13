@@ -14,6 +14,7 @@
 - ✅ **Bun 優化**: 針對 Bun 運行時的性能優化
 - ✅ **事件驅動**: 支持領域事件與非同步處理
 - ✅ **Infrastructure 層優化** (2026-03-13): 結構重組、安全修復、日誌統一
+- ✅ **Port/Adapter 抽象化改進** (2026-03-13): ITokenSigner、IInfrastructureProbe 通用命名
 
 ## 快速開始
 
@@ -481,15 +482,76 @@ src/Shared/Infrastructure/Ports/
     └── IS3Service.ts           # S3 存儲
 ```
 
+## Port/Adapter 設計改進 (2026-03-13)
+
+### ITokenSigner Port（JWT 簽發與驗證抽象）
+
+**問題修復**: Application 層不再直接依賴 `jose` 庫
+
+```typescript
+// ✅ 新的通用 Port 介面
+export interface ITokenSigner {
+  sign(payload: Record<string, unknown>): Promise<string>
+  verify(token: string): Promise<Record<string, unknown> | null>
+}
+
+// ✅ 可替換的實現（目前使用 JoseTokenSigner）
+export class JoseTokenSigner implements ITokenSigner {
+  async sign(payload: Record<string, unknown>): Promise<string> {
+    // jose 實現細節隱藏在 Adapter
+  }
+  async verify(token: string): Promise<Record<string, unknown> | null> {
+    // jose 實現細節隱藏在 Adapter
+  }
+}
+```
+
+**優勢**：
+- Session 模組的 Application 層完全解耦於 JWT 庫選擇
+- 未來可輕鬆切換到 `jsonwebtoken`、`@noble/hashes` 或其他實現
+- Domain 層完全不知道 JWT 的具體實現
+
+### IInfrastructureProbe Port（通用基礎設施探針）
+
+**問題修復**: Health Domain 層不再暴露 `redis`、`database`、`cache` 等技術名詞
+
+```typescript
+// ❌ 舊做法（技術特定）
+export interface IInfrastructureProbe {
+  probeDatabase(): Promise<boolean>
+  probeRedis(): Promise<boolean>
+  probeCache(): Promise<boolean>
+}
+
+// ✅ 新做法（通用命名）
+export interface IInfrastructureProbe {
+  probeByName(name: string): Promise<boolean>
+  getProbeableComponents(): string[]
+}
+
+// SystemChecks 也改為 Map 結構，不固定組件名稱
+export class SystemChecks extends ValueObject {
+  static create(checks: Map<string, boolean> | Record<string, boolean>): SystemChecks
+  getCheckResult(name: string): boolean | null
+  get checks(): ReadonlyMap<string, boolean>
+}
+```
+
+**優勢**：
+- Health Domain 層完全與基礎設施選擇無關
+- 支持動態組件列表（未來可加入自定義探針）
+- Port 實現可根據環境動態註冊探針
+
 ## 開發最佳實踐
 
 1. **先寫測試**：遵循 TDD（Test-Driven Development）
 2. **保持分層**：嚴格分離 Domain/Application/Infrastructure 層
-3. **使用 ILogger**：所有日誌記錄使用 ILogger 介面，不使用 console.log
-4. **改善查詢錯誤處理**：Repository 異常要傳播，不要靜默吞掉
-5. **定期重構**：Domain 層應簡潔且專注於業務邏輯
-6. **文檔更新**：新增模組時更新相關文檔
-7. **性能監控**：使用 Bun 的 profiler 檢測性能瓶頸
+3. **使用 Port/Adapter**：Application 層依賴 Port 介面，不依賴具體實現
+4. **使用 ILogger**：所有日誌記錄使用 ILogger 介面，不使用 console.log
+5. **改善查詢錯誤處理**：Repository 異常要傳播，不要靜默吞掉
+6. **定期重構**：Domain 層應簡潔且專注於業務邏輯
+7. **文檔更新**：新增模組時更新相關文檔
+8. **性能監控**：使用 Bun 的 profiler 檢測性能瓶頸
 
 ---
 
@@ -497,3 +559,4 @@ src/Shared/Infrastructure/Ports/
 **Bun 版本**: 1.3.10+
 **框架版本**: @gravito/core v2.0.1+
 **Infrastructure 層**: 已完成重大優化（品質評分 9.2/10）
+**Port/Adapter 設計**: ITokenSigner、IInfrastructureProbe 通用化完成

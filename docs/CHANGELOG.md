@@ -2,6 +2,109 @@
 
 所有項目的重要變更都記錄在此。遵循 [Semantic Versioning](https://semver.org/lang/zh_CN/) 規範。
 
+## [2.2.1] - 2026-03-13 ✅ **Port/Adapter 設計改進**
+
+### 🎯 重點
+
+完成 Port/Adapter 模式的進一步優化，提高 Application 層與 Domain 層的抽象度，確保技術選擇對業務邏輯層完全透明。
+
+### ✨ 改進內容
+
+#### 1️⃣ ITokenSigner Port - JWT 簽發與驗證抽象化
+
+**問題修復**:
+- ❌ **之前**: CreateSessionService 與 ValidateSessionService 直接依賴 `jose` 庫
+- ✅ **現在**: 依賴通用的 `ITokenSigner` Port 介面
+
+**實現**:
+- 新增 `app/Shared/Infrastructure/Ports/Auth/ITokenSigner.ts` Port 介面
+  ```typescript
+  export interface ITokenSigner {
+    sign(payload: Record<string, unknown>): Promise<string>
+    verify(token: string): Promise<Record<string, unknown> | null>
+  }
+  ```
+- 新增 `app/Shared/Infrastructure/Adapters/Gravito/JoseTokenSigner.ts` Adapter
+- 更新 SessionServiceProvider 綁定 JoseTokenSigner 實現
+- 更新 CreateSessionService 與 ValidateSessionService 注入 ITokenSigner
+
+**優勢**:
+- ✨ Session 模組 Application 層完全解耦於 JWT 庫選擇
+- 🔄 未來可輕鬆切換到 `jsonwebtoken`、`@noble/hashes` 等實現
+- 🧪 測試可注入 Mock ITokenSigner 實現
+
+**相關提交**: `6f71884`
+
+#### 2️⃣ IInfrastructureProbe Port - 通用基礎設施探針
+
+**問題修復**:
+- ❌ **之前**: Health Domain 層暴露 `redis`、`database`、`cache` 等技術特定名詞
+- ✅ **現在**: 使用通用的 `probeByName(name: string)` API
+
+**實現**:
+- 更新 `app/Modules/Health/Domain/Services/IInfrastructureProbe.ts`
+  ```typescript
+  export interface IInfrastructureProbe {
+    probeByName(name: string): Promise<boolean>
+    getProbeableComponents(): string[]
+  }
+  ```
+- 更新 `app/Modules/Health/Domain/ValueObjects/SystemChecks.ts` - 改為 Map 結構
+  ```typescript
+  static create(checks: Map<string, boolean> | Record<string, boolean>): SystemChecks
+  get checks(): ReadonlyMap<string, boolean>
+  ```
+- 新增 `app/Modules/Health/Infrastructure/Adapters/HealthProbeAdapter.ts` 實現
+- 更新 HealthCheckService 使用新的通用 API
+
+**優勢**:
+- ✨ Health Domain 層完全與基礎設施選擇無關
+- 🔄 支持動態組件列表（未來可加入自定義探針）
+- 🧪 Port 實現可根據環境動態註冊探針
+
+**相關提交**: `22f97ad`
+
+#### 3️⃣ Session 模組註解轉換
+
+- 🌐 將 SessionTokenValidator.ts 中的簡體中文轉換為繁體中文（繁體中文 - Traditional Chinese）
+- 確認其他 18 個檔案已為繁體中文標準
+
+**相關提交**: `1e7061f`
+
+### 📊 改進統計
+
+| 類別 | 數量 | 狀態 |
+|------|------|------|
+| 新增 Port 介面 | 1 (ITokenSigner) | ✅ |
+| 新增 Adapter | 2 (JoseTokenSigner, HealthProbeAdapter) | ✅ |
+| 修改 Domain 層 | 2 (IInfrastructureProbe, SystemChecks) | ✅ |
+| 修改 Application 層 | 2 (CreateSessionService, ValidateSessionService) | ✅ |
+| 修改註解 | 1 檔案 | ✅ |
+| 測試覆蓋 | 100% (所有相關測試通過) | ✅ |
+
+### 🔄 向後相容性
+
+✅ **完全向後相容（BC）**
+- 所有現有的 API 簽名保持相容
+- SessionServiceProvider 自動綁定新的 Port 實現
+- 新的 Port 介面完全隱藏 jose 庫的具體使用
+
+### 📝 修改的檔案數
+
+- **新增**: 3 個檔案（ITokenSigner, JoseTokenSigner, HealthProbeAdapter）
+- **修改**: 11 個檔案（Application Service、Domain Service、ServiceProvider 等）
+- **測試更新**: 3 個檔案（LoginFlow.test.ts 等）
+
+### 🎓 架構要點
+
+這次改進進一步驗證了以下架構原則：
+
+1. **依賴反轉 (Dependency Inversion)**: Application 層依賴 Port 介面，不依賴具體實現
+2. **適配器模式 (Adapter Pattern)**: 技術細節（jose、Redis 等）隱藏在 Adapter 中
+3. **無關技術的 Domain**: Domain 層（IInfrastructureProbe、SystemChecks）完全不知道底層技術選擇
+
+---
+
 ## [2.2.0] - 2026-03-13 ✅ **Infrastructure 層大幅優化**
 
 ### 🎯 重點
