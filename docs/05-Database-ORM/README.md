@@ -11,6 +11,7 @@
 | **[ORM_GUIDE.md](./ORM_GUIDE.md)** | ⭐ **核心指南**：資料庫遷移、播種與常用查詢指令 |
 | **[ORM_TRANSPARENT_DESIGN.md](./ORM_TRANSPARENT_DESIGN.md)** | 核心原理：為什麼能實現無感知 ORM 切換 |
 | **[ORM_SWAPPING_EXAMPLES.md](./ORM_SWAPPING_EXAMPLES.md)** | 實戰案例：切換過程中的常見問題與解決方案 |
+| **[DATABASE_CONVENTIONS.md](./DATABASE_CONVENTIONS.md)** | 設計規範：資料表、欄位命名與型別映射準則 |
 
 ---
 
@@ -30,24 +31,13 @@
 
 ---
 
-## 📊 ORM 對比
+## 📊 核心組合矩陣 (Tool × System)
 
-| 特性 | Memory | Drizzle | Atlas |
-|------|--------|---------|-------|
-| **適用場景** | 單元測試 / 快速開發 | 生產環境 (小型/SQLite) | 生產環境 (中大型/SQL) |
-| **配置難度** | 零配置 | 極低 | 低 (需設定 DB 連接) |
-| **性能** | 極高 (RAM) | 高 | 極高 |
-| **持久化** | ❌ 否 | ✅ 是 | ✅ 是 |
-| **功能完整性** | 基本 CRUD | 完整 SQL | 完整 SQL + 動態模型 |
-
----
-
-## 🚀 典型開發生命週期
-
-1. **開發階段**：使用 `ORM=memory` 專注於業務邏輯編寫。
-2. **測試階段**：使用 `ORM=memory` 運行快速單元測試。
-3. **整合階段**：切換至 `ORM=drizzle` 驗證 SQL Schema 與遷移邏輯。
-4. **生產階段**：根據需求選擇 `ORM=atlas` (PostgreSQL) 或 `ORM=drizzle` (SQLite)。
+| 工具 (ORM) | 支援系統 (Database) | 特色 |
+| :--- | :--- | :--- |
+| **Memory** | JS 記憶體 | 極速測試，無外部依賴。 |
+| **Drizzle** | SQLite, PostgreSQL | 現代、類型安全，適合輕量到中型專案。 |
+| **Atlas** | PostgreSQL, MySQL, SQLite | 企業級、動態 Schema，適合複雜業務。 |
 
 ---
 
@@ -88,9 +78,9 @@ bun orbit doctor
 
 ## 🔗 相關資源
 
-**DDD 實踐**:
+**設計與規範**:
+- [資料庫開發規範](./DATABASE_CONVENTIONS.md)
 - [領域層 Repository 介面定義](../02-Architecture/CORE_DESIGN.md)
-- [Repository 基類實作](../02-Architecture/EVENT_SYSTEM.md)
 
 **架構接線**:
 - [資料庫訪問建構器 (DatabaseAccessBuilder)](../06-Adapters-Wiring/WIRING_SYSTEM.md)
