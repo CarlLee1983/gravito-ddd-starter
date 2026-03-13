@@ -1,27 +1,42 @@
 /**
- * RabbitMQ 事件分發器
- * 基於 AMQP topic exchange 的領域事件分發系統
+ * @file RabbitMQEventDispatcher.ts
+ * @description 基於 AMQP 的非同步領域事件分發器
+ *
+ * 特點：
+ * - 非同步分發，事件發布到 topic exchange
+ * - 支援死信交換 (DLX) 處理失敗消息
+ * - 由外部 Consumer 消費消息並執行 Handler
+ * - 支援重試機制（指數退避）
+ * - 失敗事件記錄到死信隊列和 DLX
+ *
+ * Role: Infrastructure Adapter
  */
 
-import type { DomainEvent } from '../../Domain/DomainEvent'
-import type { IntegrationEvent } from '../../Domain/IntegrationEvent'
-import type { IEventDispatcher, EventHandler, Event } from '../IEventDispatcher'
+import type { Event, EventHandler } from '../IEventDispatcher'
 import type { IRabbitMQService } from '../IRabbitMQService'
+import { BaseEventDispatcher } from './BaseEventDispatcher'
 
 // Simple logger implementation
 const logger = {
-  info: (msg: string) => console.log(`[RabbitMQEventDispatcher] ${msg}`),
-  warn: (msg: string) => console.warn(`[RabbitMQEventDispatcher] ⚠️  ${msg}`),
-  error: (msg: string, err?: any) => console.error(`[RabbitMQEventDispatcher] ❌ ${msg}`, err),
-  debug: (msg: string) => console.debug(`[RabbitMQEventDispatcher] ${msg}`),
+	info: (msg: string) => console.log(`[RabbitMQEventDispatcher] ${msg}`),
+	warn: (msg: string) => console.warn(`[RabbitMQEventDispatcher] ⚠️  ${msg}`),
+	error: (msg: string, err?: any) => console.error(`[RabbitMQEventDispatcher] ❌ ${msg}`, err),
+	debug: (msg: string) => console.debug(`[RabbitMQEventDispatcher] ${msg}`),
 }
 
-export class RabbitMQEventDispatcher implements IEventDispatcher {
-  private handlers: Map<string, EventHandler[]> = new Map()
-  private pendingBindings: Array<{ eventName: string }> = []
-  private isConsuming = false
+/**
+ * RabbitMQ 事件分發器
+ *
+ * 基於 AMQP topic exchange 的領域事件分發系統。
+ * 與 Consumer 配合，實現事件的非同步執行和死信隊列管理。
+ */
+export class RabbitMQEventDispatcher extends BaseEventDispatcher {
+	private pendingBindings: Array<{ eventName: string }> = []
+	private isConsuming = false
 
-  constructor(private readonly rabbitmq: IRabbitMQService) {}
+	constructor(private readonly rabbitmq: IRabbitMQService) {
+		super()
+	}
 
   /**
    * 分發事件到 gravito.domain.events exchange
@@ -63,22 +78,19 @@ export class RabbitMQEventDispatcher implements IEventDispatcher {
     }
   }
 
-  /**
-   * 執行處理程序 (供 Consumer 調用)
-   */
-  async executeHandlers(eventName: string, eventData: any): Promise<void> {
-    const handlers = this.handlers.get(eventName) || []
-
-    await Promise.all(
-      handlers.map(async (handler) => {
-        try {
-          await handler(eventData)
-        } catch (error) {
-          logger.error(`Failed to execute handler for ${eventName}:`, error)
-        }
-      })
-    )
-  }
+	/**
+	 * 執行處理程序 (供 Consumer 調用)
+	 *
+	 * @param eventName - 事件名稱
+	 * @param eventData - 事件數據
+	 * @internal 僅供 Consumer 使用，不應直接呼叫
+	 *
+	 * 使用基類的 executeHandlers（包含失敗重試邏輯）
+	 */
+	public async executeHandlers(eventName: string, eventData: any): Promise<void> {
+		logger.info(`執行 ${eventName} 的所有 Handler`)
+		await super.executeHandlers(eventName, eventData)
+	}
 
   /**
    * 啟動 AMQP Consumer
@@ -134,46 +146,23 @@ export class RabbitMQEventDispatcher implements IEventDispatcher {
     }
   }
 
-  /**
-   * 提取事件名稱
-   */
-  private getEventName(event: Event): string {
-    // IntegrationEvent 獨有 sourceContext 屬性
-    if ('sourceContext' in event && typeof event.sourceContext === 'string') {
-      return (event as IntegrationEvent).eventType
-    }
-    // DomainEvent
-    return (event as DomainEvent).constructor.name
-  }
+	/**
+	 * 取得路由金鑰（聚合根類型 + 事件名稱）
+	 *
+	 * 使用 getEventName() 從基類取得事件名稱（共用邏輯）
+	 */
+	private getRoutingKey(event: Event): string {
+		const eventName = this.getEventName(event)
 
-  /**
-   * 取得路由金鑰（聚合根類型 + 事件名稱）
-   */
-  private getRoutingKey(event: Event): string {
-    const eventName = this.getEventName(event)
+		// IntegrationEvent 獨有 sourceContext 屬性
+		if ('sourceContext' in event && typeof event.sourceContext === 'string') {
+			const integrationEvent = event as any
+			return `${integrationEvent.aggregateType}.${eventName}`
+		}
 
-    // IntegrationEvent 獨有 sourceContext 屬性
-    if ('sourceContext' in event && typeof event.sourceContext === 'string') {
-      const integrationEvent = event as IntegrationEvent
-      return `${integrationEvent.aggregateType}.${eventName}`
-    }
-
-    // DomainEvent - 嘗試從事件物件取得 aggregateType
-    const domainEvent = event as DomainEvent
-    const aggregateType = (domainEvent as any).aggregateType || 'Unknown'
-    return `${aggregateType}.${eventName}`
-  }
-
-  /**
-   * 序列化事件
-   */
-  private serializeEvent(event: Event): Record<string, any> {
-    // IntegrationEvent 獨有 sourceContext 屬性
-    if ('sourceContext' in event && typeof event.sourceContext === 'string') {
-      // IntegrationEvent 已是 plain object，直接回傳
-      return event as Record<string, any>
-    }
-    // DomainEvent
-    return (event as DomainEvent).toJSON()
-  }
+		// DomainEvent - 嘗試從事件物件取得 aggregateType
+		const domainEvent = event as any
+		const aggregateType = domainEvent.aggregateType || 'Unknown'
+		return `${aggregateType}.${eventName}`
+	}
 }

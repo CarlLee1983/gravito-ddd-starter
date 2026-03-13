@@ -1,32 +1,42 @@
 /**
  * @file RedisEventDispatcher.ts
  * @description 基於 Redis 的非同步領域事件分發器
- * 
+ *
+ * 特點：
+ * - 非同步分發，事件推入 Redis 列表
+ * - 由外部 Worker (SystemWorker) 消費隊列並執行 Handler
+ * - 支援重試機制（指數退避）
+ * - 失敗事件記錄到死信隊列
+ *
  * Role: Infrastructure Adapter
  */
 
-import type { DomainEvent } from '../../Domain/DomainEvent'
-import type { IntegrationEvent } from '../../Domain/IntegrationEvent'
-import type { IEventDispatcher, EventHandler, Event } from '../IEventDispatcher'
+import type { Event } from '../IEventDispatcher'
 import type { IRedisService } from '../IRedisService'
+import { BaseEventDispatcher } from './BaseEventDispatcher'
 
 /**
  * Redis 事件分發器
  *
  * 使用 Redis 列表作為消息隊列，實現非同步的事件處理。
+ * 與 SystemWorker 配合，實現事件的異步執行。
  */
-export class RedisEventDispatcher implements IEventDispatcher {
+export class RedisEventDispatcher extends BaseEventDispatcher {
 	private readonly queueKey = 'domain_events_queue'
-	private handlers: Map<string, EventHandler[]> = new Map()
 
 	/**
 	 * 建構子
 	 * @param redis - Redis 服務實例
 	 */
-	constructor(private readonly redis: IRedisService) {}
+	constructor(private readonly redis: IRedisService) {
+		super()
+	}
 
 	/**
 	 * 分發事件：將事件序列化後推入 Redis 隊列
+	 *
+	 * 此方法僅負責將事件推入隊列，不執行 Handler。
+	 * Handler 的執行由 SystemWorker 透過呼叫 executeHandlers() 進行。
 	 */
 	async dispatch(events: Event | Event[]): Promise<void> {
 		const eventList = Array.isArray(events) ? events : [events]
@@ -37,7 +47,8 @@ export class RedisEventDispatcher implements IEventDispatcher {
 
 			const payload = JSON.stringify({
 				name: eventName,
-				event: serialized
+				event: serialized,
+				timestamp: new Date().toISOString(),
 			})
 
 			await this.redis.rpush(this.queueKey, payload)
@@ -46,64 +57,16 @@ export class RedisEventDispatcher implements IEventDispatcher {
 	}
 
 	/**
-	 * 提取事件名稱
-	 * - IntegrationEvent: 使用 eventType（擁有 sourceContext 屬性）
-	 * - DomainEvent: 使用 constructor.name
+	 * 執行處理程序 (供 SystemWorker 調用)
 	 *
-	 * @private
-	 */
-	private getEventName(event: Event): string {
-		// IntegrationEvent 獨有 sourceContext 屬性
-		if ('sourceContext' in event && typeof event.sourceContext === 'string') {
-			return (event as IntegrationEvent).eventType
-		}
-		// DomainEvent
-		return (event as DomainEvent).constructor.name
-	}
-
-	/**
-	 * 序列化事件
-	 * - IntegrationEvent: 已是 plain object，直接序列化整體
-	 * - DomainEvent: 呼叫 toJSON() 取得序列化資料
+	 * @param eventName - 事件名稱
+	 * @param eventData - 事件數據
+	 * @internal 僅供 SystemWorker 使用，不應直接呼叫
 	 *
-	 * @private
+	 * 使用基類的 executeHandlers（包含失敗重試邏輯）
 	 */
-	private serializeEvent(event: Event): Record<string, any> {
-		// IntegrationEvent 獨有 sourceContext 屬性
-		if ('sourceContext' in event && typeof event.sourceContext === 'string') {
-			// IntegrationEvent 已是 plain object，直接回傳
-			return event as Record<string, any>
-		}
-		// DomainEvent
-		return (event as DomainEvent).toJSON()
-	}
-
-	/**
-	 * 訂閱事件：維護本地處理程序
-	 * 注意：在 Redis 模式下，處理程序的觸發由外部 Worker 調用此實例的執行方法。
-	 */
-	subscribe(eventName: string, handler: EventHandler): void {
-		if (!this.handlers.has(eventName)) {
-			this.handlers.set(eventName, [])
-		}
-		this.handlers.get(eventName)!.push(handler)
-	}
-
-	/**
-	 * 執行處理程序 (供 Worker 調用)
-	 * @internal
-	 */
-	async executeHandlers(eventName: string, eventData: any): Promise<void> {
-		const handlers = this.handlers.get(eventName) || []
-		
-		await Promise.all(
-			handlers.map(async (handler) => {
-				try {
-					await handler(eventData)
-				} catch (error) {
-					console.error(`[RedisEventDispatcher] 執行 ${eventName} 處理程序失敗:`, error)
-				}
-			})
-		)
+	public async executeHandlers(eventName: string, eventData: any): Promise<void> {
+		console.log(`[RedisEventDispatcher] 執行 ${eventName} 的所有 Handler`)
+		await super.executeHandlers(eventName, eventData)
 	}
 }

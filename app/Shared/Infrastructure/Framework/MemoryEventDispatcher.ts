@@ -3,24 +3,32 @@
  * @description 內存事件分發器實作 (Adapter)
  *
  * 支援分發 DomainEvent 和 IntegrationEvent
+ * 同步分發，適合開發和測試環境
+ *
+ * 特點：
+ * - 同步執行，所有 Handler 立即執行
+ * - 若任一 Handler 失敗，其他 Handler 不會執行
+ * - 支援重試機制（指數退避）
+ * - 失敗事件記錄到死信隊列
+ *
  * Role: Infrastructure Adapter
  */
 
-import type { DomainEvent } from '../../Domain/DomainEvent'
-import type { IntegrationEvent } from '../../Domain/IntegrationEvent'
-import type { IEventDispatcher, Event, EventHandler } from '../IEventDispatcher'
+import type { Event } from '../IEventDispatcher'
 import type { ILogger } from '../ILogger'
+import { BaseEventDispatcher } from './BaseEventDispatcher'
 
 /**
  * 內存事件分發器
  *
- * 負責在同一個執行序中同步或非同步地分發領域事件和整合事件。
+ * 負責在同一個執行序中同步分發領域事件和整合事件。
+ * 使用基類提供的失敗重試機制和死信隊列支持。
  */
-export class MemoryEventDispatcher implements IEventDispatcher {
-	private handlers: Map<string, EventHandler[]> = new Map()
+export class MemoryEventDispatcher extends BaseEventDispatcher {
 	private logger: ILogger
 
 	constructor(logger?: ILogger) {
+		super()
 		this.logger = logger || {
 			debug: (msg: string) => console.debug(`[DEBUG] ${msg}`),
 			info: (msg: string) => console.info(`[INFO] ${msg}`),
@@ -30,66 +38,30 @@ export class MemoryEventDispatcher implements IEventDispatcher {
 	}
 
 	/**
-	 * 分發事件（DomainEvent 或 IntegrationEvent）
+	 * 分發事件（同步）
+	 *
+	 * 立即執行所有訂閱者的處理函式
 	 */
 	async dispatch(events: Event | Event[]): Promise<void> {
 		const eventList = Array.isArray(events) ? events : [events]
 
 		for (const event of eventList) {
 			const eventName = this.getEventName(event)
-			const handlers = this.handlers.get(eventName) || []
+			const handlerCount = this.handlers.get(eventName)?.length || 0
 
 			console.log('[MemoryEventDispatcher.dispatch] 分發事件:', {
 				eventName,
-				handlerCount: handlers.length,
-				eventType: (event as any).eventType || (event as any).constructor.name,
+				handlerCount,
 			})
 
-			if (handlers.length === 0) {
-				this.logger.debug(`[EventDispatcher] 無人訂閱事件: ${eventName}`)
-				continue
+			// 使用基類的 executeHandlers（包含失敗重試邏輯）
+			try {
+				await this.executeHandlers(eventName, event)
+			} catch (error) {
+				// 記錄到日誌，但不中斷其他事件的分發
+				this.logger.error(`[MemoryEventDispatcher] 分發事件 ${eventName} 失敗`, error)
+				throw error // 重新拋出，讓調用者決定是否中斷
 			}
-
-			// 執行所有訂閱者處理函式
-			await Promise.all(
-				handlers.map(async (handler) => {
-					try {
-						console.log('[MemoryEventDispatcher] 執行訂閱者處理函式:', eventName)
-						await handler(event)
-					} catch (error) {
-						console.error('[MemoryEventDispatcher] 處理函式執行失敗:', eventName, error)
-						this.logger.error(`[EventDispatcher] 處理事件 ${eventName} 時發生錯誤`, error instanceof Error ? error : new Error(String(error)))
-					}
-				})
-			)
 		}
-	}
-
-	/**
-	 * 訂閱事件
-	 */
-	subscribe(eventName: string, handler: EventHandler): void {
-		if (!this.handlers.has(eventName)) {
-			this.handlers.set(eventName, [])
-		}
-		this.handlers.get(eventName)!.push(handler)
-	}
-
-	/**
-	 * 提取事件名稱
-	 * - IntegrationEvent: 使用 eventType（擁有 sourceContext 屬性）
-	 * - DomainEvent: 使用 constructor.name
-	 *
-	 * 優先檢查 sourceContext 以避免序列化時的歧義
-	 *
-	 * @private
-	 */
-	private getEventName(event: Event): string {
-		// IntegrationEvent 獨有 sourceContext 屬性（更明確的識別）
-		if ('sourceContext' in event && typeof event.sourceContext === 'string') {
-			return (event as IntegrationEvent).eventType
-		}
-		// DomainEvent
-		return (event as DomainEvent).constructor.name
 	}
 }
