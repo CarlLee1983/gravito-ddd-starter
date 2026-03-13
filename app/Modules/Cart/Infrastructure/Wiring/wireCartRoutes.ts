@@ -48,6 +48,6 @@ export function wireCartRoutes(ctx: IRouteRegistrationContext): void {
 
 	registerCartRoutes(router, controller)
 
-	// 註冊頁面路由
-	registerPageRoutes(router, cartRepository)
+	// 註冊頁面路由（使用 Page Guard 中間件）
+	registerPageRoutes(router, cartRepository, ctx.pageGuardMiddleware)
 }

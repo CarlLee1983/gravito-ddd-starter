@@ -23,6 +23,8 @@ import type { ITokenValidator } from '@/Shared/Infrastructure/Ports/Auth/ITokenV
 import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
 import { AuthMessageService } from '../Services/AuthMessageService'
+import { createJwtGuardMiddleware } from '@/Shared/Presentation/Middlewares/JwtGuardMiddleware'
+import { createPageGuardMiddleware } from '@/Shared/Presentation/Middlewares/PageGuardMiddleware'
 
 /**
  * Auth 模組服務提供者實作類別
@@ -88,6 +90,18 @@ export class AuthServiceProvider extends ModuleServiceProvider {
         c.make('userProfileService') as IUserProfileService,
         c.make('authMessages') as IAuthMessages
       )
+    })
+
+    // 5. JWT Guard 中間件（用於 API 路由）
+    container.singleton('jwtGuardMiddleware', (c) => {
+      const tokenValidator = c.make('tokenValidator') as ITokenValidator
+      return createJwtGuardMiddleware(tokenValidator)
+    })
+
+    // 6. Page Guard 中間件（用於頁面路由）
+    container.singleton('pageGuardMiddleware', (c) => {
+      const tokenValidator = c.make('tokenValidator') as ITokenValidator
+      return createPageGuardMiddleware(tokenValidator)
     })
   }
 

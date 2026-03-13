@@ -85,6 +85,15 @@ export class ModuleAutoWirer {
 
 		// 第三階段：裝配 Presentation 層 (需要服務和 Repository 都已註冊)
 		const activeModules: string[] = []
+
+		// 先嘗試獲取 pageGuardMiddleware（用於所有模組）
+		let pageGuardMiddleware: any = undefined
+		try {
+			pageGuardMiddleware = core.container.make('pageGuardMiddleware')
+		} catch {
+			console.warn('[AutoWirer] ⚠️ pageGuardMiddleware not available, page authentication may not work')
+		}
+
 		for (const { def, file } of modulesFound) {
 			if (def.registerRoutes) {
 				try {
@@ -105,6 +114,7 @@ export class ModuleAutoWirer {
 								throw new Error(`ITokenValidator 未實現，無法為模組 ${def.name} 建立 Auth Router`)
 							}
 						},
+						pageGuardMiddleware,
 					}
 					def.registerRoutes(routeCtx)
 					console.log(`[AutoWirer] ✅ Routes wired successfully for module: ${def.name}`)
