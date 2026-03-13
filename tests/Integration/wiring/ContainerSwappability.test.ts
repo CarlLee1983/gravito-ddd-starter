@@ -13,7 +13,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import type { IContainer, IServiceProvider } from '@/Shared/Infrastructure/IServiceProvider'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
-import { resetRegistry } from '@/wiring'
+import { resetRegistry } from '@wiring'
 
 /**
  * 簡單的容器實現（用於測試）

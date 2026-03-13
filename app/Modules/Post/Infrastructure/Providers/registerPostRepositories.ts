@@ -6,7 +6,7 @@
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { PostRepository } from '../Repositories/PostRepository'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
+import { getRegistry } from '@wiring/RepositoryRegistry'
 
 /**
  * 註冊 Post Repository 工廠到全局 Registry

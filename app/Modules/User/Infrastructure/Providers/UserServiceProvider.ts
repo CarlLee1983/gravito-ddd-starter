@@ -20,8 +20,8 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { resolveRepository } from '@/wiring/RepositoryResolver'
-import { getCurrentORM } from '@/wiring/RepositoryFactory'
+import { resolveRepository } from '@wiring/RepositoryResolver'
+import { getCurrentORM } from '@wiring/RepositoryFactory'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'

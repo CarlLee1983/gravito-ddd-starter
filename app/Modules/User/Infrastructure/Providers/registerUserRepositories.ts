@@ -14,7 +14,7 @@
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 import { UserRepository } from '../Persistence/UserRepository'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
+import { getRegistry } from '@wiring/RepositoryRegistry'
 
 /**
  * 註冊 User Repository 工廠到全局註冊表 (Registry)

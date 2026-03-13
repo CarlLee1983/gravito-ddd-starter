@@ -90,7 +90,7 @@ bun run dev
 
 2. **Bootstrap**：
    ```typescript
-   import { DatabaseAccessBuilder } from '@/wiring/DatabaseAccessBuilder'
+   import { DatabaseAccessBuilder } from '@wiring/DatabaseAccessBuilder'
    import { registerUserRepositories } from '@/Modules/User/Infrastructure/Providers/registerUserRepositories'
 
    const orm = getCurrentORM()  // 'atlas'

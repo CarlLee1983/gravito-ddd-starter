@@ -70,7 +70,7 @@ export function createRepositoryFactory(factoryMap: RepositoryFactoryMap) {
 
 ```typescript
 // registerUserRepositories.ts - 從 40+ 行減到 10 行！
-import { createRepositoryFactory } from '@/wiring/RepositoryFactoryGenerator'
+import { createRepositoryFactory } from '@wiring/RepositoryFactoryGenerator'
 
 export function registerUserRepositories(): void {
   const registry = getRegistry()
@@ -159,7 +159,7 @@ export function registerPostRepositories(): void {
 
 ```typescript
 // registerUserRepositories.ts (10 行)
-import { createRepositoryFactory } from '@/wiring/RepositoryFactoryGenerator'
+import { createRepositoryFactory } from '@wiring/RepositoryFactoryGenerator'
 
 export function registerUserRepositories(): void {
   const registry = getRegistry()
@@ -172,7 +172,7 @@ export function registerUserRepositories(): void {
 }
 
 // registerPostRepositories.ts (10 行)
-import { createRepositoryFactory } from '@/wiring/RepositoryFactoryGenerator'
+import { createRepositoryFactory } from '@wiring/RepositoryFactoryGenerator'
 
 export function registerPostRepositories(): void {
   const registry = getRegistry()
@@ -240,10 +240,10 @@ createRepositoryFactory(factoryMap)
 
 ```typescript
 // src/Modules/Order/Infrastructure/Providers/registerOrderRepositories.ts
-import { createRepositoryFactory } from '@/wiring/RepositoryFactoryGenerator'
+import { createRepositoryFactory } from '@wiring/RepositoryFactoryGenerator'
 import { OrderRepository } from '../Repositories/OrderRepository'
 import { DrizzleOrderRepository } from '@/adapters/Drizzle/Repositories/DrizzleOrderRepository'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
+import { getRegistry } from '@wiring/RepositoryRegistry'
 
 export function registerOrderRepositories(): void {
   const registry = getRegistry()
@@ -290,7 +290,7 @@ const factory = createRepositoryFactory({
 
 ```typescript
 // src/bootstrap.ts
-import { registerRepositoriesInBatch } from '@/wiring/RepositoryFactoryGenerator'
+import { registerRepositoriesInBatch } from '@wiring/RepositoryFactoryGenerator'
 
 registerRepositoriesInBatch({
   user: {

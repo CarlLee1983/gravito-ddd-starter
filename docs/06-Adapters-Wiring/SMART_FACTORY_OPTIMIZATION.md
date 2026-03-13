@@ -242,7 +242,7 @@ registerPostRepositories() { ... }
 
 ```typescript
 // src/Modules/User/Infrastructure/Providers/registerUserRepositories.ts
-import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
+import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
 function createUserRepository(orm: string, db?: IDatabaseAccess): any {
   switch (orm) {

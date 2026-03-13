@@ -13,8 +13,8 @@ import { initializeRegistry } from 'start/wiring/RepositoryRegistry'
 import { getCurrentORM } from 'start/wiring/RepositoryFactory'
 import { DatabaseAccessBuilder } from 'start/wiring/DatabaseAccessBuilder'
 import { ModuleAutoWirer } from 'start/wiring/ModuleAutoWirer'
-import { SharedServiceProvider } from 'providers/SharedServiceProvider'
-import { InfrastructureServiceProvider } from 'providers/InfrastructureServiceProvider'
+import { SharedServiceProvider } from '@providers/SharedServiceProvider'
+import { InfrastructureServiceProvider } from '@providers/InfrastructureServiceProvider'
 import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Framework/GravitoServiceProviderAdapter'
 
 /**
@@ -44,10 +44,10 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	// Step 5: 安裝 Nebula 存儲軌道 (Orbit)
 	// 注入自定義 S3 驅動
 	if (storageConfig.disks?.s3?.driver === 'custom') {
-		storageConfig.disks.s3.store = new S3Store(s3RawConfig)
+		;(storageConfig.disks.s3 as { store?: unknown }).store = new S3Store(s3RawConfig)
 	}
 	const nebula = new OrbitNebula(storageConfig)
-	core.addOrbit(nebula)
+	await core.orbit(nebula)
 
 	// Step 6: 在容器中註冊資料庫實例（供模組使用）
 	core.container.singleton('databaseAccess', () => db)
@@ -60,7 +60,6 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	core.register(createGravitoServiceProvider(new SharedServiceProvider()))
 
 	// Step 7.5: 確保關鍵服務（如 EventDispatcher）在自動佈線前已實例化
-	console.log('🔧 [Bootstrap] Step 7.5: 確保 eventDispatcher 已就緒...')
 	let eventDispatcher: any = undefined
 	try {
 		// 這裡透過容器 make 來觸發實例化，模組裝配 (Step 8) 需要它來處理領域事件

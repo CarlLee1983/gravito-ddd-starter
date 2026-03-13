@@ -1,6 +1,11 @@
 import type { OrbitNebulaOptions } from '@gravito/nebula'
 
 /**
+ * Storage 配置型別（與 @gravito/nebula OrbitNebulaOptions 一致）
+ */
+export type StorageConfig = OrbitNebulaOptions
+
+/**
  * Nebula S3 配置擴充
  */
 export interface S3StoreConfig {

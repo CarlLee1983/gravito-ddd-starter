@@ -240,7 +240,7 @@ export class DrizzleOrderRepository implements IOrderRepository { }
 
 ```typescript
 // src/Modules/Order/Infrastructure/Providers/registerOrderRepositories.ts
-import { getRegistry } from '@/wiring/RepositoryRegistry'
+import { getRegistry } from '@wiring/RepositoryRegistry'
 
 function createOrderRepository(orm: string, db?: IDatabaseAccess): any {
   switch (orm) {
@@ -446,7 +446,7 @@ registry.create('user', 'drizzle', db)
 ### Mock Registry
 
 ```typescript
-import { RepositoryRegistry } from '@/wiring/RepositoryRegistry'
+import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 
 describe('OrderServiceProvider', () => {
   it('應該使用 Registry 建立 Repository', () => {

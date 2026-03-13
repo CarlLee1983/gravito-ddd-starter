@@ -141,7 +141,7 @@ export class DrizzleOrderRepository implements IOrderRepository {
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { OrderRepository } from '../Repositories/OrderRepository'
 import { DrizzleOrderRepository } from '@/adapters/Drizzle/Repositories/DrizzleOrderRepository'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
+import { getRegistry } from '@wiring/RepositoryRegistry'
 
 /**
  * 註冊 Order Repository 工廠到全局 Registry
@@ -163,8 +163,8 @@ export function registerOrderRepositories(db: IDatabaseAccess): void {
 ```typescript
 // src/Modules/Order/Infrastructure/Providers/OrderServiceProvider.ts
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
-import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
+import { getRegistry } from '@wiring/RepositoryRegistry'
+import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
 export class OrderServiceProvider extends ModuleServiceProvider {
   override register(container: IContainer): void {

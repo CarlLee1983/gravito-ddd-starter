@@ -194,7 +194,7 @@ export class ${pascalCase}Repository implements I${pascalCase}Repository {
 		// 4. 生成註冊器 (registerRepositories)
 		const registerRepos = `import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { ${pascalCase}Repository } from '../Repositories/${pascalCase}Repository'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
+import { getRegistry } from '@wiring/RepositoryRegistry'
 
 export function register${pascalCase}Repositories(db: IDatabaseAccess): void {
 	const registry = getRegistry()
@@ -207,8 +207,8 @@ export function register${pascalCase}Repositories(db: IDatabaseAccess): void {
 
 		// 5. 生成 ServiceProvider
 		const serviceProvider = `import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
-import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
+import { getRegistry } from '@wiring/RepositoryRegistry'
+import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
 export class ${pascalCase}ServiceProvider extends ModuleServiceProvider {
 	override register(container: IContainer): void {

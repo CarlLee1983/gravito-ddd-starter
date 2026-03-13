@@ -99,7 +99,7 @@ export function createRepositoryFactory(factoryMap: RepositoryFactoryMap) {
 export function registerRepositoriesInBatch(
 	repositoryMaps: Record<string, RepositoryFactoryMap>
 ): void {
-	const { getRegistry } = require('@/wiring/RepositoryRegistry')
+	const { getRegistry } = require('@wiring/RepositoryRegistry')
 	const registry = getRegistry()
 
 	for (const [type, factoryMap] of Object.entries(repositoryMaps)) {
@@ -115,7 +115,7 @@ export function registerRepositoriesInBatch(
  * 方式 1：分別註冊（推薦，清晰）
  * ```typescript
  * // src/Modules/User/Infrastructure/Providers/registerUserRepositories.ts
- * import { createRepositoryFactory } from '@/wiring/RepositoryFactoryGenerator'
+ * import { createRepositoryFactory } from '@wiring/RepositoryFactoryGenerator'
  *
  * export function registerUserRepositories(): void {
  *   const factory = createRepositoryFactory({
@@ -129,7 +129,7 @@ export function registerRepositoriesInBatch(
  * 方式 2：批量註冊（簡潔）
  * ```typescript
  * // src/bootstrap.ts
- * import { registerRepositoriesInBatch } from '@/wiring/RepositoryFactoryGenerator'
+ * import { registerRepositoriesInBatch } from '@wiring/RepositoryFactoryGenerator'
  *
  * registerRepositoriesInBatch({
  *   user: {

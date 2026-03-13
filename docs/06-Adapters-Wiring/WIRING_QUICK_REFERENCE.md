@@ -35,7 +35,7 @@ Wiring Layer: core.container.make() 取出已配置的服務
 
 ```typescript
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { createRepository, getDatabaseAccess, getCurrentORM } from '@/wiring/RepositoryFactory'
+import { createRepository, getDatabaseAccess, getCurrentORM } from '@wiring/RepositoryFactory'
 import { CreateXHandler } from '../../Application/Commands/CreateX/CreateXHandler'
 
 export class XServiceProvider extends ModuleServiceProvider {

@@ -31,7 +31,7 @@
 import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
 import { UserServiceProvider } from './Infrastructure/Providers/UserServiceProvider'
 import { registerUserRepositories } from './Infrastructure/Providers/registerUserRepositories'
-import { registerUser } from '@/wiring/index'
+import { registerUser } from '@wiring/index'
 
 export const UserModule: IModuleDefinition = {
   name: 'User',                              // 模組名稱

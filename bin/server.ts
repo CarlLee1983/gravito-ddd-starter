@@ -16,7 +16,7 @@ async function startServer() {
 
     // PlanetCore 會自動啟動 Hono 應用
     // 在 Bun 環境中，使用 Bun.serve() 來啟動伺服器
-    const server = Bun.serve({
+    Bun.serve({
       port,
       fetch: (core.app as any).fetch.bind(core.app),
       hostname: '0.0.0.0',

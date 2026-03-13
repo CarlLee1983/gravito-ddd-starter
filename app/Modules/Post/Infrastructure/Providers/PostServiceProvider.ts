@@ -5,8 +5,8 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { resolveRepository } from '@/wiring/RepositoryResolver'
-import { getCurrentORM } from '@/wiring/RepositoryFactory'
+import { resolveRepository } from '@wiring/RepositoryResolver'
+import { getCurrentORM } from '@wiring/RepositoryFactory'
 import { WelcomePostAutomation } from '../../Application/Handlers/WelcomePostAutomation'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'

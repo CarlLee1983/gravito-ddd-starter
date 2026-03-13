@@ -292,7 +292,7 @@ export class DrizzleOrderRepository implements IOrderRepository {
 ```typescript
 // src/Modules/Order/Infrastructure/Providers/OrderServiceProvider.ts
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { createRepository, getDatabaseAccess, getCurrentORM } from '@/wiring/RepositoryFactory'
+import { createRepository, getDatabaseAccess, getCurrentORM } from '@wiring/RepositoryFactory'
 
 export class OrderServiceProvider extends ModuleServiceProvider {
   override register(container: IContainer): void {

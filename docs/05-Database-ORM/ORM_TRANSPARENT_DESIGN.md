@@ -214,7 +214,7 @@ export class OrderRepository implements IOrderRepository {
 // src/Modules/Order/Infrastructure/Providers/registerOrderRepositories.ts
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { OrderRepository } from '../Repositories/OrderRepository'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
+import { getRegistry } from '@wiring/RepositoryRegistry'
 
 export function registerOrderRepositories(db: IDatabaseAccess): void {
   const registry = getRegistry()

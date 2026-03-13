@@ -1,8 +1,7 @@
 import type { IStorageService } from '../IStorageService'
 import type { IStorageDisk } from '../IStorageDisk'
-import type { StorageConfig } from '../../../../config/app/storage'
+import type { StorageConfig } from '@config/app/storage'
 import { LocalDriver } from './Drivers/LocalDriver'
-import { S3Driver } from './Drivers/S3Driver'
 
 /**
  * StorageManager
@@ -18,34 +17,30 @@ export class StorageManager implements IStorageService {
    * 獲取指定的磁碟
    */
   disk(name?: string): IStorageDisk {
-    const diskName = name || this.config.default;
-    
+    const diskName = name ?? this.config.default ?? 'local';
+
     if (this.disks.has(diskName)) {
       return this.disks.get(diskName)!;
     }
 
-    const diskConfig = this.config.disks[diskName];
+    const diskConfig = this.config.disks?.[diskName];
     if (!diskConfig) {
       throw new Error(`Storage disk [${diskName}] is not defined.`);
     }
 
     let disk: IStorageDisk;
+    const driver = (diskConfig as { driver: string; root?: string }).driver;
 
-    switch (diskConfig.driver) {
+    switch (driver) {
       case 'local':
-        disk = new LocalDriver({ root: diskConfig.root });
+        disk = new LocalDriver({ root: (diskConfig as { root?: string }).root ?? './storage' });
         break;
       case 's3':
-        disk = new S3Driver({
-          key: diskConfig.key,
-          secret: diskConfig.secret,
-          bucket: diskConfig.bucket,
-          region: diskConfig.region,
-          visibility: diskConfig.visibility,
-        });
-        break;
+      case 'custom':
+        // 未來可以在這裡擴充 S3Driver（config 中 s3 使用 driver: 'custom'）
+        throw new Error(`Storage driver [${driver}] is not implemented yet.`);
       default:
-        throw new Error(`Storage driver [${(diskConfig as any).driver}] is not supported.`);
+        throw new Error(`Storage driver [${driver}] is not supported.`);
     }
 
     this.disks.set(diskName, disk);

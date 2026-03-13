@@ -96,8 +96,8 @@ export function getDatabaseAccess() {
  *
  * ```typescript
  * // src/Modules/User/Infrastructure/Providers/registerUserRepositories.ts
- * import { getCurrentORM, getDatabaseAccess } from '@/wiring/RepositoryFactory'
- * import { getRegistry } from '@/wiring/RepositoryRegistry'
+* import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
+   * import { getRegistry } from '@wiring/RepositoryRegistry'
  *
  * function createUserRepository(orm: string, db?: IDatabaseAccess): any {
  *   switch (orm) {

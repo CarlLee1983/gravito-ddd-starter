@@ -250,9 +250,9 @@ private getModuleDefinition(moduleName: string): Record<string, any> {
 
 ```typescript
 // src/Modules/Order/Infrastructure/Providers/registerOrderRepositories.ts
-import type { RepositoryFactoryMap } from '@/wiring/RepositoryFactoryGenerator'
-import { createRepositoryFactory } from '@/wiring/RepositoryFactoryGenerator'
-import { getRegistry } from '@/wiring/RepositoryRegistry'
+import type { RepositoryFactoryMap } from '@wiring/RepositoryFactoryGenerator'
+import { createRepositoryFactory } from '@wiring/RepositoryFactoryGenerator'
+import { getRegistry } from '@wiring/RepositoryRegistry'
 
 export function registerOrderRepositories(
   factoryMap: RepositoryFactoryMap
@@ -338,7 +338,7 @@ registerOrderRepositories(factoryBuilder.build('order'))  // ← 新增
 
 ```typescript
 import { registerUserRepositories } from '@/Modules/User/Infrastructure/Providers/registerUserRepositories'
-import { initializeRegistry } from '@/wiring/RepositoryRegistry'
+import { initializeRegistry } from '@wiring/RepositoryRegistry'
 
 test('UserServiceProvider 應使用 mock Repository', () => {
   initializeRegistry()

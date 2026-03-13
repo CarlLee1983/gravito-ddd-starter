@@ -68,7 +68,7 @@ export class S3Store implements StorageStore {
       if (!response.Body) return null
       
       const bytes = await response.Body.transformToByteArray()
-      return new Blob([bytes], { type: response.ContentType })
+      return new Blob([new Uint8Array(bytes)], { type: response.ContentType })
     } catch (error: any) {
       if (error.name === 'NoSuchKey') return null
       throw error

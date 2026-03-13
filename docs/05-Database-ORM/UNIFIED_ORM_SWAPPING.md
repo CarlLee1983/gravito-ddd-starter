@@ -178,7 +178,7 @@ export class DrizzleUserRepository implements IUserRepository {
 ```typescript
 // src/Modules/User/Infrastructure/Providers/UserServiceProvider.ts
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { createRepository, getDatabaseAccess } from '@/wiring/RepositoryFactory'
+import { createRepository, getDatabaseAccess } from '@wiring/RepositoryFactory'
 import { CreateUserHandler } from '../../Application/Commands/CreateUser/CreateUserHandler'
 
 export class UserServiceProvider extends ModuleServiceProvider {
