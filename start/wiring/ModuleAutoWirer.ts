@@ -9,7 +9,7 @@ import path from 'node:path'
 import { glob } from 'glob'
 import type { PlanetCore } from '@gravito/core'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
+import { createGravitoServiceProvider, GravitoContainerAdapter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
 import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
 import { createGravitoAuthRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoAuthRouter'
 import type {
@@ -33,7 +33,7 @@ export class ModuleAutoWirer {
 	static async wire(core: PlanetCore, db: IDatabaseAccess, eventDispatcher: any): Promise<void> {
 		// 1. 定義掃描模式：所有模組目錄下的 index.ts
 		const files = await glob('app/Modules/*/index.ts')
-		const modulesFound: string[] = []
+		const modulesFound: { def: IModuleDefinition, file: string }[] = []
 
 		// 2. 獲取絕對路徑列表並逐一導入
 		for (const file of files) {
@@ -43,7 +43,7 @@ export class ModuleAutoWirer {
 				// 動態導入模組入口
 				const moduleExports = await import(absolutePath)
 
-				// 尋找導出的 Module 物件 (約定：變數名中包含 Module 且符合介面結構)
+				// 尋找導出的 Module 物件
 				const moduleDef = Object.values(moduleExports).find(
 					(v: any) =>
 						v &&
@@ -57,51 +57,69 @@ export class ModuleAutoWirer {
 					continue
 				}
 
-				// 3. 執行三步裝配流程：
+				modulesFound.push({ def: moduleDef, file })
+			} catch (error) {
+				console.error(`❌ [AutoWirer] 載入模組 ${file} 時發生錯誤:`, error)
+			}
+		}
 
-				// 第一步：註冊 Service Provider 到 DI 容器 (先註冊才能在之後解析)
-				const provider = new moduleDef.provider()
-				core.register(createGravitoServiceProvider(provider))
+		// 3. 執行裝配流程 (分階段確保依賴關係正確)
 
-				// 第二步：註冊 Repository 工廠 (Infrastructure Layer)
-				if (moduleDef.registerRepositories) {
-					// 直接注入 db 與傳入的 eventDispatcher
-					console.log(`[AutoWirer] 呼叫 ${moduleDef.name}.registerRepositories()，eventDispatcher: ${eventDispatcher ? '✅' : '❌'}`)
-					moduleDef.registerRepositories(db, eventDispatcher)
-				}
+		// 第一階段：手動執行所有 Service Provider 的 register 方法
+		// 這是為了確保在第三階段註冊路由時，所有依賴都已經在容器中可用
+		const adaptedContainer = new GravitoContainerAdapter(core.container as any)
+		for (const { def } of modulesFound) {
+			const provider = new def.provider()
+			// 1. 先執行內部註冊
+			provider.register(adaptedContainer)
+			// 2. 再掛載到 Gravito 框架生命週期 (用於執行 boot)
+			core.register(createGravitoServiceProvider(provider))
+		}
 
-				// 第三步：裝配 Presentation 層 (Controllers & Routes)，傳入框架無關的 Context
-				if (moduleDef.registerRoutes) {
+		// 第二階段：註冊所有 Repository 工廠 (Infrastructure Layer)
+		for (const { def } of modulesFound) {
+			if (def.registerRepositories) {
+				def.registerRepositories(db, eventDispatcher)
+			}
+		}
+
+		// 第三階段：裝配 Presentation 層 (需要服務和 Repository 都已註冊)
+		const activeModules: string[] = []
+		for (const { def, file } of modulesFound) {
+			if (def.registerRoutes) {
+				try {
 					const routeCtx: IRouteRegistrationContext = {
 						container: core.container,
-						createModuleRouter: () => createGravitoModuleRouter(core),
+						createModuleRouter: () => {
+							console.log(`[AutoWirer] Creating router for module: ${def.name}`)
+							return createGravitoModuleRouter(core)
+						},
 						createAuthRouter: () => {
-							// 嘗試從容器取得 ITokenValidator 實現
 							try {
 								const tokenValidator = core.container.make(
 									'tokenValidator'
 								) as ITokenValidator
 								return createGravitoAuthRouter(core, tokenValidator)
 							} catch {
-								// 若未註冊 tokenValidator，拋出清晰的錯誤訊息
-								throw new Error('ITokenValidator 未實現，無法創建 Auth Router（確保 Session 模組已裝配並正確實現 ITokenValidator）')
+								throw new Error(`ITokenValidator 未實現，無法為模組 ${def.name} 建立 Auth Router`)
 							}
 						},
 					}
-					moduleDef.registerRoutes(routeCtx)
+					def.registerRoutes(routeCtx)
+					activeModules.push(def.name)
+				} catch (error) {
+					console.error(`❌ [AutoWirer] 裝配模組 ${file} 路由時發生錯誤:`, error)
 				}
-
-				modulesFound.push(moduleDef.name)
-			} catch (error) {
-				console.error(`❌ [AutoWirer] 裝配模組 ${file} 時發生錯誤:`, error)
+			} else {
+				activeModules.push(def.name)
 			}
 		}
 
 		console.log(`╔════════════════════════════════════╗
 ║      Module Auto-Wiring Report     ║
 ╠════════════════════════════════════╣
-║ Staged Modules: ${modulesFound.length.toString().padEnd(19)} ║
-║ Active List: ${modulesFound.join(', ').padEnd(23)} ║
+║ Staged Modules: ${activeModules.length.toString().padEnd(19)} ║
+║ Active List: ${activeModules.join(', ').padEnd(23)} ║
 ╚════════════════════════════════════╝`)
 	}
 }

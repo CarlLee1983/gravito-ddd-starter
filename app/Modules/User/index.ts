@@ -25,6 +25,7 @@ export type { IUserRepository } from './Domain/Repositories/IUserRepository'
 
 // Application - Services
 export { CreateUserService } from './Application/Services/CreateUserService'
+export { RegisterUserService } from './Application/Services/RegisterUserService'
 export { GetUserService } from './Application/Services/GetUserService'
 
 // Application - DTOs

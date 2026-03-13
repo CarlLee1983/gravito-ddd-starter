@@ -1,23 +1,17 @@
 /**
- * @file RevokeSessionService.ts
- * @description 撤銷 Session（登出）應用服務
+ * @file LogoutService.ts
+ * @description 登出應用服務（從 Session/RevokeSessionService 遷移）
  */
 
-import type { ISessionRepository } from '../../Domain/Repositories/ISessionRepository'
-import { ValidateSessionService } from './ValidateSessionService'
+import type { ISessionRepository } from '@/Modules/Session/Domain/Repositories/ISessionRepository'
+import { ValidateSessionService } from '@/Modules/Session/Application/Services/ValidateSessionService'
 
 /**
- * 撤銷 Session 應用服務
+ * 登出應用服務
  *
  * 驗證 Token → 撤銷 Session（登出）
  */
-export class RevokeSessionService {
-  /**
-   * 建構子
-   *
-   * @param sessionRepository - Session Repository
-   * @param validateSessionService - 驗證服務
-   */
+export class LogoutService {
   constructor(
     private sessionRepository: ISessionRepository,
     private validateSessionService: ValidateSessionService

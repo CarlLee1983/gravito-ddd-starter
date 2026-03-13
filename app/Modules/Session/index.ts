@@ -5,7 +5,6 @@
 
 import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { SessionServiceProvider } from './Infrastructure/Providers/SessionServiceProvider'
-import { wireSessionRoutes } from './Infrastructure/Wiring/wireSessionRoutes'
 
 // Domain - Aggregates
 export { Session } from './Domain/Aggregates/Session'
@@ -25,9 +24,7 @@ export { InvalidCredentialsException } from './Domain/Exceptions/InvalidCredenti
 export { SessionExpiredException } from './Domain/Exceptions/SessionExpiredException'
 
 // Application - Services
-export { CreateSessionService } from './Application/Services/CreateSessionService'
 export { ValidateSessionService } from './Application/Services/ValidateSessionService'
-export { RevokeSessionService } from './Application/Services/RevokeSessionService'
 export type { ValidationResult } from './Application/Services/ValidateSessionService'
 
 // Application - DTOs
@@ -38,15 +35,10 @@ export type { SessionDTO } from './Application/DTOs/SessionDTO'
 export { MemorySessionRepository } from './Infrastructure/Persistence/MemorySessionRepository'
 export { SessionServiceProvider } from './Infrastructure/Providers/SessionServiceProvider'
 
-// Presentation
-export { AuthController } from './Presentation/Controllers/AuthController'
-export { registerAuthRoutes } from './Presentation/Routes/api'
-
 /**
  * 模組定義物件（用於自動裝配）
  */
 export const SessionModule: IModuleDefinition = {
   name: 'Session',
   provider: SessionServiceProvider,
-  registerRoutes: wireSessionRoutes,
 }

@@ -1,37 +1,44 @@
 /**
  * @file wireProductRoutes.ts
  * @description 產品路由接線
+ *
+ * 責任：從容器取得 Application Services → 組裝 Controller → 註冊路由。
+ * 僅依賴 Shared 的 IRouteRegistrationContext，不依賴特定框架。
  */
 
-import { Router } from 'express'
+import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { ProductController } from '../../Presentation/Controllers/ProductController'
 import { CreateProductService } from '../../Application/Services/CreateProductService'
 import { GetProductService } from '../../Application/Services/GetProductService'
 import { registerProductRoutes } from '../../Presentation/Routes/api'
 import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Core/ILogger'
 
-export function wireProductRoutes(container: any, mainRouter: Router): void {
-  // 取得服務
-  const productRepository = container.make('productRepository')
-  const logger = container.make('logger') as any
+/**
+ * 註冊 Product 模組路由（供 IModuleDefinition.registerRoutes 使用）
+ *
+ * @param ctx - 框架無關的註冊用 Context（容器 + 建立路由器）
+ */
+export function wireProductRoutes(ctx: IRouteRegistrationContext): void {
+  const router = ctx.createModuleRouter()
 
-  // 嘗試取得查詢服務（可能不存在）
-  let queryService: IProductQueryService | undefined
+  // 嘗試從容器取得服務
+  let productRepository: any
+  let logger: ILogger
+  let queryService: IProductQueryService
+  let createProductService: CreateProductService
+  let getProductService: GetProductService
+
   try {
-    queryService = container.make('productQueryService')
-  } catch {
-    // 服務不存在時優雅降級
-    queryService = undefined
-  }
-
-  if (!queryService) {
-    logger.warn('ProductQueryService not found, CQRS read side disabled')
+    productRepository = ctx.container.make('productRepository')
+    logger = ctx.container.make('logger') as ILogger
+    queryService = ctx.container.make('productQueryService') as IProductQueryService
+    createProductService = ctx.container.make('createProductService') as CreateProductService
+    getProductService = ctx.container.make('getProductService') as GetProductService
+  } catch (error) {
+    console.warn('[wireProductRoutes] Warning: Application services not ready, skipping route registration')
     return
   }
-
-  // 建立服務
-  const createProductService = new CreateProductService(productRepository)
-  const getProductService = new GetProductService(queryService)
 
   // 建立控制器
   const controller = new ProductController(
@@ -42,5 +49,5 @@ export function wireProductRoutes(container: any, mainRouter: Router): void {
   )
 
   // 設置路由
-  registerProductRoutes(mainRouter, controller)
+  registerProductRoutes(router, controller)
 }

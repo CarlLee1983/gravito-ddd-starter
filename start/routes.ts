@@ -33,5 +33,5 @@ export async function registerRoutes(core: PlanetCore) {
 		})
 	})
 
-	console.log('✅ Global routes registered (Business routes handled by AutoWirer)')
+	console.log('✅ Global routes registered (Domain routes handled by AutoWirer)')
 }

@@ -8,6 +8,9 @@ import type { ILogger } from '@/Shared/Infrastructure/Ports/Core/ILogger'
 
 export class PaymentServiceProvider extends ModuleServiceProvider {
 	override register(container: IContainer): void {
+		// 向全局註冊表註冊，確保 RepositoryFactory 能建立它
+		// 雖然 ModuleAutoWirer 會呼叫 registerRepositories，
+		// 但在這裡也確保單例綁定在容器中，供之後解析使用。
 		container.singleton('paymentRepository', () => {
 			const registry = getRegistry()
 			const orm = getCurrentORM()

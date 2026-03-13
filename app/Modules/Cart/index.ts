@@ -56,7 +56,7 @@ export { registerCartRoutes } from './Presentation/Routes/api'
  */
 export const CartModule: IModuleDefinition = {
 	name: 'Cart',
-	provider: CartServiceProvider as any,
-	registerRepositories: registerCartRepositories as any,
-	registerRoutes: wireCartRoutes as any,
+	provider: CartServiceProvider,
+	registerRepositories: registerCartRepositories,
+	registerRoutes: wireCartRoutes,
 }

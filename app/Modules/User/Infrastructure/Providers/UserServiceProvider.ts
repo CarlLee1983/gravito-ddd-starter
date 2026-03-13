@@ -24,10 +24,12 @@ import { resolveRepository } from '@wiring/RepositoryResolver'
 import { getCurrentORM } from '@wiring/RepositoryFactory'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
+import { RegisterUserService } from '../../Application/Services/RegisterUserService'
 import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'
 import { SendWelcomeEmailJob } from '../../Application/Jobs/SendWelcomeEmailJob'
 import { UserCredentialVerifier } from '../Adapters/UserCredentialVerifier'
 import { UserProfileAdapter } from '../Adapters/UserProfileAdapter'
+import { UserCreatorAdapter } from '../Adapters/UserCreatorAdapter'
 import { UserMessageService } from '../Services/UserMessageService'
 import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
 import { JobRegistry } from '@/Shared/Infrastructure/Registries/JobRegistry'
@@ -75,8 +77,16 @@ export class UserServiceProvider extends ModuleServiceProvider {
 		container.singleton('createUserService', (c) => {
 			return new CreateUserService(c.make('userRepository') as IUserRepository)
 		})
+		container.singleton('registerUserService', (c) => {
+			return new RegisterUserService(c.make('userRepository') as IUserRepository)
+		})
 		container.singleton('getUserService', (c) => {
 			return new GetUserService(c.make('userRepository') as IUserRepository)
+		})
+
+		// 3.5. 實現 IUserCreator Port（供 Auth 模組使用）
+		container.singleton('userCreator', (c) => {
+			return new UserCreatorAdapter(c.make('registerUserService') as RegisterUserService)
 		})
 
 		// 4. 註冊 Job（單例）

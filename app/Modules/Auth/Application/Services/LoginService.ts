@@ -1,34 +1,22 @@
 /**
- * @file CreateSessionService.ts
- * @description 建立 Session（登入）應用服務
+ * @file LoginService.ts
+ * @description 登入應用服務（從 Session/CreateSessionService 遷移）
  */
 
 import type { ICredentialVerifier } from '@/Shared/Infrastructure/Ports/Auth/ICredentialVerifier'
 import type { ITokenSigner } from '@/Shared/Infrastructure/Ports/Auth/ITokenSigner'
-import type { ISessionRepository } from '../../Domain/Repositories/ISessionRepository'
-import { Session } from '../../Domain/Aggregates/Session'
-import { SessionId } from '../../Domain/ValueObjects/SessionId'
-import { InvalidCredentialsException } from '../../Domain/Exceptions/InvalidCredentialsException'
+import type { ISessionRepository } from '@/Modules/Session/Domain/Repositories/ISessionRepository'
+import { Session } from '@/Modules/Session/Domain/Aggregates/Session'
+import { SessionId } from '@/Modules/Session/Domain/ValueObjects/SessionId'
+import { InvalidCredentialsException } from '@/Modules/Session/Domain/Exceptions/InvalidCredentialsException'
 import type { SessionDTO } from '../DTOs/SessionDTO'
 
 /**
- * 建立 Session 應用服務
+ * 登入應用服務
  *
  * 處理登入流程：驗證認證憑證 → 簽發 JWT → 建立 Session 實體 → 保存
- *
- * 改進：
- * 1. 現在依賴於 ICredentialVerifier Port，而非直接依賴 User Repository
- * 2. 依賴於 ITokenSigner Port，而非直接使用 jose 庫
- * 這樣 Session 模組與 User 模組、JWT 實現都完全解耦，各自可獨立演進。
  */
-export class CreateSessionService {
-  /**
-   * 建構子
-   *
-   * @param credentialVerifier - 凭证验证器（Port 介面實現）
-   * @param tokenSigner - Token 簽發器（Port 介面實現）
-   * @param sessionRepository - Session Repository
-   */
+export class LoginService {
   constructor(
     private credentialVerifier: ICredentialVerifier,
     private tokenSigner: ITokenSigner,
@@ -44,7 +32,7 @@ export class CreateSessionService {
    * @throws InvalidCredentialsException 如果認證失敗
    */
   async execute(email: string, password: string): Promise<SessionDTO> {
-    // 步驟 1: 驗證凭证（透過 Port 介面，不直接依賴 User 模組）
+    // 步驟 1: 驗證認證憑證（透過 Port 介面，不直接依賴 User 模組）
     const credentialResult = await this.credentialVerifier.verifyByEmail(email, password)
 
     if (!credentialResult) {
@@ -62,7 +50,7 @@ export class CreateSessionService {
       jti: sessionId,
     })
 
-    // 步驟 4: 從 Token 簽發器計算過期時間（根據環境變數 JWT_EXPIRES_IN）
+    // 步驟 4: 從環境變數計算過期時間
     const expiresInSeconds = parseInt(process.env.JWT_EXPIRES_IN ?? '86400', 10)
     const expiresAt = new Date(Date.now() + expiresInSeconds * 1000)
 

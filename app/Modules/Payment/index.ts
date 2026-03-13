@@ -1,9 +1,7 @@
 import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { PaymentServiceProvider } from './Infrastructure/Providers/PaymentServiceProvider'
 import { registerPaymentRepositories } from './Infrastructure/Providers/registerPaymentRepositories'
-import { PaymentController } from './Presentation/Controllers/PaymentController'
-import { registerPaymentRoutes } from './Presentation/Routes/payment.routes'
-import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
+import { wirePaymentRoutes } from './Infrastructure/Wiring/wirePaymentRoutes'
 
 // Domain 導出
 export { Payment } from './Domain/Aggregates/Payment'
@@ -37,10 +35,5 @@ export const PaymentModule: IModuleDefinition = {
 	name: 'Payment',
 	provider: PaymentServiceProvider,
 	registerRepositories: registerPaymentRepositories,
-	registerRoutes: (core) => {
-		const repository = core.container.make('paymentRepository')
-		const controller = new PaymentController(repository)
-		const router = createGravitoModuleRouter(core)
-		registerPaymentRoutes(router, controller)
-	}
+	registerRoutes: wirePaymentRoutes
 }

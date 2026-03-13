@@ -42,41 +42,32 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	const core = new PlanetCore(config)
 
 	// Step 5: 安裝 Nebula 存儲軌道 (Orbit)
-	// 注入自定義 S3 驅動
 	if (storageConfig.disks?.s3?.driver === 'custom') {
 		;(storageConfig.disks.s3 as { store?: unknown }).store = new S3Store(s3RawConfig)
 	}
 	const nebula = new OrbitNebula(storageConfig)
 	await core.orbit(nebula)
 
-	// Step 6: 在容器中註冊資料庫實例（供模組使用）
-	core.container.singleton('databaseAccess', () => db)
-
-	// Step 6: 註冊基礎設施適配器 (由 Gravito 框架模組驅動)
+	// Step 6: 註冊基礎設施適配器
 	core.register(createGravitoServiceProvider(new InfrastructureServiceProvider()))
-
-	// Step 7: 註冊基礎設施共享服務 (如 EventDispatcher)
-	// 透過 PlanetCore 的容器系統註冊 Provider
 	core.register(createGravitoServiceProvider(new SharedServiceProvider()))
 
-	// Step 7.5: 確保關鍵服務（如 EventDispatcher）在自動佈線前已實例化
+	// Step 7: 確保關鍵服務（如 EventDispatcher）在自動佈線前已實例化
 	let eventDispatcher: any = undefined
 	try {
-		// 這裡透過容器 make 來觸發實例化，模組裝配 (Step 8) 需要它來處理領域事件
 		eventDispatcher = core.container.make('eventDispatcher')
-		console.log('✅ [Bootstrap] eventDispatcher 已初始化:', eventDispatcher?.constructor.name)
 	} catch (error) {
-		console.warn('⚠️ [Bootstrap] eventDispatcher 初始化警告 (可能尚未註冊):', error instanceof Error ? error.message : error)
+		// Ignore
 	}
 
 	// Step 8: ✨ 自動掃描並裝配所有模組 (Auto-Wiring)
 	await ModuleAutoWirer.wire(core, db, eventDispatcher)
 
-	// Step 9: 執行 ServiceProvider 的 boot() 初始化
-	await core.bootstrap()
-
-	// Step 10: 註冊全域路由
+	// Step 9: 註冊全域路由
 	await registerRoutes(core)
+
+	// Step 10: 執行 ServiceProvider 的 boot() 初始化
+	await core.bootstrap()
 
 	// Step 11: 註冊全域錯誤處理器
 	core.registerGlobalErrorHandlers()

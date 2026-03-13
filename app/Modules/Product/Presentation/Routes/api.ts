@@ -1,13 +1,19 @@
 /**
  * @file api.ts
- * @description 產品路由
+ * @description 產品模組的 HTTP 路由定義
  */
 
-import { Router } from 'express'
-import type { ProductController } from '../Controllers/ProductController'
+import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import { ProductController } from '../Controllers/ProductController'
 
-export function registerProductRoutes(router: Router, controller: ProductController): void {
-  router.post('/api/products', (req: any, res: any) => controller.create(req, res))
-  router.get('/api/products/:id', (req: any, res: any) => controller.getById(req, res))
-  router.get('/api/products', (req: any, res: any) => controller.getAll(req, res))
+/**
+ * 註冊產品模組路由
+ *
+ * @param router - 模組路由器
+ * @param controller - 產品控制器
+ */
+export function registerProductRoutes(router: IModuleRouter, controller: ProductController): void {
+  router.get('/products', (ctx) => controller.getAll(ctx))
+  router.get('/products/:id', (ctx) => controller.getById(ctx))
+  router.post('/products', (ctx) => controller.create(ctx))
 }

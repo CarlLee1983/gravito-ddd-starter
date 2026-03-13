@@ -1,4 +1,4 @@
-import { Controller, IRequest, IResponse } from '@gravito/core'
+import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { OrderId } from '../../Domain/ValueObjects/OrderId'
 import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
@@ -7,197 +7,189 @@ import { PlaceOrderDTO, OrderResponseDTO } from '../../Application/DTOs/PlaceOrd
 /**
  * OrderController - HTTP 控制器
  */
-export class OrderController extends Controller {
+export class OrderController {
   constructor(
     private readonly placeOrderService: PlaceOrderService,
     private readonly orderRepository: IOrderRepository,
-  ) {
-    super()
-  }
+  ) {}
 
   /**
    * POST /orders - 建立訂單
    */
-  async placeOrder(req: IRequest, res: IResponse): Promise<void> {
+  async placeOrder(ctx: IHttpContext): Promise<Response> {
     try {
-      const dto: PlaceOrderDTO = req.body
+      const dto: PlaceOrderDTO = ctx.body as any
 
       // 驗證輸入
       if (!dto.userId || !dto.lines || dto.lines.length === 0) {
-        res.status(400).json({
+        return ctx.json({
           success: false,
           error: '缺少必要字段: userId 和 lines',
-        })
-        return
+        }, 400)
       }
 
       // 執行業務邏輯
       const orderDTO = await this.placeOrderService.execute(dto)
 
-      res.status(201).json({
+      return ctx.json({
         success: true,
         data: orderDTO,
-      })
+      }, 201)
     } catch (error) {
-      res.status(400).json({
+      return ctx.json({
         success: false,
         error: error instanceof Error ? error.message : '建立訂單失敗',
-      })
+      }, 400)
     }
   }
 
   /**
    * GET /orders/:id - 獲取訂單詳情
    */
-  async getOrder(req: IRequest, res: IResponse): Promise<void> {
+  async getOrder(ctx: IHttpContext): Promise<Response> {
     try {
-      const { id } = req.params
-      const orderId = OrderId.fromString(id)
+      const { id } = ctx.params
+      const orderId = OrderId.fromString(id!)
       const order = await this.orderRepository.findById(orderId)
 
       if (!order) {
-        res.status(404).json({
+        return ctx.json({
           success: false,
           error: '訂單不存在',
-        })
-        return
+        }, 404)
       }
 
-      res.status(200).json({
+      return ctx.json({
         success: true,
         data: this.orderToDTO(order),
       })
     } catch (error) {
-      res.status(400).json({
+      return ctx.json({
         success: false,
         error: error instanceof Error ? error.message : '獲取訂單失敗',
-      })
+      }, 400)
     }
   }
 
   /**
    * GET /orders/user/:userId - 獲取用戶訂單列表
    */
-  async getUserOrders(req: IRequest, res: IResponse): Promise<void> {
+  async getUserOrders(ctx: IHttpContext): Promise<Response> {
     try {
-      const { userId } = req.params
-      const orders = await this.orderRepository.findByUserId(userId)
+      const { userId } = ctx.params
+      const orders = await this.orderRepository.findByUserId(userId!)
 
-      res.status(200).json({
+      return ctx.json({
         success: true,
         data: orders.map((order) => this.orderToDTO(order)),
       })
     } catch (error) {
-      res.status(400).json({
+      return ctx.json({
         success: false,
         error: error instanceof Error ? error.message : '獲取訂單列表失敗',
-      })
+      }, 400)
     }
   }
 
   /**
    * POST /orders/:id/confirm - 確認訂單
    */
-  async confirmOrder(req: IRequest, res: IResponse): Promise<void> {
+  async confirmOrder(ctx: IHttpContext): Promise<Response> {
     try {
-      const { id } = req.params
-      const orderId = OrderId.fromString(id)
+      const { id } = ctx.params
+      const orderId = OrderId.fromString(id!)
       const order = await this.orderRepository.findById(orderId)
 
       if (!order) {
-        res.status(404).json({
+        return ctx.json({
           success: false,
           error: '訂單不存在',
-        })
-        return
+        }, 404)
       }
 
       order.confirm()
       const updated = await this.orderRepository.update(order)
 
-      res.status(200).json({
+      return ctx.json({
         success: true,
         data: this.orderToDTO(updated),
       })
     } catch (error) {
-      res.status(400).json({
+      return ctx.json({
         success: false,
         error: error instanceof Error ? error.message : '確認訂單失敗',
-      })
+      }, 400)
     }
   }
 
   /**
    * POST /orders/:id/ship - 發貨
    */
-  async shipOrder(req: IRequest, res: IResponse): Promise<void> {
+  async shipOrder(ctx: IHttpContext): Promise<Response> {
     try {
-      const { id } = req.params
-      const { trackingNumber } = req.body
-      const orderId = OrderId.fromString(id)
+      const { id } = ctx.params
+      const { trackingNumber } = ctx.body as any
+      const orderId = OrderId.fromString(id!)
       const order = await this.orderRepository.findById(orderId)
 
       if (!order) {
-        res.status(404).json({
+        return ctx.json({
           success: false,
           error: '訂單不存在',
-        })
-        return
+        }, 404)
       }
 
       order.ship(trackingNumber)
       const updated = await this.orderRepository.update(order)
 
-      res.status(200).json({
+      return ctx.json({
         success: true,
         data: this.orderToDTO(updated),
       })
     } catch (error) {
-      res.status(400).json({
+      return ctx.json({
         success: false,
         error: error instanceof Error ? error.message : '發貨失敗',
-      })
+      }, 400)
     }
   }
 
   /**
    * POST /orders/:id/cancel - 取消訂單
    */
-  async cancelOrder(req: IRequest, res: IResponse): Promise<void> {
+  async cancelOrder(ctx: IHttpContext): Promise<Response> {
     try {
-      const { id } = req.params
-      const { reason } = req.body
-      const orderId = OrderId.fromString(id)
+      const { id } = ctx.params
+      const { reason } = ctx.body as any
+      const orderId = OrderId.fromString(id!)
       const order = await this.orderRepository.findById(orderId)
 
       if (!order) {
-        res.status(404).json({
+        return ctx.json({
           success: false,
           error: '訂單不存在',
-        })
-        return
+        }, 404)
       }
 
       if (!reason) {
-        res.status(400).json({
+        return ctx.json({
           success: false,
           error: '取消原因不能為空',
-        })
-        return
+        }, 400)
       }
 
       order.cancel(reason)
       const updated = await this.orderRepository.update(order)
 
-      res.status(200).json({
+      return ctx.json({
         success: true,
         data: this.orderToDTO(updated),
       })
     } catch (error) {
-      res.status(400).json({
+      return ctx.json({
         success: false,
         error: error instanceof Error ? error.message : '取消訂單失敗',
-      })
+      }, 400)
     }
   }
 

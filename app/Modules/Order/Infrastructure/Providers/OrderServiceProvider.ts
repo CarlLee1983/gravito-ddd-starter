@@ -1,45 +1,45 @@
-import { IServiceProvider } from '@gravito/core'
-import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
-import { OrderRepository } from '../Repositories/OrderRepository'
-import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
-
 /**
- * OrderServiceProvider - 依賴注入容器配置
+ * @file OrderServiceProvider.ts
+ * @description Order 模組 Service Provider
  */
-export class OrderServiceProvider implements IServiceProvider {
-  /**
-   * 註冊 Repository 實現
-   * 此處綁定 Domain 介面到 Infrastructure 實現
-   */
-  registerRepositories(core: any): void {
-    const db = core.container.make('database')
-    const eventDispatcher = core.container.make('eventDispatcher')
 
-    core.container.singleton('orderRepository', () => {
-      return new OrderRepository(db, eventDispatcher)
+import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
+import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
+import { getRegistry } from '@wiring/RepositoryRegistry'
+import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
+
+export class OrderServiceProvider extends ModuleServiceProvider {
+  /**
+   * 註冊服務到容器
+   */
+  override register(container: IContainer): void {
+    // 註冊 Repository 為單例
+    container.singleton('orderRepository', () => {
+      const registry = getRegistry()
+      const orm = getCurrentORM()
+      const db = orm !== 'memory' ? getDatabaseAccess() : undefined
+      return registry.create('order', orm, db)
     })
-  }
 
-  /**
-   * 註冊應用層服務
-   */
-  registerServices(core: any): void {
-    core.container.singleton('placeOrderService', (c: any) => {
+    // 註冊應用層服務
+    container.singleton('placeOrderService', (c: IContainer) => {
       const orderRepository = c.make('orderRepository') as IOrderRepository
       return new PlaceOrderService(orderRepository)
     })
   }
 
   /**
-   * 註冊 Event Listeners（監聽其他模組事件）
-   * 範例：監聽 Cart 模組的 CartCheckoutRequested 事件
+   * 啟動模組並註冊事件監聽
    */
-  registerEventListeners(core: any): void {
-    const eventDispatcher = core.container.make('eventDispatcher')
+  override boot(context: any): void {
+    const container = context.container
+    const eventDispatcher = container.make('eventDispatcher') as IEventDispatcher
 
     // 監聽購物車結帳事件並建立訂單
     eventDispatcher.subscribe('CartCheckoutRequested', async (event: any) => {
-      const placeOrderService = core.container.make('placeOrderService')
+      const placeOrderService = container.make('placeOrderService') as PlaceOrderService
       try {
         await placeOrderService.execute({
           userId: event.userId,
@@ -53,7 +53,7 @@ export class OrderServiceProvider implements IServiceProvider {
 
     // 監聽支付完成事件並更新訂單為 Confirmed
     eventDispatcher.subscribe('PaymentCompleted', async (event: any) => {
-      const orderRepository = core.container.make('orderRepository') as IOrderRepository
+      const orderRepository = container.make('orderRepository') as IOrderRepository
       try {
         const order = await orderRepository.findById(event.orderId)
         if (order) {
@@ -64,5 +64,7 @@ export class OrderServiceProvider implements IServiceProvider {
         console.error('更新訂單狀態失敗:', error)
       }
     })
+
+    console.log('📦 [Order] Module loaded')
   }
 }

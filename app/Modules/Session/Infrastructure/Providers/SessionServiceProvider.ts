@@ -8,17 +8,11 @@
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 import { MemorySessionRepository } from '../Persistence/MemorySessionRepository'
 import { SessionTokenValidator } from '../Adapters/SessionTokenValidator'
-import { AuthMessageService } from '../Services/AuthMessageService'
-import { CreateSessionService } from '../../Application/Services/CreateSessionService'
 import { ValidateSessionService } from '../../Application/Services/ValidateSessionService'
-import { RevokeSessionService } from '../../Application/Services/RevokeSessionService'
 import { JoseTokenSigner } from '@/Shared/Infrastructure/Adapters/Gravito/JoseTokenSigner'
 import type { ISessionRepository } from '../../Domain/Repositories/ISessionRepository'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
-import type { ICredentialVerifier } from '@/Shared/Infrastructure/Ports/Auth/ICredentialVerifier'
 import type { ITokenSigner } from '@/Shared/Infrastructure/Ports/Auth/ITokenSigner'
-import type { IAuthMessages } from '@/Shared/Infrastructure/Ports/Messages/IAuthMessages'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * Session 模組服務提供者
@@ -47,7 +41,7 @@ export class SessionServiceProvider extends ModuleServiceProvider {
       return new MemorySessionRepository(eventDispatcher)
     })
 
-    // 3. 註冊 ValidateSessionService（現在依賴 ITokenSigner Port）
+    // 3. 註冊 ValidateSessionService（供 Auth 模組使用）
     container.singleton('validateSessionService', (c) => {
       const tokenSigner = c.make('tokenSigner') as ITokenSigner
       const sessionRepository = c.make('sessionRepository') as ISessionRepository
@@ -58,27 +52,6 @@ export class SessionServiceProvider extends ModuleServiceProvider {
     container.singleton('tokenValidator', (c) => {
       const validateSessionService = c.make('validateSessionService') as ValidateSessionService
       return new SessionTokenValidator(validateSessionService)
-    })
-
-    // 5. 註冊 CreateSessionService（現在依賴 ICredentialVerifier 和 ITokenSigner Port）
-    container.singleton('createSessionService', (c) => {
-      const credentialVerifier = c.make('credentialVerifier') as ICredentialVerifier
-      const tokenSigner = c.make('tokenSigner') as ITokenSigner
-      const sessionRepository = c.make('sessionRepository') as ISessionRepository
-      return new CreateSessionService(credentialVerifier, tokenSigner, sessionRepository)
-    })
-
-    // 6. 註冊 RevokeSessionService
-    container.singleton('revokeSessionService', (c) => {
-      const sessionRepository = c.make('sessionRepository') as ISessionRepository
-      const validateSessionService = c.make('validateSessionService') as ValidateSessionService
-      return new RevokeSessionService(sessionRepository, validateSessionService)
-    })
-
-    // 7. 註冊 AuthMessageService（訊息簡寫方案）
-    container.singleton('authMessages', (c) => {
-      const translator = c.make('translator') as ITranslator
-      return new AuthMessageService(translator)
     })
   }
 }

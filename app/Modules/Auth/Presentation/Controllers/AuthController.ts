@@ -1,35 +1,28 @@
 /**
  * @file AuthController.ts
- * @description 認證控制器
+ * @description Auth 控制器
  *
- * 處理登入、登出和當前用戶查詢。使用 i18n 進行多語系訊息支援。
- * 訊息管理已優化為方案 4（Message Service Object），提供簡潔的語法。
+ * 處理登入、註冊、登出和當前用戶查詢。
  */
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
 import type { IAuthMessages } from '@/Shared/Infrastructure/Ports/Messages/IAuthMessages'
-import { CreateSessionService } from '../../Application/Services/CreateSessionService'
-import { RevokeSessionService } from '../../Application/Services/RevokeSessionService'
-import { InvalidCredentialsException } from '../../Domain/Exceptions/InvalidCredentialsException'
+import { LoginService } from '../../Application/Services/LoginService'
+import { RegisterService } from '../../Application/Services/RegisterService'
+import { LogoutService } from '../../Application/Services/LogoutService'
+import { InvalidCredentialsException } from '@/Modules/Session/Domain/Exceptions/InvalidCredentialsException'
 import type { IUserProfileService } from '@/Shared/Infrastructure/Ports/Auth/IUserProfileService'
 
 /**
- * 認證控制器
+ * Auth 控制器
  *
- * 處理所有認證相關的 HTTP 請求。
+ * 處理所有認證相關的 HTTP 請求（登入、註冊、登出、當前用戶）
  */
 export class AuthController {
-  /**
-   * 建構子
-   *
-   * @param createSessionService - 建立 Session 服務
-   * @param revokeSessionService - 撤銷 Session 服務
-   * @param userProfileService - 用戶資料查詢服務
-   * @param authMessages - 認證訊息服務（簡寫方案）
-   */
   constructor(
-    private createSessionService: CreateSessionService,
-    private revokeSessionService: RevokeSessionService,
+    private loginService: LoginService,
+    private registerService: RegisterService,
+    private logoutService: LogoutService,
     private userProfileService: IUserProfileService,
     private authMessages: IAuthMessages
   ) {}
@@ -43,11 +36,10 @@ export class AuthController {
    * @param ctx - HTTP Context
    * @returns JSON 回應（accessToken, expiresAt, userId, tokenType）
    */
-  async login(ctx: IHttpContext): Promise<any> {
+  async login(ctx: IHttpContext): Promise<Response> {
     try {
       const { email, password } = await ctx.getJsonBody<{ email: string; password: string }>()
 
-      // 基本驗證
       if (!email || !password) {
         return ctx.json(
           {
@@ -58,11 +50,7 @@ export class AuthController {
         )
       }
 
-      // 執行登入
-      const sessionDto = await this.createSessionService.execute(
-        email,
-        password
-      )
+      const sessionDto = await this.loginService.execute(email, password)
 
       return ctx.json({
         success: true,
@@ -91,6 +79,63 @@ export class AuthController {
   }
 
   /**
+   * 註冊端點
+   *
+   * POST /api/auth/register
+   * Body: { name: string, email: string, password: string }
+   *
+   * @param ctx - HTTP Context
+   * @returns JSON 回應（註冊成功並自動登入，回傳 Session）
+   */
+  async register(ctx: IHttpContext): Promise<Response> {
+    try {
+      const input = await ctx.getJsonBody<{
+        name: string
+        email: string
+        password: string
+      }>()
+
+      if (!input.name || !input.email || !input.password) {
+        return ctx.json(
+          {
+            success: false,
+            message: this.authMessages.validationEmailPasswordRequired(),
+          },
+          400
+        )
+      }
+
+      const sessionDto = await this.registerService.execute(input)
+
+      return ctx.json({
+        success: true,
+        data: sessionDto,
+      }, 201)
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '註冊失敗'
+
+      if (errorMessage.includes('郵件')) {
+        return ctx.json(
+          {
+            success: false,
+            message: this.authMessages.registrationEmailDuplicate?.() ?? '郵件已被使用',
+          },
+          400
+        )
+      }
+
+      console.error('[AuthController.register] Error:', error)
+      return ctx.json(
+        {
+          success: false,
+          message: this.authMessages.registrationFailed?.() ?? '註冊失敗',
+        },
+        500
+      )
+    }
+  }
+
+  /**
    * 登出端點
    *
    * POST /api/auth/logout
@@ -99,7 +144,7 @@ export class AuthController {
    * @param ctx - HTTP Context
    * @returns JSON 回應
    */
-  async logout(ctx: IHttpContext): Promise<any> {
+  async logout(ctx: IHttpContext): Promise<Response> {
     try {
       const token = this.extractTokenFromHeader(ctx)
       if (!token) {
@@ -112,7 +157,7 @@ export class AuthController {
         )
       }
 
-      await this.revokeSessionService.execute(token)
+      await this.logoutService.execute(token)
 
       return ctx.json({
         success: true,
@@ -139,9 +184,9 @@ export class AuthController {
    * 需要 JWT Guard 中間件已驗證，ctx.get('authenticatedUserId') 已設定。
    *
    * @param ctx - HTTP Context
-   * @returns JSON 回應（用戶信息，排除密碼）
+   * @returns JSON 回應（用戶信息）
    */
-  async me(ctx: IHttpContext): Promise<any> {
+  async me(ctx: IHttpContext): Promise<Response> {
     try {
       const userId = ctx.get('authenticatedUserId') as string | undefined
       if (!userId) {
@@ -154,7 +199,6 @@ export class AuthController {
         )
       }
 
-      // 查詢用戶資料
       const userProfile = await this.userProfileService.findById(userId)
       if (!userProfile) {
         return ctx.json(
@@ -166,7 +210,6 @@ export class AuthController {
         )
       }
 
-      // 回傳用戶資訊
       return ctx.json({
         success: true,
         data: userProfile,
@@ -195,6 +238,6 @@ export class AuthController {
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return null
     }
-    return authHeader.slice(7) // 移除 'Bearer ' 前綴
+    return authHeader.slice(7)
   }
 }

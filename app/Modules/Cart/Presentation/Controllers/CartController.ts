@@ -3,7 +3,7 @@
  * @description 購物車 HTTP 控制器
  */
 
-import type { Request, Response } from 'express'
+import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
 import type { AddItemToCartService } from '../../Application/Services/AddItemToCartService'
 import type { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'
 import type { CheckoutCartService } from '../../Application/Services/CheckoutCartService'
@@ -28,19 +28,18 @@ export class CartController {
 	 *
 	 * GET /carts/:userId
 	 */
-	async getCart(req: Request, res: Response): Promise<void> {
+	async getCart(ctx: IHttpContext): Promise<Response> {
 		try {
-			const { userId } = req.params
+			const { userId } = ctx.params
 
-			const cart = await this.cartRepository.findByUserId(userId)
+			const cart = await this.cartRepository.findByUserId(userId!)
 			if (!cart) {
-				res.status(404).json({ success: false, error: '購物車不存在' })
-				return
+				return ctx.json({ success: false, error: '購物車不存在' }, 404)
 			}
 
-			res.json({ success: true, data: toCartResponseDTO(cart) })
+			return ctx.json({ success: true, data: toCartResponseDTO(cart) })
 		} catch (error) {
-			res.status(500).json({ success: false, error: String(error) })
+			return ctx.json({ success: false, error: String(error) }, 500)
 		}
 	}
 
@@ -49,27 +48,26 @@ export class CartController {
 	 *
 	 * POST /carts/:userId/items
 	 */
-	async addItem(req: Request, res: Response): Promise<void> {
+	async addItem(ctx: IHttpContext): Promise<Response> {
 		try {
-			const { userId } = req.params
-			const { productId, quantity } = req.body
+			const { userId } = ctx.params
+			const { productId, quantity } = ctx.body as any
 
 			if (!productId || !quantity) {
-				res.status(400).json({ success: false, error: '缺少必要欄位' })
-				return
+				return ctx.json({ success: false, error: '缺少必要欄位' }, 400)
 			}
 
 			const cartDto = await this.addItemService.execute({
-				userId,
+				userId: userId!,
 				productId,
 				quantity: Number(quantity),
 			})
 
-			res.json({ success: true, data: cartDto })
+			return ctx.json({ success: true, data: cartDto })
 		} catch (error) {
 			const message = String(error)
 			const statusCode = message.includes('不存在') ? 404 : 400
-			res.status(statusCode).json({ success: false, error: message })
+			return ctx.json({ success: false, error: message }, statusCode)
 		}
 	}
 
@@ -78,17 +76,17 @@ export class CartController {
 	 *
 	 * DELETE /carts/:userId/items/:productId
 	 */
-	async removeItem(req: Request, res: Response): Promise<void> {
+	async removeItem(ctx: IHttpContext): Promise<Response> {
 		try {
-			const { userId, productId } = req.params
+			const { userId, productId } = ctx.params
 
-			const cartDto = await this.removeItemService.execute(userId, productId)
+			const cartDto = await this.removeItemService.execute(userId!, productId!)
 
-			res.json({ success: true, data: cartDto })
+			return ctx.json({ success: true, data: cartDto })
 		} catch (error) {
 			const message = String(error)
 			const statusCode = message.includes('不存在') ? 404 : 400
-			res.status(statusCode).json({ success: false, error: message })
+			return ctx.json({ success: false, error: message }, statusCode)
 		}
 	}
 
@@ -97,29 +95,27 @@ export class CartController {
 	 *
 	 * PATCH /carts/:userId/items/:productId
 	 */
-	async updateItemQuantity(req: Request, res: Response): Promise<void> {
+	async updateItemQuantity(ctx: IHttpContext): Promise<Response> {
 		try {
-			const { userId } = req.params
-			const { quantity } = req.body
+			const { userId } = ctx.params
+			const { quantity } = ctx.body as any
 
 			if (!quantity) {
-				res.status(400).json({ success: false, error: '缺少數量欄位' })
-				return
+				return ctx.json({ success: false, error: '缺少數量欄位' }, 400)
 			}
 
-			const cart = await this.cartRepository.findByUserId(userId)
+			const cart = await this.cartRepository.findByUserId(userId!)
 			if (!cart) {
-				res.status(404).json({ success: false, error: '購物車不存在' })
-				return
+				return ctx.json({ success: false, error: '購物車不存在' }, 404)
 			}
 
 			// 這個功能可以延伸，現在先省略實作
 			// cart.updateItemQuantity(productId, Quantity.create(quantity))
 			// await this.cartRepository.save(cart)
 
-			res.json({ success: true, data: toCartResponseDTO(cart) })
+			return ctx.json({ success: true, data: toCartResponseDTO(cart) })
 		} catch (error) {
-			res.status(500).json({ success: false, error: String(error) })
+			return ctx.json({ success: false, error: String(error) }, 500)
 		}
 	}
 
@@ -128,22 +124,21 @@ export class CartController {
 	 *
 	 * DELETE /carts/:userId
 	 */
-	async clearCart(req: Request, res: Response): Promise<void> {
+	async clearCart(ctx: IHttpContext): Promise<Response> {
 		try {
-			const { userId } = req.params
+			const { userId } = ctx.params
 
-			const cart = await this.cartRepository.findByUserId(userId)
+			const cart = await this.cartRepository.findByUserId(userId!)
 			if (!cart) {
-				res.status(404).json({ success: false, error: '購物車不存在' })
-				return
+				return ctx.json({ success: false, error: '購物車不存在' }, 404)
 			}
 
 			cart.clear()
 			await this.cartRepository.save(cart)
 
-			res.json({ success: true, message: '購物車已清空' })
+			return ctx.json({ success: true, message: '購物車已清空' })
 		} catch (error) {
-			res.status(500).json({ success: false, error: String(error) })
+			return ctx.json({ success: false, error: String(error) }, 500)
 		}
 	}
 
@@ -152,17 +147,17 @@ export class CartController {
 	 *
 	 * POST /carts/:userId/checkout
 	 */
-	async checkout(req: Request, res: Response): Promise<void> {
+	async checkout(ctx: IHttpContext): Promise<Response> {
 		try {
-			const { userId } = req.params
+			const { userId } = ctx.params
 
-			const cartDto = await this.checkoutService.execute(userId)
+			const cartDto = await this.checkoutService.execute(userId!)
 
-			res.json({ success: true, data: cartDto, message: '結帳成功，訂單已建立' })
+			return ctx.json({ success: true, data: cartDto, message: '結帳成功，訂單已建立' })
 		} catch (error) {
 			const message = String(error)
 			const statusCode = message.includes('不存在') ? 404 : 400
-			res.status(statusCode).json({ success: false, error: message })
+			return ctx.json({ success: false, error: message }, statusCode)
 		}
 	}
 }

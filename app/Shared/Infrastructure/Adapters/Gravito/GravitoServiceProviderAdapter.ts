@@ -16,7 +16,7 @@ import type { ModuleServiceProvider, IContainer } from '@/Shared/Infrastructure/
  * 容器適配器類別
  * 將 Gravito 的原生 Container 適配為框架無關的 IContainer 介面。
  */
-class GravitoContainerAdapter implements IContainer {
+export class GravitoContainerAdapter implements IContainer {
 	/**
 	 * 建構子
 	 * @param gravitoContainer - Gravito 原生容器實例

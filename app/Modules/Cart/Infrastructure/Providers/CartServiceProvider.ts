@@ -1,30 +1,35 @@
 /**
  * @file CartServiceProvider.ts
  * @description Cart 模組 Service Provider
- *
- * 負責：
- * 1. 在 DI 容器中註冊所有應用層服務
- * 2. 配置防腐層適配器
- * 3. 設置服務之間的依賴關係
  */
 
-import type { Container } from '@gravito/core'
+import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 import { ProductCatalogAdapter } from '../Adapters/ProductCatalogAdapter'
 import { AddItemToCartService } from '../../Application/Services/AddItemToCartService'
 import { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'
 import { CheckoutCartService } from '../../Application/Services/CheckoutCartService'
 import type { IProductRepository } from '@/Modules/Product/Domain/Repositories/IProductRepository'
+import { getRegistry } from '@wiring/RepositoryRegistry'
+import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
 /**
  * Cart 模組 Service Provider
  */
-export class CartServiceProvider {
+export class CartServiceProvider extends ModuleServiceProvider {
 	/**
 	 * 在容器中註冊 Cart 模組的所有服務
 	 *
 	 * @param container - DI 容器
 	 */
-	register(container: Container): void {
+	override register(container: IContainer): void {
+		// 註冊 Repository
+		container.singleton('cartRepository', () => {
+			const registry = getRegistry()
+			const orm = getCurrentORM()
+			const db = orm !== 'memory' ? getDatabaseAccess() : undefined
+			return registry.create('cart', orm, db)
+		})
+
 		// 1. 註冊防腐層適配器
 		container.singleton('productCatalogAdapter', (c) => {
 			const productRepository = c.make('productRepository') as IProductRepository
@@ -50,13 +55,5 @@ export class CartServiceProvider {
 
 			return new CheckoutCartService(cartRepository)
 		})
-	}
-
-	/**
-	 * 啟動 Cart 模組時的初始化邏輯
-	 * （若需要）
-	 */
-	boot(): void {
-		// 暫無初始化邏輯
 	}
 }
