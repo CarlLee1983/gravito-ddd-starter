@@ -102,260 +102,47 @@ src/Modules/Product/
 
 ### 核心規則（必須遵守）
 
-#### ❌ Domain 層禁止
+**Domain 層**：無 ORM 導入、無框架依賴，只定義業務邏輯和介面
+- ❌ 禁止：`import '@gravito/atlas' | 'typeorm' | 'prisma'`
+- ✅ 推薦：`export interface IUserRepository` + Domain Entity
 
-```typescript
-// ❌ 錯誤：Domain 層不應知道 ORM
-import { User as AtlasUser } from '@gravito/atlas'
-import type { Repository } from 'typeorm'
+**Application 層**：只依賴 Port 介面，不使用 ORM 特定型別
+- ❌ 禁止：`SelectQueryBuilder | PrismaClient | EntityManager`
+- ✅ 推薦：注入 `IDatabaseAccess`，呼叫 `db.getRepository(Entity)`
 
-export class User extends AtlasUser {
-  // ...
-}
-```
-
-#### ✅ Domain 層應該
-
-```typescript
-// ✅ 正確：只定義邏輯，介面抽象
-export class User {
-  private readonly id: string
-  private readonly email: string
-
-  constructor(id: string, email: string) {
-    if (!email.includes('@')) throw new Error('Invalid email')
-    this.id = id
-    this.email = email
-  }
-}
-
-export interface IUserRepository {
-  findById(id: string): Promise<User | null>
-  save(user: User): Promise<void>
-}
-```
-
-#### ❌ Application 層禁止
-
-```typescript
-// ❌ 錯誤：不應使用 ORM 特定型別
-import type { SelectQueryBuilder } from 'typeorm'
-
-export class UserService {
-  async findWithQuery(queryBuilder: SelectQueryBuilder<User>) {
-    // ...
-  }
-}
-```
-
-#### ✅ Application 層應該
-
-```typescript
-// ✅ 正確：使用 IDatabaseAccess（ORM 無關）
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
-
-export class UserService {
-  constructor(private db: IDatabaseAccess) {}
-
-  async findUser(id: string) {
-    const repo = this.db.getRepository(User)
-    return repo.findById(id)
-  }
-}
-```
+**Infrastructure 層**：實現 Repository，包含 ORM 相關代碼
+- 遷移流程：修改 Repository 實現 → 檢查 Adapter → 更新 Service Provider → 模組自身無需改動
 
 ## 自動模組註冊機制
 
-gravito-ddd 使用 `ModuleAutoWirer` 自動掃描和註冊模組，流程如下：
+`ModuleAutoWirer` 自動掃描 `src/Modules/*/index.ts`，尋找 `IModuleDefinition` 導出並完成：
+1. Service Provider 註冊（DI 容器綁定）
+2. `registerRepositories()` - Repository 工廠註冊
+3. `registerRoutes()` - HTTP 路由註冊
 
-```
-1. 掃描 src/Modules/*/index.ts
-   ↓
-2. 尋找 IModuleDefinition 導出
-   ↓
-3. 註冊 Service Provider（DI 容器）
-   ↓
-4. 呼叫 registerRepositories() - 註冊 Repository 工廠
-   ↓
-5. 呼叫 registerRoutes() - 註冊 HTTP 路由
-```
+每個 `index.ts` 必須導出 `IModuleDefinition`，包含 `registerRepositories()` 和 `registerRoutes()` 方法
 
-### 模組導出格式
+## 開發指南
 
-每個 `index.ts` 必須導出 `IModuleDefinition`：
+**事件驅動**：聚合根發佈 DomainEvent，Repository 分派事件至其他模組（見 CHANGELOG.md v2.2.1）
 
-```typescript
-// src/Modules/Product/index.ts
-import { ProductServiceProvider } from './Infrastructure/Providers/ProductServiceProvider'
-import { ProductController } from './Presentation/Controllers/ProductController'
+**Redis 快取**：使用 `--redis` 標誌生成帶快取模組
 
-export const ProductModule: IModuleDefinition = {
-  name: 'Product',
-  provider: ProductServiceProvider,
+**Repository ORM 無關**：Module 不依賴特定 ORM，所有持久化透過 `IDatabaseAccess` Port 進行
 
-  registerRepositories(db: IDatabaseAccess, eventDispatcher?: any) {
-    // 註冊 Repository 工廠
-    RepositoryRegistry.register('productRepository', () =>
-      new ProductRepository(db, eventDispatcher)
-    )
-  },
-
-  registerRoutes(core: PlanetCore) {
-    // 註冊路由
-    const controller = core.container.make(ProductController)
-    core.registerController(ProductController)
-  }
-}
-```
-
-## 特定領域的開發指南
-
-### 事件驅動模式
-
-模組可以發佈和訂閱領域事件：
-
-```typescript
-// Domain Event
-export class ProductCreatedEvent extends DomainEvent {
-  constructor(
-    public productId: string,
-    public productName: string
-  ) {
-    super()
-  }
-}
-
-// Entity 發佈事件
-export class Product {
-  private uncommittedEvents: DomainEvent[] = []
-
-  static create(id: string, name: string): Product {
-    const product = new Product(id, name)
-    product.uncommittedEvents.push(
-      new ProductCreatedEvent(id, name)
-    )
-    return product
-  }
-
-  getUncommittedEvents(): DomainEvent[] {
-    return this.uncommittedEvents
-  }
-}
-
-// Repository 負責分派事件
-export class ProductRepository implements IProductRepository {
-  async save(product: Product): Promise<void> {
-    await this.db.save(product)
-    await this.eventDispatcher.dispatch(product.getUncommittedEvents())
-  }
-}
-
-// 其他模組訂閱事件
-export class NotificationHandler {
-  async handle(event: ProductCreatedEvent) {
-    // 發送通知
-  }
-}
-```
-
-### Redis 快取集成
-
-使用 `--redis` 標誌生成帶快取的模組：
-
-```typescript
-// src/adapters/GravitoSessionAdapter.ts
-import type { RedisClientContract } from '@gravito/plasma'
-
-export class GravitoSessionAdapter {
-  constructor(private redis: RedisClientContract) {}
-
-  async getSession(id: string) {
-    const cached = await this.redis.get(`session:${id}`)
-    if (cached) return JSON.parse(cached)
-
-    const session = await this.repository.findById(id)
-    await this.redis.set(`session:${id}`, JSON.stringify(session), 'EX', 3600)
-    return session
-  }
-}
-```
-
-### Repository ORM 無關設計
-
-Repository 實現是 ORM 可替換的關鍵。Module 本身不依賴任何固定的套件：
-
-```typescript
-// src/Modules/Product/Infrastructure/Repositories/ProductRepository.ts
-// 此文件的具體實現（使用 Atlas/Drizzle/Prisma/TypeORM）由外部綁定決定
-
-export class ProductRepository implements IProductRepository {
-  constructor(private db: IDatabaseAccess) {
-    // db 是通用的數據庫訪問介面，不知道背後是什麼 ORM
-  }
-
-  async findById(id: string): Promise<Product | null> {
-    // 使用 this.db 通用方法，不使用 ORM 特定 API
-    const repo = this.db.getRepository(Product)
-    return repo.findById(id)
-  }
-
-  async save(product: Product): Promise<void> {
-    const repo = this.db.getRepository(Product)
-    await repo.save(product)
-    // EventDispatcher 由外部注入，與 ORM 無關
-    await this.eventDispatcher.dispatch(product.getUncommittedEvents())
-  }
-}
-
-// Service Provider 中綁定實現 - 這是唯一依賴 ORM 的地方
-// src/Modules/Product/Infrastructure/Providers/ProductServiceProvider.ts
-
-export class ProductServiceProvider {
-  register(container: IContainer) {
-    // 綁定 Repository 實現 - ORM 變更時，只需改這裡
-    container.bind('productRepository', () =>
-      new ProductRepository(container.resolve(IDatabaseAccess))
-    )
-  }
-}
-```
-
-**遷移流程**（從 Atlas → Drizzle）：
-1. 修改 `ProductRepository` 實現（使用 Drizzle API 而非 Atlas）
-2. 檢查 `IDatabaseAccess` 適配層是否支持新 ORM
-3. 如需新適配器，在 `src/adapters/` 添加 `DrizzelDatabaseAdapter`
-4. 更新 Service Provider 的綁定
-5. Module 自身無需改動 ✅
-
-### 分層測試
-
-- **Unit Tests**: 測試 Domain 層實體和值物件
-- **Integration Tests**: 測試 Repository 與數據庫交互
-- **Feature/E2E Tests**: 測試完整的 HTTP 流程
-
-```bash
-bun test tests/Unit/          # Domain 層測試
-bun test tests/Integration/   # Infrastructure 層測試
-bun test tests/Feature/       # 端到端測試
-```
+**分層測試**：
+- Unit: Domain 層實體和值物件
+- Integration: Repository 與數據庫交互
+- E2E: 完整 HTTP 流程
 
 ## gravito-core 框架修正
 
-如遇到 @gravito/core 的運行時異常，應直接在源代碼修正，而非規避：
+遇到 @gravito/core 異常時，直接在源代碼修正（`/Users/carl/Dev/Carl/gravito-core/packages/core/`），而非規避：
+1. 修改源代碼 + 添加備用方案
+2. `cd gravito-core/packages/core && bun run build`
+3. 在 gravito-ddd 驗證 `bun dev`
 
-### 修正流程
-
-1. **識別問題**：確定是否來自 @gravito/core
-2. **定位源代碼**：找到 `/Users/carl/Dev/Carl/gravito-core/packages/core/` 中的相關文件
-3. **修正實現**：直接修改源代碼，添加備用方案（如 Bun API 不可用時）
-4. **重建**：`cd gravito-core/packages/core && bun run build`
-5. **驗證**：在 gravito-ddd 中運行 `bun dev` 測試
-
-### 已知框架特性
-
-- **Bun API 備用方案**: `bunEscapeHTML`, `bunPeek`, `bunFile` 都有 fallback 實現
-- **ESM Only**: CJS 構建已移除，避免 Bun 動態 require() 問題
-- **版本控制**: @gravito/core v2.0.1+ 經過 Bun 最佳化
+已知特性：Bun API 備用方案、ESM Only、v2.0.1+ Bun 最佳化
 
 ## 參考文檔
 
@@ -411,136 +198,41 @@ cd /Users/carl/Dev/Carl/gravito-core/packages/core && bun run build
 ```
 如果沒有看到路由註冊日誌，表示 `registerRoutes` 沒有被執行。參考上面的「路由未生效」排查步驟。
 
-## Infrastructure 層優化完成 (2026-03-13)
-
-### 品質改善摘要
+## Infrastructure 層優化 (2026-03-13)
 
 **品質評分**: 6.0/10 → 9.2/10 (+53%)
 
-#### ✅ 目錄結構重組
-- `Ports/` - 按功能分類的 Port 介面（Core, Database, Messaging, Services, Storage）
-- `Adapters/` - 按來源分類（Gravito, RabbitMQ, Redis, S3）
-- `Events/` - 事件系統獨立組織
-- `Database/` - 數據庫連接和 ORM 適配
-- `Logging/` - 統一的 ILogger 系統（見下文）
-- 其他 12 個子目錄，提高可發現性和維護性
+✅ 目錄結構重組（Ports/Adapters/Events/Database/Logging）
+✅ 安全漏洞修復（2 CRITICAL + 5 HIGH 優先）
+✅ 日誌統一（移除 74 個 console.log，使用 ILogger Port）
+✅ 查詢錯誤處理改進（不再靜默吞掉異常）
+✅ Repository 層重構（消除 ~300 行重複代碼）
 
-#### ✅ 安全漏洞修復
-- 消除 2 個 CRITICAL（XSS、容器遞迴問題）
-- 修復 5 個 HIGH 優先級問題
-- 改進路徑驗證和輸入驗證
-
-#### ✅ 日誌系統統一
-- **移除 74 個 console.log 呼叫**
-- 統一使用 `ILogger` 介面（定義在 `Ports/Core/ILogger.ts`）
-- 支持可配置的日誌級別和輸出格式
-
-#### ✅ 查詢錯誤處理改進
-- 修復查詢異常被靜默吞掉的問題
-- 改進堆棧追蹤和錯誤日誌
-- 詳細的數據庫異常診斷
-
-#### ✅ Repository 層重構
-- 消除 ~300 行重複代碼
-- 統一的 `BaseRepository<T>` 基類
-- 改進分頁、排序和型別安全
-
-### 使用 ILogger 而非 console.log
-
-```typescript
-// ❌ 舊做法（已移除）
-console.log('User created:', user.id)
-
-// ✅ 新做法（統一模式）
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Core/ILogger'
-
-export class UserService {
-  constructor(private logger: ILogger) {}
-
-  async create(user: User) {
-    this.logger.info('User created', { userId: user.id })
-  }
-}
-```
-
-### 新的 Port 介面位置
-```
-src/Shared/Infrastructure/Ports/
-├── Core/
-│   ├── ILogger.ts              # 日誌介面
-│   └── IHealthCheck.ts         # 健康檢查
-├── Database/
-│   ├── IDatabaseAccess.ts      # ORM 無關數據庫訪問
-│   └── IDatabaseConnectivityCheck.ts
-├── Messaging/
-│   ├── IEventDispatcher.ts     # 事件分發器
-│   └── IDeadLetterQueue.ts     # 死信隊列
-├── Services/
-│   ├── IRedisService.ts        # Redis 快取
-│   └── ICacheService.ts        # 應用層快取
-└── Storage/
-    └── IS3Service.ts           # S3 存儲
-```
+Port 介面位置：`src/Shared/Infrastructure/Ports/`
+- Core/: ILogger、IHealthCheck
+- Database/: IDatabaseAccess、連線檢查
+- Messaging/: IEventDispatcher、IDeadLetterQueue
+- Services/: IRedisService、ICacheService
+- Storage/: IS3Service
 
 ## Port/Adapter 設計改進 (2026-03-13)
 
-### ITokenSigner Port（JWT 簽發與驗證抽象）
+### ITokenSigner Port
 
-**問題修復**: Application 層不再直接依賴 `jose` 庫
+**修復**: Application 層不再直接依賴 `jose`
 
-```typescript
-// ✅ 新的通用 Port 介面
-export interface ITokenSigner {
-  sign(payload: Record<string, unknown>): Promise<string>
-  verify(token: string): Promise<Record<string, unknown> | null>
-}
+- Port 介面：`sign(payload)` + `verify(token)`
+- 實現：JoseTokenSigner 隱藏 jose 細節
+- 優勢：可輕鬆切換 JWT 庫而無需改動 Application/Domain 層
 
-// ✅ 可替換的實現（目前使用 JoseTokenSigner）
-export class JoseTokenSigner implements ITokenSigner {
-  async sign(payload: Record<string, unknown>): Promise<string> {
-    // jose 實現細節隱藏在 Adapter
-  }
-  async verify(token: string): Promise<Record<string, unknown> | null> {
-    // jose 實現細節隱藏在 Adapter
-  }
-}
-```
+### IInfrastructureProbe Port
 
-**優勢**：
-- Session 模組的 Application 層完全解耦於 JWT 庫選擇
-- 未來可輕鬆切換到 `jsonwebtoken`、`@noble/hashes` 或其他實現
-- Domain 層完全不知道 JWT 的具體實現
+**修復**: Health Domain 層不再暴露技術名詞（redis、database、cache）
 
-### IInfrastructureProbe Port（通用基礎設施探針）
-
-**問題修復**: Health Domain 層不再暴露 `redis`、`database`、`cache` 等技術名詞
-
-```typescript
-// ❌ 舊做法（技術特定）
-export interface IInfrastructureProbe {
-  probeDatabase(): Promise<boolean>
-  probeRedis(): Promise<boolean>
-  probeCache(): Promise<boolean>
-}
-
-// ✅ 新做法（通用命名）
-export interface IInfrastructureProbe {
-  probeByName(name: string): Promise<boolean>
-  getProbeableComponents(): string[]
-}
-
-// SystemChecks 也改為 Map 結構，不固定組件名稱
-export class SystemChecks extends ValueObject {
-  static create(checks: Map<string, boolean> | Record<string, boolean>): SystemChecks
-  getCheckResult(name: string): boolean | null
-  get checks(): ReadonlyMap<string, boolean>
-}
-```
-
-**優勢**：
-- Health Domain 層完全與基礎設施選擇無關
-- 支持動態組件列表（未來可加入自定義探針）
-- Port 實現可根據環境動態註冊探針
+- 舊 API：`probeDatabase()`, `probeRedis()`, `probeCache()`
+- 新 API：`probeByName(name)` + `getProbeableComponents()`
+- SystemChecks 改為 Map 結構，支持動態組件列表
+- 優勢：Health Domain 完全與基礎設施選擇無關
 
 ## 開發最佳實踐
 
