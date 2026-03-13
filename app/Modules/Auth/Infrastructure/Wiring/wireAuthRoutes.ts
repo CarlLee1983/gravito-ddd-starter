@@ -20,22 +20,20 @@ import { registerPageRoutes } from '../../Presentation/Routes/pages'
 export function wireAuthRoutes(ctx: IRouteRegistrationContext): void {
   const router = ctx.createModuleRouter()
 
-  // 嘗試從容器取得依賴
+  // 註冊頁面路由（這些不需要 authController）
+  registerPageRoutes(router)
+
+  // 嘗試從容器取得依賴（用於 API 路由）
   let authController: AuthController
   try {
     authController = ctx.container.make('authController') as AuthController
+    // 註冊 API 路由（/api/auth/*)
+    registerAuthRoutes(router, authController)
   } catch (error) {
     console.error('[wireAuthRoutes] Error: Failed to resolve authController', {
       message: (error as Error).message,
       hint: '可能缺少依賴: userProfileService, authMessages, 或其他 Auth 服務'
     })
-    console.warn('[wireAuthRoutes] Warning: authController not ready, skipping route registration')
-    return
+    console.warn('[wireAuthRoutes] Warning: API routes skipped, but page routes registered')
   }
-
-  // 註冊 API 路由（/api/auth/*)
-  registerAuthRoutes(router, authController)
-
-  // 註冊頁面路由（/, /login, /register, /dashboard）
-  registerPageRoutes(router)
 }
