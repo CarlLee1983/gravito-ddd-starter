@@ -6,10 +6,11 @@
 
 import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
 import type { PostController } from '../Controllers/PostController'
+import { exceptionHandlingMiddleware } from '@/Shared/Presentation/Middlewares/ExceptionHandlingMiddleware'
 
 /**
  * 註冊 Post 路由
- * 
+ *
  * 在 DDD 架構中屬於「表現層 (Presentation Layer)」。
  * 此函數負責將 HTTP 路徑映射到控制器的對應方法。
  *
@@ -22,9 +23,11 @@ export function registerPostRoutes(
 	controller: PostController,
 ): void {
 	/** 取得文章列表 */
-	router.get('/api/Post', (ctx) => controller.index(ctx))
+	router.get('/api/Post', [exceptionHandlingMiddleware], (ctx) => controller.index(ctx))
+
 	/** 取得單一文章 */
-	router.get('/api/Post/:id', (ctx) => controller.show(ctx))
-	/** 建立新文章 */
-	router.post('/api/Post', (ctx) => controller.store(ctx))
+	router.get('/api/Post/:id', [exceptionHandlingMiddleware], (ctx) => controller.show(ctx))
+
+	/** 建立新文章 - 可能拋出 EntityNotFoundException 或 DuplicateEntityException */
+	router.post('/api/Post', [exceptionHandlingMiddleware], (ctx) => controller.store(ctx))
 }

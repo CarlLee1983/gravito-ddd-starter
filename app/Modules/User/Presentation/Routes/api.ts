@@ -19,6 +19,7 @@
 
 import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
 import type { UserController } from '../Controllers/UserController'
+import { exceptionHandlingMiddleware } from '@/Shared/Presentation/Middlewares/ExceptionHandlingMiddleware'
 
 /**
  * 註冊用戶模組的所有路由
@@ -34,17 +35,18 @@ export function registerUserRoutes(
 	 * GET /api/users
 	 * 列出所有用戶
 	 */
-	router.get('/api/users', (ctx) => controller.index(ctx))
+	router.get('/api/users', [exceptionHandlingMiddleware], (ctx) => controller.index(ctx))
 
 	/**
 	 * GET /api/users/:id
 	 * 獲取特定用戶
 	 */
-	router.get('/api/users/:id', (ctx) => controller.show(ctx))
+	router.get('/api/users/:id', [exceptionHandlingMiddleware], (ctx) => controller.show(ctx))
 
 	/**
 	 * POST /api/users
 	 * 創建新用戶
+	 * 可能拋出 DuplicateEntityException（電子郵件已使用）
 	 */
-	router.post('/api/users', (ctx) => controller.store(ctx))
+	router.post('/api/users', [exceptionHandlingMiddleware], (ctx) => controller.store(ctx))
 }
