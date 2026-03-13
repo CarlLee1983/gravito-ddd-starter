@@ -88,10 +88,11 @@ export class ModuleAutoWirer {
 		for (const { def, file } of modulesFound) {
 			if (def.registerRoutes) {
 				try {
+					console.log(`[AutoWirer] 🔄 Wiring routes for module: ${def.name}...`)
 					const routeCtx: IRouteRegistrationContext = {
 						container: core.container,
 						createModuleRouter: () => {
-							console.log(`[AutoWirer] Creating router for module: ${def.name}`)
+							console.log(`[AutoWirer] 📍 Creating router for module: ${def.name}`)
 							return createGravitoModuleRouter(core)
 						},
 						createAuthRouter: () => {
@@ -106,6 +107,7 @@ export class ModuleAutoWirer {
 						},
 					}
 					def.registerRoutes(routeCtx)
+					console.log(`[AutoWirer] ✅ Routes wired successfully for module: ${def.name}`)
 					activeModules.push(def.name)
 				} catch (error) {
 					console.error(`❌ [AutoWirer] 裝配模組 ${file} 路由時發生錯誤:`, error)

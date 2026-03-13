@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { router } from '@inertiajs/react'
 import GuestLayout from '../../Layouts/GuestLayout'
 import { useAuth } from '../../hooks/useAuth'
+import { Mail, Lock, Loader2, ArrowRight } from 'lucide-react'
 
 export default function Login() {
   const { login } = useAuth()
@@ -16,20 +17,16 @@ export default function Login() {
     setLoading(true)
 
     try {
-      // 基本驗證
       if (!email || !password) {
-        setError('郵件和密碼必填')
+        setError('請填寫郵件和密碼')
         setLoading(false)
         return
       }
 
-      // 呼叫登入
       await login(email, password)
-
-      // 登入成功，跳轉到儀表板
       router.visit('/dashboard')
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '登入失敗，請重試'
+      const errorMessage = err instanceof Error ? err.message : '登入失敗，請檢查您的憑據'
       setError(errorMessage)
       setLoading(false)
     }
@@ -37,57 +34,90 @@ export default function Login() {
 
   return (
     <GuestLayout
-      title="登入"
-      subtitle="輸入您的認證資訊"
+      title="登入帳號"
+      subtitle="歡迎回來！請輸入您的認證資訊"
       bottomLink={{
         text: '還沒有帳號？',
         href: '/register',
-        linkText: '立即註冊',
+        linkText: '立即註冊體驗',
       }}
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-6">
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700">{error}</p>
+          <div className="p-4 bg-red-50 border border-red-100 rounded-2xl animate-in fade-in zoom-in duration-300">
+            <p className="text-red-700 text-sm font-bold flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+              {error}
+            </p>
           </div>
         )}
 
-        <div className="mb-6">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider text-[10px]">
             郵件地址
           </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <Mail size={18} />
+            </div>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@company.com"
+              className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+              disabled={loading}
+              autoComplete="email"
+            />
+          </div>
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-            密碼
-          </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
+        <div className="space-y-2">
+          <div className="flex justify-between items-center ml-1">
+            <label htmlFor="password" className="block text-sm font-bold text-slate-700 uppercase tracking-wider text-[10px]">
+              密碼
+            </label>
+            <a href="#" className="text-[10px] font-bold text-blue-600 hover:text-blue-700 uppercase tracking-wider">忘記密碼？</a>
+          </div>
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <Lock size={18} />
+            </div>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+              disabled={loading}
+              autoComplete="current-password"
+            />
+          </div>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full group relative bg-blue-600 text-white py-4 rounded-2xl hover:bg-blue-700 font-black text-lg shadow-xl shadow-blue-600/20 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 overflow-hidden"
         >
-          {loading ? '登入中...' : '登入'}
+          <span className="relative z-10 flex items-center justify-center gap-2">
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                處理中...
+              </>
+            ) : (
+              <>
+                登入系統 <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+              </>
+            )}
+          </span>
+          {/* Animated shimmer effect */}
+          {!loading && (
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-[shimmer_1.5s_infinite] pointer-events-none"></div>
+          )}
         </button>
       </form>
     </GuestLayout>

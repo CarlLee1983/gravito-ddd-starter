@@ -220,17 +220,22 @@ export class TableBuilder implements ITableBuilder {
 	}
 
 	timestamps(): void {
-		const createdAt = new ColumnBuilder('created_at', 'DATETIME')
+		// 根據不同資料庫選擇適當的時間戳記型別
+		const timestampType = process.env.DB_CONNECTION === 'postgres' ? 'TIMESTAMP' : 'DATETIME'
+
+		const createdAt = new ColumnBuilder('created_at', timestampType)
 		createdAt.default('CURRENT_TIMESTAMP').notNull()
 
-		const updatedAt = new ColumnBuilder('updated_at', 'DATETIME')
+		const updatedAt = new ColumnBuilder('updated_at', timestampType)
 		updatedAt.default('CURRENT_TIMESTAMP').notNull()
 
 		this.columns.push(createdAt, updatedAt)
 	}
 
 	softDeletes(): void {
-		const deletedAt = new ColumnBuilder('deleted_at', 'DATETIME')
+		// 根據不同資料庫選擇適當的時間戳記型別
+		const timestampType = process.env.DB_CONNECTION === 'postgres' ? 'TIMESTAMP' : 'DATETIME'
+		const deletedAt = new ColumnBuilder('deleted_at', timestampType)
 		this.columns.push(deletedAt)
 	}
 

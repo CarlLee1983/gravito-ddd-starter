@@ -31,7 +31,8 @@ export async function createTable(
 
 	// 直接執行 SQL 語句（Atlas 的連接介面支援原始 SQL）
 	// biome-ignore lint/suspicious/noExplicitAny: 參數型別由框架決定
-	await (db.connection.execute as any)(sqlStatement)
+	const connection = (db as any).connection || db
+	await (connection.raw as any)(sqlStatement)
 }
 
 /**
@@ -45,7 +46,8 @@ export async function createTable(
 export async function dropTable(db: AtlasOrbit, table: string): Promise<void> {
 	const sqlStatement = schema().drop(table)
 	// biome-ignore lint/suspicious/noExplicitAny: 參數型別由框架決定
-	await (db.connection.execute as any)(sqlStatement)
+	const connection = (db as any).connection || db
+	await (connection.raw as any)(sqlStatement)
 }
 
 /**
@@ -59,7 +61,8 @@ export async function dropTable(db: AtlasOrbit, table: string): Promise<void> {
 export async function dropTableIfExists(db: AtlasOrbit, table: string): Promise<void> {
 	const sqlStatement = schema().dropIfExists(table)
 	// biome-ignore lint/suspicious/noExplicitAny: 參數型別由框架決定
-	await (db.connection.execute as any)(sqlStatement)
+	const connection = (db as any).connection || db
+	await (connection.raw as any)(sqlStatement)
 }
 
 /**
@@ -72,5 +75,6 @@ export async function dropTableIfExists(db: AtlasOrbit, table: string): Promise<
  */
 export async function rawSQL(db: AtlasOrbit, sqlStatement: string): Promise<void> {
 	// biome-ignore lint/suspicious/noExplicitAny: 參數型別由框架決定
-	await (db.connection.execute as any)(sqlStatement)
+	const connection = (db as any).connection || db
+	await (connection.raw as any)(sqlStatement)
 }

@@ -13,6 +13,7 @@ import type { CheckoutCartService } from '../../Application/Services/CheckoutCar
 import type { ICartRepository } from '../../Domain/Repositories/ICartRepository'
 import { CartController } from '../../Presentation/Controllers/CartController'
 import { registerCartRoutes } from '../../Presentation/Routes/api'
+import { registerPageRoutes } from '../../Presentation/Routes/pages'
 
 /**
  * 註冊 Cart 模組路由（供 IModuleDefinition.registerRoutes 使用）
@@ -46,4 +47,7 @@ export function wireCartRoutes(ctx: IRouteRegistrationContext): void {
 	)
 
 	registerCartRoutes(router, controller)
+
+	// 註冊頁面路由
+	registerPageRoutes(router, cartRepository)
 }

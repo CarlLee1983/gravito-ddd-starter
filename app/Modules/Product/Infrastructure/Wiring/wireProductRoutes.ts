@@ -11,6 +11,7 @@ import { ProductController } from '../../Presentation/Controllers/ProductControl
 import { CreateProductService } from '../../Application/Services/CreateProductService'
 import { GetProductService } from '../../Application/Services/GetProductService'
 import { registerProductRoutes } from '../../Presentation/Routes/api'
+import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
 import type { ILogger } from '@/Shared/Infrastructure/Ports/Core/ILogger'
 
@@ -67,7 +68,11 @@ export function wireProductRoutes(ctx: IRouteRegistrationContext): void {
   console.log('[wireProductRoutes] ✓ ProductController created')
 
   // 設置路由
-  console.log('[wireProductRoutes] Registering routes...')
+  console.log('[wireProductRoutes] Registering API routes...')
   registerProductRoutes(router, controller)
+
+  console.log('[wireProductRoutes] Registering page routes...')
+  registerPageRoutes(router, queryService)
+
   console.log('[wireProductRoutes] ✅ Product routes registered successfully')
 }

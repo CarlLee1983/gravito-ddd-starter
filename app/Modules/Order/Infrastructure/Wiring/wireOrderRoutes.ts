@@ -6,6 +6,7 @@
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { OrderController } from '../../Presentation/Controllers/OrderController'
 import { registerOrderRoutes } from '../../Presentation/Routes/Order.routes'
+import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import type { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
 
@@ -17,6 +18,9 @@ export function wireOrderRoutes(ctx: IRouteRegistrationContext): void {
   const placeOrderService = ctx.container.make('placeOrderService') as PlaceOrderService
   
   const controller = new OrderController(placeOrderService, repository)
-  
+
   registerOrderRoutes(router, controller)
+
+  // 註冊頁面路由
+  registerPageRoutes(router, repository)
 }

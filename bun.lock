@@ -48,7 +48,7 @@
     },
   },
   "overrides": {
-    "@gravito/atlas": "^2.4.0",
+    "@gravito/atlas": "latest",
     "@gravito/chromatic": "1.0.0",
     "@gravito/core": "^2.0.4",
     "@gravito/photon": "1.0.1",

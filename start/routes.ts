@@ -33,5 +33,8 @@ export async function registerRoutes(core: PlanetCore) {
 		})
 	})
 
+	// --- 前端路由由 Product、Cart、Order 模組的 API 端點提供 ---
+	// Inertia 頁面路由暫時禁用（待 Inertia 中介軟體配置）
+
 	console.log('✅ Global routes registered (Domain routes handled by AutoWirer)')
 }

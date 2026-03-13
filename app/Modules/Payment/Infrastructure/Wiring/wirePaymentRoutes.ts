@@ -6,6 +6,7 @@
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { PaymentController } from '../../Presentation/Controllers/PaymentController'
 import { registerPaymentRoutes } from '../../Presentation/Routes/payment.routes'
+import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { IPaymentRepository } from '../../Domain/Repositories/IPaymentRepository'
 
 export function wirePaymentRoutes(ctx: IRouteRegistrationContext): void {
@@ -16,6 +17,9 @@ export function wirePaymentRoutes(ctx: IRouteRegistrationContext): void {
   const repository = ctx.container.make('paymentRepository') as IPaymentRepository
   
   const controller = new PaymentController(repository)
-  
+
   registerPaymentRoutes(router, controller)
+
+  // 註冊頁面路由
+  registerPageRoutes(router)
 }

@@ -2,13 +2,14 @@ import { useState } from 'react'
 import { router } from '@inertiajs/react'
 import GuestLayout from '../../Layouts/GuestLayout'
 import { useAuth } from '../../hooks/useAuth'
+import { User, Mail, Lock, Loader2, ArrowRight } from 'lucide-react'
 
 export default function Register() {
   const { register } = useAuth()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [passwordConfirm, setPasswordConfirm] = useState('')
+  const [passwordConfirmation, setPasswordConfirmation] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
@@ -18,39 +19,19 @@ export default function Register() {
     setLoading(true)
 
     try {
-      // 驗證輸入
-      if (!name || !email || !password || !passwordConfirm) {
-        setError('所有欄位都必填')
+      if (!name || !email || !password) {
+        setError('請填寫所有必填欄位')
         setLoading(false)
         return
       }
 
-      // 驗證郵件格式
-      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-      if (!emailRegex.test(email)) {
-        setError('請輸入有效的郵件地址')
+      if (password !== passwordConfirmation) {
+        setError('兩次輸入的密碼不一致')
         setLoading(false)
         return
       }
 
-      // 驗證密碼長度
-      if (password.length < 8) {
-        setError('密碼至少需要 8 個字元')
-        setLoading(false)
-        return
-      }
-
-      // 驗證密碼確認
-      if (password !== passwordConfirm) {
-        setError('密碼不相符')
-        setLoading(false)
-        return
-      }
-
-      // 呼叫註冊
       await register(name, email, password)
-
-      // 註冊成功，跳轉到儀表板
       router.visit('/dashboard')
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : '註冊失敗，請重試'
@@ -62,86 +43,127 @@ export default function Register() {
   return (
     <GuestLayout
       title="建立帳號"
-      subtitle="立即開始使用 Gravito"
+      subtitle="立即加入 Gravito，開啟您的開發之旅"
       bottomLink={{
-        text: '已有帳號？',
+        text: '已經有帳號了？',
         href: '/login',
-        linkText: '立即登入',
+        linkText: '前往登入',
       }}
     >
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} className="space-y-5">
         {error && (
-          <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-red-700">{error}</p>
+          <div className="p-4 bg-red-50 border border-red-100 rounded-2xl animate-in fade-in zoom-in duration-300">
+            <p className="text-red-700 text-sm font-bold flex items-center gap-2">
+              <span className="w-1.5 h-1.5 bg-red-500 rounded-full animate-pulse"></span>
+              {error}
+            </p>
           </div>
         )}
 
-        <div className="mb-6">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-2">
-            名稱
+        <div className="space-y-2">
+          <label htmlFor="name" className="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider text-[10px]">
+            全名 / 名稱
           </label>
-          <input
-            id="name"
-            type="text"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="您的名稱"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <User size={18} />
+            </div>
+            <input
+              id="name"
+              type="text"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              placeholder="John Doe"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+              disabled={loading}
+            />
+          </div>
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="space-y-2">
+          <label htmlFor="email" className="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider text-[10px]">
             郵件地址
           </label>
-          <input
-            id="email"
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="your@email.com"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <Mail size={18} />
+            </div>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="name@company.com"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+              disabled={loading}
+            />
+          </div>
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
-            密碼（至少 8 個字元）
+        <div className="space-y-2">
+          <label htmlFor="password" className="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider text-[10px]">
+            設定密碼
           </label>
-          <input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <Lock size={18} />
+            </div>
+            <input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="至少 8 個字元"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+              disabled={loading}
+            />
+          </div>
         </div>
 
-        <div className="mb-6">
-          <label htmlFor="passwordConfirm" className="block text-sm font-medium text-gray-700 mb-2">
+        <div className="space-y-2">
+          <label htmlFor="password_confirmation" className="block text-sm font-bold text-slate-700 ml-1 uppercase tracking-wider text-[10px]">
             確認密碼
           </label>
-          <input
-            id="passwordConfirm"
-            type="password"
-            value={passwordConfirm}
-            onChange={(e) => setPasswordConfirm(e.target.value)}
-            placeholder="••••••••"
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            disabled={loading}
-          />
+          <div className="relative group">
+            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-500 transition-colors">
+              <Lock size={18} />
+            </div>
+            <input
+              id="password_confirmation"
+              type="password"
+              value={passwordConfirmation}
+              onChange={(e) => setPasswordConfirmation(e.target.value)}
+              placeholder="再次輸入密碼"
+              className="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-2xl focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 outline-none transition-all font-medium text-slate-900 placeholder:text-slate-400"
+              disabled={loading}
+            />
+          </div>
+        </div>
+
+        <div className="flex items-start gap-3 ml-1 py-2">
+          <input type="checkbox" id="terms" className="mt-1 rounded border-slate-300 text-blue-600 focus:ring-blue-500" required />
+          <label htmlFor="terms" className="text-xs text-slate-500 font-medium leading-relaxed">
+            我同意 <a href="#" className="text-blue-600 font-bold hover:underline">服務條款</a> 與 <a href="#" className="text-blue-600 font-bold hover:underline">隱私權政策</a>。
+          </label>
         </div>
 
         <button
           type="submit"
           disabled={loading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full group relative bg-slate-900 text-white py-4 rounded-2xl hover:bg-slate-800 font-black text-lg shadow-xl shadow-slate-900/10 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:translate-y-0 overflow-hidden"
         >
-          {loading ? '建立帳號中...' : '建立帳號'}
+          <span className="relative z-10 flex items-center justify-center gap-2">
+            {loading ? (
+              <>
+                <Loader2 className="animate-spin" size={20} />
+                帳號建立中...
+              </>
+            ) : (
+              <>
+                註冊帳號 <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
+              </>
+            )}
+          </span>
         </button>
       </form>
     </GuestLayout>

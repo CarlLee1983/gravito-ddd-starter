@@ -13,7 +13,9 @@ import { GetUserService } from '../../Application/Services/GetUserService'
 import { UserMessageService } from '../Services/UserMessageService'
 import { UserController } from '../../Presentation/Controllers/UserController'
 import { registerUserRoutes } from '../../Presentation/Routes/api'
+import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { IUserQueryService } from '../../Application/Queries/IUserQueryService'
 
 /**
  * 註冊 User 模組路由（供 IModuleDefinition.registerRoutes 使用）
@@ -50,4 +52,12 @@ export function wireUserRoutes(ctx: IRouteRegistrationContext): void {
 
 	const controller = new UserController(createUserService, getUserService, userMessages)
 	registerUserRoutes(router, controller)
+
+	// 註冊頁面路由
+	try {
+		const queryService = ctx.container.make('userQueryService') as IUserQueryService
+		registerPageRoutes(router, queryService)
+	} catch {
+		console.warn('[wireUserRoutes] Warning: userQueryService not available for page routes')
+	}
 }
