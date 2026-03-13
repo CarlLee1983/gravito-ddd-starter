@@ -1,168 +1,76 @@
-# Payment 模組
+# Payment 模組 — 支付管理
 
-支付管理模組，實現支付狀態機（Initiated → Succeeded/Failed）和事件驅動架構。
+## 概述
 
-## 功能
+Payment 模組管理支付生命週期，支援 5 種支付方式，並監聽 Order 模組的事件自動發起支付。
 
-### Domain 層
-- **Payment 聚合根**: 支付狀態機管理
-  - 狀態: `INITIATED` (初始) → `SUCCEEDED` (成功) 或 `FAILED` (失敗)
-  - 行為: `create()`, `succeed()`, `fail()`
-  - 事件發佈: PaymentInitiated, PaymentSucceeded, PaymentFailed
+## 核心職責
 
-### Value Objects
-- **PaymentId**: 支付唯一識別符
-- **Amount**: 金額（新台幣，以分為單位）
-- **PaymentMethod**: 支付方式（信用卡、銀行轉帳、電子錢包、LINE Pay、Apple Pay）
-- **PaymentStatus**: 支付狀態（初始、成功、失敗）
-- **TransactionId**: 交易編號（來自支付網關）
+- 支付生命週期管理（發起、成功、失敗）
+- 5 種支付方式支援
+- 事件監聽（OrderPlaced）
+- 事件發佈（PaymentSucceeded、PaymentFailed）
 
-### Application 層
-- **InitiatePaymentService**: 建立新支付
-- **HandlePaymentSuccessService**: 處理支付成功
-- **HandlePaymentFailureService**: 處理支付失敗
+## Domain 層
 
-### Infrastructure 層
-- **PaymentRepository**: Repository 實現（支援 ORM 無關設計）
-- **PaymentServiceProvider**: 依賴注入配置
+### Aggregate Root — Payment
+狀態機：`Initiated → Succeeded` 或 `Failed`
 
-### Presentation 層
-- **PaymentController**: HTTP 控制器
-  - GET `/api/payments/:id` - 取得支付記錄
-  - GET `/api/payments/order/:orderId` - 依訂單取得支付
-  - GET `/api/payments` - 列表查詢（含分頁）
+- `initiate()` — 發起支付
+- `succeed()` — 標記成功（自動觸發 Order.confirm()）
+- `fail()` — 標記失敗（自動觸發 Order.cancel()）
+
+### ValueObjects
+- `PaymentId` — UUID 支付識別碼
+- `PaymentMethod` — 支付方式（CreditCard、BankTransfer、WalletTransfer、LinePay、ApplePay）
+- `Amount` — 支付金額 + 貨幣
+- `TransactionId` — 外部交易編號
+- `PaymentStatus` — 支付狀態（Initiated、Succeeded、Failed）
+
+## Application 層 — 事件監聽
+
+### OrderPlacedHandler
+自動監聽 Order 的 `OrderPlaced` 事件，發起支付並發佈 `PaymentSucceeded/Failed` 事件。
+
+## REST API
+
+```bash
+# 發起支付
+POST /api/payments
+{ "orderId": "uuid", "amount": 100000, "currency": "TWD", "method": "credit_card" }
+
+# 確認支付成功
+POST /api/payments/:id/confirm
+
+# 標記支付失敗
+POST /api/payments/:id/fail
+
+# 查詢訂單支付
+GET /api/payments/order/:orderId
+```
 
 ## 支付方式
 
-支援 5 種支付方式：
-- 信用卡 (CREDIT_CARD)
-- 銀行轉帳 (BANK_TRANSFER)
-- 電子錢包 (WALLET_TRANSFER)
-- LINE Pay (LINE_PAY)
-- Apple Pay (APPLE_PAY)
+- **CreditCard** — 信用卡
+- **BankTransfer** — 銀行轉帳
+- **WalletTransfer** — 電子錢包轉帳
+- **LinePay** — LINE Pay
+- **ApplePay** — Apple Pay
 
-## 事件驅動
+## 設計特點
 
-### 發佈的事件
+✅ 完整的支付狀態機
+✅ 5 種支付方式支援
+✅ 跨模組事件驅動
+✅ Event Sourcing 支援
+✅ ORM 無關設計
 
-**PaymentInitiated** - 支付已建立
-```typescript
-new PaymentInitiated(paymentId, orderId, userId, amount, paymentMethod)
+## 測試
+
+```bash
+bun test tests/Unit/Modules/Payment/
 ```
 
-**PaymentSucceeded** - 支付成功
-```typescript
-new PaymentSucceeded(paymentId, orderId, transactionId)
-```
+## 參考文檔
 
-**PaymentFailed** - 支付失敗
-```typescript
-new PaymentFailed(paymentId, orderId, reason)
-```
-
-### 跨 Bounded Context
-
-其他模組（如 Order）可監聽這些事件：
-- PaymentSucceeded → 確認訂單
-- PaymentFailed → 取消訂單
-
-## 使用例
-
-### 建立支付
-```typescript
-const service = container.make('initiatePaymentService')
-const result = await service.execute({
-  orderId: 'ORD-001',
-  userId: 'USER-001',
-  amountCents: 50000, // 500 元
-  paymentMethod: 'CREDIT_CARD'
-})
-```
-
-### 標記支付成功
-```typescript
-const service = container.make('handlePaymentSuccessService')
-await service.execute('PAY-ID', 'TXN-123')
-```
-
-### 標記支付失敗
-```typescript
-const service = container.make('handlePaymentFailureService')
-await service.execute('PAY-ID', '卡片被拒絕')
-```
-
-## 金額處理
-
-金額以新台幣（TWD）計價，以分為單位存儲（避免浮點數問題）：
-
-```typescript
-// 建立金額
-const amount = new Amount(50000) // 500.00 元
-console.log(amount.cents) // 50000
-console.log(amount.dollars) // 500
-
-// 從元轉換
-const amount2 = Amount.fromTWD(99.99)
-console.log(amount2.cents) // 9999
-```
-
-## 狀態轉換規則
-
-```
-Initiated → Succeeded ✓
-Initiated → Failed ✓
-Succeeded → * ✗ (無法再轉換)
-Failed → * ✗ (無法再轉換)
-```
-
-## 資料庫模式
-
-```sql
-CREATE TABLE payments (
-  id VARCHAR(36) PRIMARY KEY,
-  order_id VARCHAR(36) NOT NULL,
-  user_id VARCHAR(36) NOT NULL,
-  amount_cents INTEGER NOT NULL,
-  payment_method VARCHAR(50) NOT NULL,
-  status VARCHAR(50) NOT NULL,
-  transaction_id VARCHAR(255),
-  failure_reason TEXT,
-  created_at TIMESTAMP NOT NULL,
-  updated_at TIMESTAMP NOT NULL
-);
-
-CREATE INDEX idx_payments_order_id ON payments(order_id);
-CREATE INDEX idx_payments_user_id ON payments(user_id);
-CREATE INDEX idx_payments_status ON payments(status);
-```
-
-## 測試覆蓋
-
-- **91 個單元測試**
-- **Value Objects 測試** (28 tests) - PaymentId, Amount, PaymentMethod, PaymentStatus 等
-- **Aggregate 測試** (24 tests) - Payment 聚合根行為和狀態機
-- **Application Service 測試** (39 tests) - 支付服務流程
-- **Integration 測試** (76+ 場景) - 完整支付流程和邊界情況
-
-## 架構特點
-
-### ORM 無關設計
-- Domain 層完全不知道 ORM
-- Repository 實現依賴 `IDatabaseAccess` Port
-- 可輕鬆切換 ORM（Atlas → Drizzle/Prisma/TypeORM）
-
-### 事件驅動
-- 聚合根發佈 DomainEvent
-- Repository 分派事件至其他模組
-- 支持跨 Bounded Context 通訊
-
-### 完整的狀態機
-- 明確的狀態定義和轉換規則
-- 業務規則驗證
-- 清晰的錯誤提示
-
-## 相關文檔
-
-- [DDD 架構設計](../../docs/02-Architecture/ARCHITECTURE.md)
-- [模組生成指南](../../docs/04-Module-Development/MODULE_GENERATION_WITH_ADAPTERS.md)
-- [抽象化規則](../../docs/02-Architecture/ABSTRACTION_RULES.md)
+- [購物系統完整開發指南](../../docs/04-Module-Development/SHOPPING_MODULES_GUIDE.md)

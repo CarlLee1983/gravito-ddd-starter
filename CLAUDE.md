@@ -361,6 +361,65 @@ locales/
 - ✅ **日誌統一**：移除 74 個 console.log，使用 ILogger
 - ✅ **Port/Adapter**：ITokenSigner、IInfrastructureProbe 通用化
 
+## 購物系統模組 (2026-03-13) ✨
+
+**狀態**: ✅ 完成 | **模組**: 4 個 | **檔案**: 94 個 | **測試**: 237 個通過
+
+完整的電商購物系統實現，包括 Product、Cart、Order、Payment 四個相互協作的 Bounded Context。
+
+### 核心特性
+
+✅ **Product 模組** (22 個檔案)
+- 商品管理、CQRS 讀側、事件發佈
+
+✅ **Cart 模組** (27 個檔案)
+- 購物車管理、防腐層設計（ProductCatalogAdapter）
+- 隔離 Product Context，Domain 層零耦合
+
+✅ **Order 模組** (24 個檔案)
+- 訂單狀態機（Pending→Confirmed→Shipped/Cancelled）
+- 事件監聽（CartCheckoutRequested）
+- 自動建立訂單
+
+✅ **Payment 模組** (21 個檔案)
+- 支付狀態機、5 種支付方式
+- 事件監聽（OrderPlaced）
+- 自動發起支付
+
+### 完整的事件驅動流程
+
+```
+Cart.checkout()
+  → CartCheckoutRequested
+  → Order.place()
+  → OrderPlaced
+  → Payment.initiate()
+  → PaymentSucceeded/Failed
+  → Order.confirm()/cancel()
+```
+
+### 防腐層設計
+
+Cart Domain 層完全隔離 Product Context，通過 `IProductQueryPort` Port 介面查詢商品資訊。
+ProductCatalogAdapter 在 Infrastructure 層實現適配邏輯，可隨時替換 Product 實現。
+
+### 架構亮點
+
+- **DDD 純淨性**: Domain 層零 ORM 依賴
+- **Event Sourcing**: 完整的事件驅動實現
+- **Port/Adapter**: Application 層只依賴 Port 介面
+- **狀態機**: Order 和 Payment 的完整狀態轉換規則
+- **跨模組通訊**: 透過 IntegrationEvent 進行安全通訊
+
+### 完整文檔
+
+參考 `docs/04-Module-Development/SHOPPING_MODULES_GUIDE.md`：
+- 4 個模組的完整設計說明
+- Domain/Application/Infrastructure 層詳細
+- REST API 規格
+- 跨模組整合檢查清單
+- 開發最佳實踐
+
 ---
 
 **更新於**: 2026-03-13
