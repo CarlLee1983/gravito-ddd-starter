@@ -10,6 +10,7 @@ import { Content } from '../../Domain/ValueObjects/Content'
 import { PostDTO } from '../DTOs/PostDTO'
 import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
 import type { IAuthorService } from '../../Domain/Services/IAuthorService'
+import { EntityNotFoundException, DuplicateEntityException } from '@/Shared/Domain/Exceptions'
 
 /**
  * CreatePostService 類別
@@ -58,13 +59,13 @@ export class CreatePostService {
     // 2. 驗證作者存在性
     const author = await this.authorService.findAuthor(input.authorId)
     if (!author) {
-      throw new Error(`作者不存在：${input.authorId}`)
+      throw new EntityNotFoundException('Author', input.authorId)
     }
 
     // 3. 檢查標題是否已被使用
     const existingPost = await this.repository.findByTitle(title)
     if (existingPost) {
-      throw new Error(`標題已被使用：${title.value}`)
+      throw new DuplicateEntityException('Post', 'title', title.value)
     }
 
     // 4. 建立聚合根（產生 PostCreated 事件）

@@ -9,6 +9,7 @@ import { Email } from '../../Domain/ValueObjects/Email'
 import { UserName } from '../../Domain/ValueObjects/UserName'
 import { UserDTO } from '../DTOs/UserDTO'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
+import { DuplicateEntityException } from '@/Shared/Domain/Exceptions'
 
 /**
  * CreateUserService 類別
@@ -53,7 +54,7 @@ export class CreateUserService {
     // 2. 檢查電子郵件是否已被使用
     const existingUser = await this.repository.findByEmail(email)
     if (existingUser) {
-      throw new Error(`電子郵件已被使用：${email.value}`)
+      throw new DuplicateEntityException('User', 'email', email.value)
     }
 
     // 3. 建立聚合根（產生 UserCreated 事件）

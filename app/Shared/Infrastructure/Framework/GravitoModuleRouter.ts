@@ -8,7 +8,7 @@
  */
 
 import type { PlanetCore } from '@gravito/core'
-import { fromGravitoContext } from '@/Shared/Presentation/IHttpContext'
+import { fromGravitoContext } from '@/Shared/Infrastructure/Framework/GravitoHttpContextAdapter'
 import type {
 	IModuleRouter,
 	RouteHandler,
