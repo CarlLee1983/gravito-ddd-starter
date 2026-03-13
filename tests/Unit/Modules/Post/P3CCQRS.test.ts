@@ -10,14 +10,16 @@ import { GetPostService } from '@/Modules/Post/Application/Services/GetPostServi
 import { Post } from '@/Modules/Post/Domain/Aggregates/Post'
 import { Title } from '@/Modules/Post/Domain/ValueObjects/Title'
 import { Content } from '@/Modules/Post/Domain/ValueObjects/Content'
+import { AuthorInfo } from '@/Modules/Post/Domain/ValueObjects/AuthorInfo'
 import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import type { PostReadModel } from '@/Modules/Post/Application/ReadModels/PostReadModel'
 import type { IPostQueryService } from '@/Modules/Post/Application/Queries/IPostQueryService'
+import type { IAuthorService } from '@/Modules/Post/Domain/Services/IAuthorService'
 
 // Mock IAuthorService
-const mockAuthorService = {
-  getAuthorName: async () => 'Mock Author',
+const mockAuthorService: IAuthorService = {
+	findAuthor: async (id: string) => new AuthorInfo(id, 'Mock Author', 'mock@example.com'),
 }
 
 describe('Post Service - CQRS (P3C)', () => {

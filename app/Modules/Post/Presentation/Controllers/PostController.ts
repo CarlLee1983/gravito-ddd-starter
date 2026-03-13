@@ -39,21 +39,11 @@ export class PostController {
 	 * @returns Promise 包含 HTTP 響應對象
 	 */
 	async index(ctx: IHttpContext): Promise<Response> {
-		try {
-			const posts = await this.getPostService.listAll()
-			return ctx.json({
-				success: true,
-				data: posts,
-			})
-		} catch (error: any) {
-			return ctx.json(
-				{
-					success: false,
-					message: error.message || 'Failed to list posts',
-				},
-				500,
-			)
-		}
+		const posts = await this.getPostService.listAll()
+		return ctx.json({
+			success: true,
+			data: posts,
+		})
 	}
 
 	/**
@@ -64,44 +54,34 @@ export class PostController {
 	 * @returns Promise 包含文章資料的 HTTP 響應
 	 */
 	async show(ctx: IHttpContext): Promise<Response> {
-		try {
-			const id = ctx.params.id
-			if (!id) {
-				return ctx.json(
-					{
-						success: false,
-						message: 'ID is required',
-					},
-					400,
-				)
-			}
-
-			// 透過 Application Service 查詢文章
-			const postDto = await this.getPostService.findById(id)
-
-			if (!postDto) {
-				return ctx.json(
-					{
-						success: false,
-						message: 'Post not found',
-					},
-					404,
-				)
-			}
-
-			return ctx.json({
-				success: true,
-				data: postDto,
-			})
-		} catch (error: any) {
+		const id = ctx.params.id
+		if (!id) {
 			return ctx.json(
 				{
 					success: false,
-					message: error.message || 'Failed to get post',
+					message: 'ID is required',
 				},
-				500,
+				400,
 			)
 		}
+
+		// 透過 Application Service 查詢文章
+		const postDto = await this.getPostService.findById(id)
+
+		if (!postDto) {
+			return ctx.json(
+				{
+					success: false,
+					message: 'Post not found',
+				},
+				404,
+			)
+		}
+
+		return ctx.json({
+			success: true,
+			data: postDto,
+		})
 	}
 
 	/**
@@ -112,46 +92,34 @@ export class PostController {
 	 * @returns Promise 包含建立結果的 HTTP 響應
 	 */
 	async store(ctx: IHttpContext): Promise<Response> {
-		try {
-			const body = await ctx.getJsonBody<{ title: string; content?: string; authorId: string }>()
+		const body = await ctx.getJsonBody<{ title: string; content?: string; authorId: string }>()
 
-			// 基礎輸入驗證
-			if (!body.title || !body.authorId) {
-				return ctx.json(
-					{
-						success: false,
-						message: 'Missing required fields: title, authorId',
-					},
-					400,
-				)
-			}
-
-			// 透過 Application Service 執行建立文章的業務邏輯
-			const postDto = await this.createPostService.execute({
-				id: crypto.randomUUID(),
-				title: body.title,
-				content: body.content,
-				authorId: body.authorId,
-			})
-
-			return ctx.json(
-				{
-					success: true,
-					message: 'Post created successfully',
-					data: postDto,
-				},
-				201,
-			)
-		} catch (error: any) {
-			// 根據不同的錯誤類型返回適當的 HTTP 狀態碼
-			const statusCode = error.message?.includes('已') ? 400 : 400
+		// 基礎輸入驗證
+		if (!body.title || !body.authorId) {
 			return ctx.json(
 				{
 					success: false,
-					message: error.message || 'Failed to create post',
+					message: 'Missing required fields: title, authorId',
 				},
-				statusCode,
+				400,
 			)
 		}
+
+		// 透過 Application Service 執行建立文章的業務邏輯
+		const postDto = await this.createPostService.execute({
+			id: crypto.randomUUID(),
+			title: body.title,
+			content: body.content,
+			authorId: body.authorId,
+		})
+
+		return ctx.json(
+			{
+				success: true,
+				message: 'Post created successfully',
+				data: postDto,
+			},
+			201,
+		)
 	}
 }

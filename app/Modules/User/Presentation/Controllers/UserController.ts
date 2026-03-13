@@ -44,27 +44,17 @@ export class UserController {
 	 * @returns JSON 回應
 	 */
 	async index(ctx: IHttpContext): Promise<Response> {
-		try {
-			const users = await this.getUserService.listAll()
+		const users = await this.getUserService.listAll()
 
-			return ctx.json({
-				success: true,
-				data: users.map(u => ({
-					id: u.id,
-					name: u.name,
-					email: u.email,
-					createdAt: u.createdAt,
-				})),
-			})
-		} catch (error: any) {
-			return ctx.json(
-				{
-					success: false,
-					message: error.message || 'Failed to list users',
-				},
-				500,
-			)
-		}
+		return ctx.json({
+			success: true,
+			data: users.map(u => ({
+				id: u.id,
+				name: u.name,
+				email: u.email,
+				createdAt: u.createdAt,
+			})),
+		})
 	}
 
 	/**
@@ -75,46 +65,34 @@ export class UserController {
 	 * @returns JSON 回應 (201 Created)
 	 */
 	async store(ctx: IHttpContext): Promise<Response> {
-		try {
-			const body = await ctx.getJsonBody<{ name: string; email: string }>()
+		const body = await ctx.getJsonBody<{ name: string; email: string }>()
 
-			// 基礎輸入驗證
-			if (!body.name || !body.email) {
-				return ctx.json(
-					{
-						success: false,
-						message: 'Missing required fields: name, email',
-					},
-					400,
-				)
-			}
-
-			// 透過 Application Service 執行建立用戶的業務邏輯
-			const userDto = await this.createUserService.execute({
-				id: crypto.randomUUID(),
-				name: body.name,
-				email: body.email,
-			})
-
-			return ctx.json(
-				{
-					success: true,
-					message: 'User created successfully',
-					data: userDto,
-				},
-				201,
-			)
-		} catch (error: any) {
-			// 根據不同的錯誤類型返回適當的 HTTP 狀態碼
-			const statusCode = error.message?.includes('已被使用') ? 400 : 400
+		// 基礎輸入驗證
+		if (!body.name || !body.email) {
 			return ctx.json(
 				{
 					success: false,
-					message: error.message || 'Failed to create user',
+					message: 'Missing required fields: name, email',
 				},
-				statusCode,
+				400,
 			)
 		}
+
+		// 透過 Application Service 執行建立用戶的業務邏輯
+		const userDto = await this.createUserService.execute({
+			id: crypto.randomUUID(),
+			name: body.name,
+			email: body.email,
+		})
+
+		return ctx.json(
+			{
+				success: true,
+				message: 'User created successfully',
+				data: userDto,
+			},
+			201,
+		)
 	}
 
 	/**
@@ -125,44 +103,34 @@ export class UserController {
 	 * @returns JSON 回應
 	 */
 	async show(ctx: IHttpContext): Promise<Response> {
-		try {
-			const id = ctx.params.id
+		const id = ctx.params.id
 
-			if (!id) {
-				return ctx.json(
-					{
-						success: false,
-						message: 'User ID is required',
-					},
-					400,
-				)
-			}
-
-			// 透過 Application Service 查詢用戶
-			const userDto = await this.getUserService.findById(id)
-
-			if (!userDto) {
-				return ctx.json(
-					{
-						success: false,
-						message: 'User not found',
-					},
-					404,
-				)
-			}
-
-			return ctx.json({
-				success: true,
-				data: userDto,
-			})
-		} catch (error: any) {
+		if (!id) {
 			return ctx.json(
 				{
 					success: false,
-					message: error.message || 'Failed to get user',
+					message: 'User ID is required',
 				},
-				500,
+				400,
 			)
 		}
+
+		// 透過 Application Service 查詢用戶
+		const userDto = await this.getUserService.findById(id)
+
+		if (!userDto) {
+			return ctx.json(
+				{
+					success: false,
+					message: 'User not found',
+				},
+				404,
+			)
+		}
+
+		return ctx.json({
+			success: true,
+			data: userDto,
+		})
 	}
 }

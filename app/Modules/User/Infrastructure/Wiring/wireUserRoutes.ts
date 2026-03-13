@@ -7,12 +7,10 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { UserController } from '../../Presentation/Controllers/UserController'
 import { registerUserRoutes } from '../../Presentation/Routes/api'
-import { UserRepository } from '../Persistence/UserRepository'
 
 /**
  * 註冊 User 模組路由（供 IModuleDefinition.registerRoutes 使用）
@@ -22,38 +20,9 @@ import { UserRepository } from '../Persistence/UserRepository'
 export function wireUserRoutes(ctx: IRouteRegistrationContext): void {
 	const router = ctx.createModuleRouter()
 
-	let createUserService: CreateUserService
-	let getUserService: GetUserService
-	try {
-		createUserService = ctx.container.make('createUserService') as CreateUserService
-		getUserService = ctx.container.make('getUserService') as GetUserService
-	} catch (error) {
-		// 降級方案：如果容器中沒有服務，直接組裝
-		console.warn(
-			`⚠️ [User] Services not found in container, attempting direct instantiation: ${(error as Error).message}`
-		)
-
-		try {
-			// 從容器中取得資料庫實例
-			const db = ctx.container.make('databaseAccess') as IDatabaseAccess
-
-			// 嘗試從容器中取得 eventDispatcher
-			let eventDispatcher: any = undefined
-			try {
-				eventDispatcher = ctx.container.make('eventDispatcher')
-			} catch {
-				// eventDispatcher 尚未註冊，忽略
-			}
-
-			// 組裝 Repository 和 Services
-			const userRepository = new UserRepository(db, eventDispatcher)
-			createUserService = new CreateUserService(userRepository)
-			getUserService = new GetUserService(userRepository)
-		} catch (fallbackError) {
-			console.warn(`⚠️ [User] Failed to instantiate services, skipping User routes: ${(fallbackError as Error).message}`)
-			return
-		}
-	}
+	// 直接從容器取得服務（不降級，失敗即報錯）
+	const createUserService = ctx.container.make('createUserService') as CreateUserService
+	const getUserService = ctx.container.make('getUserService') as GetUserService
 
 	const controller = new UserController(createUserService, getUserService)
 	registerUserRoutes(router, controller)
