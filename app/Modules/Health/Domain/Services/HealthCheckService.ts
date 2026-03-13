@@ -27,15 +27,22 @@ export class HealthCheckService {
    * 同時發起所有組件的檢查請求，並彙整結果。
    * Domain Service 只負責協調，具體實現由 Port 的 Adapter 提供。
    *
+   * 改進：使用通用的 probeByName() 方法，與基礎設施選擇無關。
+   *
    * @returns Promise 包含 SystemChecks 結果物件
    */
   async performSystemCheck(): Promise<SystemChecks> {
-    const [dbOk, redisOk, cacheOk] = await Promise.all([
-      this.probe.probeDatabase(),
-      this.probe.probeRedis(),
-      this.probe.probeCache(),
-    ])
+    // 取得所有可探測的組件
+    const components = this.probe.getProbeableComponents()
 
-    return SystemChecks.create(dbOk, redisOk, cacheOk)
+    // 同時發起所有組件的檢查請求
+    const results = await Promise.all(
+      components.map((component) => this.probe.probeByName(component))
+    )
+
+    // 彙整結果為 Map
+    const checks = new Map(components.map((component, index) => [component, results[index]]))
+
+    return SystemChecks.create(checks)
   }
 }

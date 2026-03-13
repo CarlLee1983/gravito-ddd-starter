@@ -4,27 +4,24 @@
  * Domain Service 定義的 Port，由 Infrastructure 層的 Adapter 實現。
  * 這遵循 Hexagonal Architecture (六邊形架構) 的原則，
  * Domain 層定義需要的 Port，外層的 Adapter 提供實現。
+ *
+ * 改進：使用通用命名 `probeByName()`，而非硬編碼技術特定的方法。
+ * 這樣 Health Domain 層完全與基礎設施選擇無關。
  */
 
 export interface IInfrastructureProbe {
   /**
-   * 探測資料庫連線可用性
+   * 按名稱探測一個基礎設施組件的可用性
    *
-   * @returns 資料庫是否可用
+   * @param name 組件名稱（如 'database'、'redis'、'cache'）
+   * @returns 該組件是否可用
    */
-  probeDatabase(): Promise<boolean>
+  probeByName(name: string): Promise<boolean>
 
   /**
-   * 探測 Redis 服務可用性
+   * 取得所有可探測的組件名稱列表
    *
-   * @returns Redis 是否可用
+   * @returns 組件名稱陣列
    */
-  probeRedis(): Promise<boolean>
-
-  /**
-   * 探測快取服務可用性
-   *
-   * @returns 快取是否可用
-   */
-  probeCache(): Promise<boolean>
+  getProbeableComponents(): string[]
 }

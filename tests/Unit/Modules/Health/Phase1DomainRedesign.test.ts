@@ -20,29 +20,33 @@ import type { IInfrastructureProbe } from '@/Modules/Health/Domain/Services/IInf
 
 // 測試用 Mock Adapter
 class MockInfrastructureProbe implements IInfrastructureProbe {
+  private components: Map<string, boolean>
+
   constructor(
     private dbStatus: boolean = true,
     private redisStatus: boolean = true,
     private cacheStatus: boolean = true
-  ) {}
-
-  async probeDatabase(): Promise<boolean> {
-    return this.dbStatus
+  ) {
+    this.components = new Map([
+      ['database', dbStatus],
+      ['redis', redisStatus],
+      ['cache', cacheStatus],
+    ])
   }
 
-  async probeRedis(): Promise<boolean> {
-    return this.redisStatus
+  async probeByName(name: string): Promise<boolean> {
+    return this.components.get(name) ?? true
   }
 
-  async probeCache(): Promise<boolean> {
-    return this.cacheStatus
+  getProbeableComponents(): string[] {
+    return Array.from(this.components.keys())
   }
 }
 
 describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
   describe('HealthCheck.perform() -- 事件驅動建立', () => {
     it('應繼承 AggregateRoot', () => {
-      const checks = SystemChecks.create(true, true, true)
+      const checks = SystemChecks.create({ database: true, redis: true, cache: true })
       const hc = HealthCheck.perform('hc-1', checks)
 
       expect(hc.id).toBe('hc-1')
@@ -51,7 +55,7 @@ describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
     })
 
     it('應產生 HealthCheckPerformed 事件', () => {
-      const checks = SystemChecks.create(true, true, false)
+      const checks = SystemChecks.create({ database: true, redis: true, cache: false })
       const hc = HealthCheck.perform('hc-2', checks)
 
       const events = hc.getUncommittedEvents()
@@ -60,16 +64,16 @@ describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
     })
 
     it('事件應立即套用到狀態', () => {
-      const checks = SystemChecks.create(true, true, true)
+      const checks = SystemChecks.create({ database: true, redis: true, cache: true })
       const hc = HealthCheck.perform('hc-3', checks)
 
       expect(hc.status.isFullyHealthy()).toBe(true)
       expect(hc.message).toBe('All systems operational')
-      expect(hc.checks.database).toBe(true)
+      expect(hc.checks.getCheckResult('database')).toBe(true)
     })
 
     it('所有子系統都失敗時應為 unhealthy 或 degraded', () => {
-      const checks = SystemChecks.create(false, false, false)
+      const checks = SystemChecks.create({ database: false, redis: false, cache: false })
       const hc = HealthCheck.perform('hc-4', checks)
 
       // 當資料庫失敗時至少應該是 degraded
@@ -79,7 +83,7 @@ describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
 
   describe('HealthCheck.reconstitute() -- 從持久化還原', () => {
     it('不應產生任何事件', () => {
-      const checks = SystemChecks.create(true, true, true)
+      const checks = SystemChecks.create({ database: true, redis: true, cache: true })
       const hc = HealthCheck.reconstitute(
         'hc-5',
         HealthStatus.healthy(),
@@ -91,7 +95,7 @@ describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
     })
 
     it('應正確還原所有狀態', () => {
-      const checks = SystemChecks.create(true, false, true)
+      const checks = SystemChecks.create({ database: true, redis: false, cache: true })
       const status = HealthStatus.degraded()
       const performedAt = new Date('2026-03-11T10:00:00Z')
       const message = 'Redis down'
@@ -99,7 +103,7 @@ describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
       const hc = HealthCheck.reconstitute('hc-6', status, checks, performedAt, message)
 
       expect(hc.status.isDegraded()).toBe(true)
-      expect(hc.checks.redis).toBe(false)
+      expect(hc.checks.getCheckResult("redis")).toBe(false)
       expect(hc.performedAt).toEqual(performedAt)
       expect(hc.message).toBe('Redis down')
     })
@@ -107,7 +111,7 @@ describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
 
   describe('applyEvent() -- 事件應用', () => {
     it('應正確應用 HealthCheckPerformed 事件', () => {
-      const checks = SystemChecks.create(true, true, false)
+      const checks = SystemChecks.create({ database: true, redis: true, cache: false })
       const event = new HealthCheckPerformed(
         'hc-7',
         HealthStatus.degraded(),
@@ -119,28 +123,28 @@ describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
       hc.applyEvent(event)
 
       expect(hc.status.isDegraded()).toBe(true)
-      expect(hc.checks.cache).toBe(false)
+      expect(hc.checks.getCheckResult("cache")).toBe(false)
       expect(hc.message).toContain('degraded')
     })
   })
 
   describe('不可變性 -- 無 setter，只有唯讀存取器', () => {
     it('不應存在 update() 方法', () => {
-      const checks = SystemChecks.create(true, true, true)
+      const checks = SystemChecks.create({ database: true, redis: true, cache: true })
       const hc = HealthCheck.perform('hc-8', checks)
 
       expect((hc as any).update).toBeUndefined()
     })
 
     it('不應存在 markAsUnhealthy() 方法', () => {
-      const checks = SystemChecks.create(true, true, true)
+      const checks = SystemChecks.create({ database: true, redis: true, cache: true })
       const hc = HealthCheck.perform('hc-9', checks)
 
       expect((hc as any).markAsUnhealthy).toBeUndefined()
     })
 
     it('狀態屬性應為唯讀', () => {
-      const checks = SystemChecks.create(true, true, true)
+      const checks = SystemChecks.create({ database: true, redis: true, cache: true })
       const hc = HealthCheck.perform('hc-10', checks)
 
       expect(() => {
@@ -151,7 +155,7 @@ describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
 
   describe('事件提交', () => {
     it('markEventsAsCommitted 後應清除未提交事件', () => {
-      const checks = SystemChecks.create(true, true, true)
+      const checks = SystemChecks.create({ database: true, redis: true, cache: true })
       const hc = HealthCheck.perform('hc-11', checks)
 
       expect(hc.getUncommittedEvents()).toHaveLength(1)
@@ -160,38 +164,43 @@ describe('Phase 1 -- HealthCheck Aggregate 重建', () => {
     })
 
     it('提交後狀態應保持不變', () => {
-      const checks = SystemChecks.create(true, false, true)
+      const checks = SystemChecks.create({ database: true, redis: false, cache: true })
       const hc = HealthCheck.perform('hc-12', checks)
 
       hc.markEventsAsCommitted()
 
       expect(hc.status.isDegraded()).toBe(true)
-      expect(hc.checks.redis).toBe(false)
+      expect(hc.checks.getCheckResult("redis")).toBe(false)
     })
   })
 })
 
 describe('Phase 1 -- SystemChecks ValueObject', () => {
   it('應支援泛型和結構相等性', () => {
-    const checks1 = SystemChecks.create(true, true, false)
-    const checks2 = SystemChecks.create(true, true, false)
+    const checks1 = SystemChecks.create({ database: true, redis: true, cache: false })
+    const checks2 = SystemChecks.create({ database: true, redis: true, cache: false })
 
     expect(checks1.equals(checks2)).toBe(true)
   })
 
   it('should derive correct status', () => {
-    const allHealthy = SystemChecks.create(true, true, true)
-    const degraded = SystemChecks.create(true, false, true)
+    const allHealthy = SystemChecks.create({ database: true, redis: true, cache: true })
+    const degraded = SystemChecks.create({ database: true, redis: false, cache: true })
 
     expect(allHealthy.deriveStatus().isFullyHealthy()).toBe(true)
     expect(degraded.deriveStatus().isDegraded()).toBe(true)
   })
 
   it('應為不可變', () => {
-    const checks = SystemChecks.create(true, true, true)
-    expect(() => {
-      ;(checks as any).props.database = false
-    }).toThrow()
+    const checks = SystemChecks.create({ database: true, redis: true, cache: true })
+    const originalChecks = JSON.stringify(checks.toString())
+
+    // 嘗試修改也不會影響原物件（因為 Map 是傳入的副本）
+    const checks2 = SystemChecks.create({ database: false, redis: false, cache: false })
+
+    // 原物件應保持不變
+    expect(checks.getCheckResult('database')).toBe(true)
+    expect(checks2.getCheckResult('database')).toBe(false)
   })
 })
 
@@ -209,9 +218,9 @@ describe('Phase 1 -- HealthCheckService -- Port/Adapter 模式', () => {
 
     const result = await service.performSystemCheck()
 
-    expect(result.database).toBe(true)
-    expect(result.redis).toBe(false)
-    expect(result.cache).toBe(true)
+    expect(result.getCheckResult("database")).toBe(true)
+    expect(result.getCheckResult("redis")).toBe(false)
+    expect(result.getCheckResult("cache")).toBe(true)
   })
 
   it('應返回 SystemChecks ValueObject', async () => {
@@ -231,7 +240,7 @@ describe('Phase 1 -- HealthCheckService -- Port/Adapter 模式', () => {
     const result = await service.performSystemCheck()
 
     // 驗證結果無副作用
-    expect(result.database).toBe(true)
+    expect(result.getCheckResult("database")).toBe(true)
   })
 })
 
@@ -247,7 +256,7 @@ describe('Phase 1 -- 完整流程：檢查 -> 建立 -> 提交', () => {
 
     expect(hc.id).toBe('hc-final')
     expect(hc.status.isDegraded()).toBe(true)
-    expect(hc.checks.cache).toBe(false)
+    expect(hc.checks.getCheckResult("cache")).toBe(false)
     expect(hc.getUncommittedEvents()).toHaveLength(1)
 
     // 3. 提交事件（由 Repository.save() 負責）
@@ -273,7 +282,7 @@ describe('Phase 1 -- Domain 層純淨性驗證', () => {
     // 此測試確認代碼中沒有非法 import
     // 實際驗證需要靜態分析，這裡只驗證運行時行為
 
-    const checks = SystemChecks.create(true, true, true)
+    const checks = SystemChecks.create({ database: true, redis: true, cache: true })
     const hc = HealthCheck.perform('test', checks)
 
     // HealthCheck 應該只知道 Domain 層的概念

@@ -118,15 +118,15 @@ export class HealthCheck extends AggregateRoot {
   }
 
   /**
-   * 向下相容：取得檢查詳情
+   * 取得檢查詳情（Map 格式）
    *
-   * @returns 系統檢查結果物件
+   * @returns 系統檢查結果的 Map
    */
   get checksDetail() {
-    return {
-      database: this._checks.database,
-      redis: this._checks.redis,
-      cache: this._checks.cache,
+    const detail: Record<string, boolean> = {}
+    for (const [name, status] of this._checks.checks) {
+      detail[name] = status
     }
+    return detail
   }
 }

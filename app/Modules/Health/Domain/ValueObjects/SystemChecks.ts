@@ -3,15 +3,15 @@
  *
  * 代表系統各個組件的檢查結果。
  * 作為值物件，具有不可變性和結構相等性。
+ *
+ * 改進：使用 Map 結構而非硬編碼屬性，完全與基礎設施選擇無關。
  */
 
 import { ValueObject } from '@/Shared/Domain/ValueObject'
 import { HealthStatus } from './HealthStatus'
 
 interface SystemChecksProps extends Record<string, unknown> {
-  readonly database: boolean
-  readonly redis: boolean
-  readonly cache: boolean
+  readonly checks: ReadonlyMap<string, boolean>
 }
 
 export class SystemChecks extends ValueObject<SystemChecksProps> {
@@ -22,12 +22,11 @@ export class SystemChecks extends ValueObject<SystemChecksProps> {
   /**
    * 建立 SystemChecks
    *
-   * @param database 資料庫是否正常
-   * @param redis Redis 是否正常（預設 true）
-   * @param cache 快取是否正常（預設 true）
+   * @param checks 組件名稱 → 健康狀態 的 Map
    */
-  static create(database: boolean, redis = true, cache = true): SystemChecks {
-    return new SystemChecks({ database, redis, cache })
+  static create(checks: Map<string, boolean> | Record<string, boolean>): SystemChecks {
+    const checksMap = checks instanceof Map ? checks : new Map(Object.entries(checks))
+    return new SystemChecks({ checks: checksMap })
   }
 
   /**
@@ -36,23 +35,33 @@ export class SystemChecks extends ValueObject<SystemChecksProps> {
    * @returns HealthStatus
    */
   deriveStatus(): HealthStatus {
-    const allHealthy = this.props.database && this.props.redis && this.props.cache
+    const allHealthy = Array.from(this.props.checks.values()).every((status) => status)
     return allHealthy ? HealthStatus.healthy() : HealthStatus.degraded()
   }
 
-  get database(): boolean {
-    return this.props.database
+  /**
+   * 取得特定組件的檢查結果
+   *
+   * @param name 組件名稱
+   * @returns 該組件的健康狀態，若不存在則返回 null
+   */
+  getCheckResult(name: string): boolean | null {
+    return this.props.checks.get(name) ?? null
   }
 
-  get redis(): boolean {
-    return this.props.redis
-  }
-
-  get cache(): boolean {
-    return this.props.cache
+  /**
+   * 取得所有檢查結果
+   *
+   * @returns 檢查結果的 Map（只讀）
+   */
+  get checks(): ReadonlyMap<string, boolean> {
+    return this.props.checks
   }
 
   toString(): string {
-    return `SystemChecks(db=${this.database}, redis=${this.redis}, cache=${this.cache})`
+    const entries = Array.from(this.props.checks.entries())
+      .map(([name, status]) => `${name}=${status}`)
+      .join(', ')
+    return `SystemChecks(${entries})`
   }
 }
