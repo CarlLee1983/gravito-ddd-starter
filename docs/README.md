@@ -31,6 +31,9 @@ Atlas 與 Drizzle 的雙 ORM 支持架構，以及資料庫切換策略。
 ### 8. [測試與 API 規範](./08-Testing-API/TESTING_API_GUIDE.md)
 單元測試、功能測試標準與 OpenAPI 文檔維護。
 
+### 9. [國際化與訊息管理](./09-Internationalization/README.md) ✨ **NEW**
+完整的多語系 i18n 系統、訊息簡寫優化 (Message Service Pattern)、Email 訊息設計。
+
 ---
 
 ## 🎯 最近更新 (2026-03-13)
