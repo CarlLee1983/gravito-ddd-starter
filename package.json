@@ -5,7 +5,10 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "bun run --hot bin/server.ts",
+    "dev": "bash scripts/dev-full.sh",
+    "dev:full": "bash scripts/dev-full.sh",
+    "dev:server": "bun run --hot bin/server.ts",
+    "dev:vite": "vite",
     "dev:watch": "tsx watch bin/server.ts",
     "dev:bun": "bun run --hot bin/server.ts",
     "dev:debug": "NODE_OPTIONS='--inspect-brk' node dist/index.js",
