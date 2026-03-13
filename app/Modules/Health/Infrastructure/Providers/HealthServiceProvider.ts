@@ -4,7 +4,7 @@
  * @module src/Modules/Health/Infrastructure/Providers
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 import type { IHealthCheckRepository } from '../../Domain/Repositories/IHealthCheckRepository'
 import { MemoryHealthCheckRepository } from '../Repositories/MemoryHealthCheckRepository'
 import { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'

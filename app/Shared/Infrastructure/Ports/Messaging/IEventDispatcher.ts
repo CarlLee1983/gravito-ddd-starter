@@ -9,8 +9,8 @@
  * Role: Infrastructure Port
  */
 
-import type { DomainEvent } from '../Domain/DomainEvent'
-import type { IntegrationEvent } from '../Domain/IntegrationEvent'
+import type { DomainEvent } from '../../../Domain/DomainEvent'
+import type { IntegrationEvent } from '../../../Domain/IntegrationEvent'
 
 /**
  * 事件型別聯合體

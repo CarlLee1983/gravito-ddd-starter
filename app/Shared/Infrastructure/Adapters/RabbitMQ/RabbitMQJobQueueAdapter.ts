@@ -3,8 +3,8 @@
  * 基於 AMQP direct exchange 的背景工作系統
  */
 
-import type { IJobQueue, JobHandler } from '../IJobQueue'
-import type { IRabbitMQService } from '../IRabbitMQService'
+import type { IJobQueue, JobHandler } from '../../Ports/Messaging/IJobQueue'
+import type { IRabbitMQService } from '../../Ports/Messaging/IRabbitMQService'
 
 // Simple logger implementation
 const logger = {

@@ -8,13 +8,13 @@
 import path from 'node:path'
 import { glob } from 'glob'
 import type { PlanetCore } from '@gravito/core'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
-import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Framework/GravitoServiceProviderAdapter'
-import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Framework/GravitoModuleRouter'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
+import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
 import type {
 	IModuleDefinition,
 	IRouteRegistrationContext,
-} from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+} from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 
 /**
  * 模組自動裝配器類別

@@ -15,9 +15,9 @@
  * @abstract
  */
 
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
-import type { IEventStore } from '@/Shared/Infrastructure/IEventStore'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventStore } from '@/Shared/Infrastructure/Ports/Database/IEventStore'
 import type { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
 import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
 import type { IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'

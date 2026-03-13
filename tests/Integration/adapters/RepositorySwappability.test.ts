@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect } from 'bun:test'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
 import { createAtlasDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Atlas'

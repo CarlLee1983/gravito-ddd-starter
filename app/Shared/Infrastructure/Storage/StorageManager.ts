@@ -1,5 +1,5 @@
-import type { IStorageService } from '../IStorageService'
-import type { IStorageDisk } from '../IStorageDisk'
+import type { IStorageService } from '../Ports/Storage/IStorageService'
+import type { IStorageDisk } from '../Ports/Storage/IStorageDisk'
 import type { StorageConfig } from '@config/app/storage'
 import { LocalDriver } from './Drivers/LocalDriver'
 

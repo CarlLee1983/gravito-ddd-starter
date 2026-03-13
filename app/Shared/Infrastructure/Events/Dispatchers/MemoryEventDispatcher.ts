@@ -14,8 +14,8 @@
  * Role: Infrastructure Adapter
  */
 
-import type { Event } from '../IEventDispatcher'
-import type { ILogger } from '../ILogger'
+import type { Event } from '../../Ports/Messaging/IEventDispatcher'
+import type { ILogger } from '../../Ports/Services/ILogger'
 import { BaseEventDispatcher } from './BaseEventDispatcher'
 
 /**

@@ -3,7 +3,7 @@
  * @description 對接 @gravito/sentinel 的日誌適配器
  */
 
-import type { ILogger } from '../ILogger'
+import type { ILogger } from '../../Ports/Services/ILogger'
 
 export class GravitoLoggerAdapter implements ILogger {
 	info(message: string, _context?: Record<string, any>): void {

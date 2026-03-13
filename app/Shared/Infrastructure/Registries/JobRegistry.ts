@@ -35,9 +35,9 @@
  * ```
  */
 
-import type { IJobQueue, JobHandler } from './IJobQueue'
-import type { IContainer } from './IServiceProvider'
-import type { BaseJob, JobPayload } from '../Application/Jobs/BaseJob'
+import type { IJobQueue, JobHandler } from '../Ports/Messaging/IJobQueue'
+import type { IContainer } from '../Ports/Core/IServiceProvider'
+import type { BaseJob, JobPayload } from '../../Application/Jobs/BaseJob'
 
 /**
  * Job 處理程序定義

@@ -11,7 +11,7 @@
  */
 
 import type { IQueueWorker } from './Jobs/IQueueWorker'
-import type { IRedisService } from '../Infrastructure/IRedisService'
+import type { IRedisService } from '../Infrastructure/Ports/Messaging/IRedisService'
 
 /**
  * 事件分發器的最小介面定義（duck-typing）

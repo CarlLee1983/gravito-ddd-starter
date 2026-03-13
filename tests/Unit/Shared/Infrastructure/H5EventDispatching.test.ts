@@ -12,15 +12,15 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { MemoryEventDispatcher } from '@/Shared/Infrastructure/Framework/MemoryEventDispatcher'
-import { MemoryDeadLetterQueue } from '@/Shared/Infrastructure/Framework/DeadLetterQueue'
+import { MemoryEventDispatcher } from '@/Shared/Infrastructure/Events/Dispatchers/MemoryEventDispatcher'
+import { MemoryDeadLetterQueue } from '@/Shared/Infrastructure/Events/Policy/DeadLetterQueue'
 import {
 	calculateDelay,
 	shouldRetry,
 	DEFAULT_RETRY_POLICY,
 	type RetryPolicy,
-} from '@/Shared/Infrastructure/Framework/EventFailurePolicy'
-import type { Event } from '@/Shared/Infrastructure/IEventDispatcher'
+} from '@/Shared/Infrastructure/Events/Policy/EventFailurePolicy'
+import type { Event } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
 
 // ==== Test Fixtures ====
 

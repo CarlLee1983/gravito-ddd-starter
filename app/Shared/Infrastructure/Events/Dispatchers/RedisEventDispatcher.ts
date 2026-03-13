@@ -11,8 +11,8 @@
  * Role: Infrastructure Adapter
  */
 
-import type { Event } from '../IEventDispatcher'
-import type { IRedisService } from '../IRedisService'
+import type { Event } from '../../Ports/Messaging/IEventDispatcher'
+import type { IRedisService } from '../../Ports/Messaging/IRedisService'
 import { BaseEventDispatcher } from './BaseEventDispatcher'
 
 /**

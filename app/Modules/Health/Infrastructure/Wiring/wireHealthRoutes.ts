@@ -11,9 +11,9 @@
  * - 與 User/Post 模組的 wiring 模式一致
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import type { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
-import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/IDatabaseConnectivityCheck'
+import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
 import { createGravitoDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Database/Adapters/Atlas'
 import { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
 import { HealthController } from '../../Presentation/Controllers/HealthController'

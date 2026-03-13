@@ -1,4 +1,4 @@
-import type { IEventStore, StoredEvent } from '../../IEventStore'
+import type { IEventStore, StoredEvent } from '../../Ports/Database/IEventStore'
 
 export class MemoryEventStore implements IEventStore {
   private readonly events: Map<string, StoredEvent[]> = new Map()

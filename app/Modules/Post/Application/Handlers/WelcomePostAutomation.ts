@@ -10,7 +10,7 @@
  */
 
 import type { IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
-import type { ILogger } from '@/Shared/Infrastructure/ILogger'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
 import { CreatePostService } from '../Services/CreatePostService'
 
 /**

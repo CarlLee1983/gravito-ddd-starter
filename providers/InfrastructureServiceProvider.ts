@@ -5,13 +5,13 @@
  * Role: Infrastructure Adapter / Provider
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { GravitoLoggerAdapter } from '@/Shared/Infrastructure/Framework/GravitoLoggerAdapter'
-import { GravitoTranslatorAdapter } from '@/Shared/Infrastructure/Framework/GravitoTranslatorAdapter'
-import { GravitoMailAdapter } from '@/Shared/Infrastructure/Framework/GravitoMailAdapter'
-import { RedisJobQueueAdapter } from '@/Shared/Infrastructure/Framework/RedisJobQueueAdapter'
-import { RabbitMQJobQueueAdapter } from '@/Shared/Infrastructure/Framework/RabbitMQJobQueueAdapter'
-import type { IRabbitMQService } from '@/Shared/Infrastructure/IRabbitMQService'
+import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { GravitoLoggerAdapter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoLoggerAdapter'
+import { GravitoTranslatorAdapter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoTranslatorAdapter'
+import { GravitoMailAdapter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoMailAdapter'
+import { RedisJobQueueAdapter } from '@/Shared/Infrastructure/Adapters/Redis/RedisJobQueueAdapter'
+import { RabbitMQJobQueueAdapter } from '@/Shared/Infrastructure/Adapters/RabbitMQ/RabbitMQJobQueueAdapter'
+import type { IRabbitMQService } from '@/Shared/Infrastructure/Ports/Messaging/IRabbitMQService'
 
 /**
  * 基礎設施服務提供者

@@ -4,15 +4,15 @@
  * @module src/Modules/Post/Infrastructure/Providers
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 import { resolveRepository } from '@wiring/RepositoryResolver'
 import { getCurrentORM } from '@wiring/RepositoryFactory'
 import { WelcomePostAutomation } from '../../Application/Handlers/WelcomePostAutomation'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 import { UserToPostAdapter } from '../Adapters/UserToPostAdapter'
-import { EventListenerRegistry } from '@/Shared/Infrastructure/EventListenerRegistry'
-import type { ILogger } from '@/Shared/Infrastructure/ILogger'
+import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
 import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
 
 /**

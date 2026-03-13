@@ -4,8 +4,8 @@
  * Decorator pattern: 包裝內部 EventStore（Redis 或 Memory）
  */
 
-import type { IEventStore, StoredEvent } from '../../IEventStore'
-import type { IRabbitMQService } from '../../IRabbitMQService'
+import type { IEventStore, StoredEvent } from '../../Ports/Database/IEventStore'
+import type { IRabbitMQService } from '../../Ports/Messaging/IRabbitMQService'
 
 // Simple logger implementation
 const logger = {

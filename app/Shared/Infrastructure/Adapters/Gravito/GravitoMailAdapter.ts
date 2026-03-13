@@ -3,7 +3,7 @@
  * @description 對接 @gravito/signal 的郵件適配器
  */
 
-import type { IMailer, MailOptions } from '../IMailer'
+import type { IMailer, MailOptions } from '../../Ports/Services/IMailer'
 
 export class GravitoMailAdapter implements IMailer {
 	/**

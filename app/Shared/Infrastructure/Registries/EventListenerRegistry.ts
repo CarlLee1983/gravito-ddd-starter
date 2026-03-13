@@ -36,8 +36,8 @@
  * ```
  */
 
-import type { IEventDispatcher, EventHandler } from './IEventDispatcher'
-import type { IContainer } from './IServiceProvider'
+import type { IEventDispatcher, EventHandler } from '../Ports/Messaging/IEventDispatcher'
+import type { IContainer } from '../Ports/Core/IServiceProvider'
 
 /**
  * 事件監聽器定義

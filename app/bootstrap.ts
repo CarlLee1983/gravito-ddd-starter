@@ -15,7 +15,7 @@ import { DatabaseAccessBuilder } from 'start/wiring/DatabaseAccessBuilder'
 import { ModuleAutoWirer } from 'start/wiring/ModuleAutoWirer'
 import { SharedServiceProvider } from '@providers/SharedServiceProvider'
 import { InfrastructureServiceProvider } from '@providers/InfrastructureServiceProvider'
-import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Framework/GravitoServiceProviderAdapter'
+import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
 
 /**
  * 啟動應用程式核心流程

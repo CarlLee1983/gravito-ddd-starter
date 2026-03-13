@@ -3,7 +3,7 @@
  * @description 對接 @gravito/prism 的翻譯適配器
  */
 
-import type { ITranslator } from '../ITranslator'
+import type { ITranslator } from '../../Ports/Services/ITranslator'
 
 export class GravitoTranslatorAdapter implements ITranslator {
 	private locale: string = 'en'

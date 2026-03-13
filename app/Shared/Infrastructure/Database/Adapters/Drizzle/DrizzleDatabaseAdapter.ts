@@ -9,7 +9,7 @@
  * @internal 此實現是基礎設施層細節
  */
 
-import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import { getDrizzleInstance } from './config'
 import { DrizzleQueryBuilder } from './DrizzleQueryBuilder'
 import * as schema from './schema'

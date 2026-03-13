@@ -9,7 +9,7 @@
 import { describe, it, expect, beforeAll } from 'bun:test'
 import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
 import { createDrizzleConnectivityCheck } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 
 describe('Drizzle 適配器 整合測試', () => {
   let db: IDatabaseAccess

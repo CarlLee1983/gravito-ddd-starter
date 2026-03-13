@@ -8,7 +8,7 @@
 
 import { describe, it, expect, beforeAll } from 'bun:test'
 import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { User } from '@/Modules/User/Domain/Aggregates/User'

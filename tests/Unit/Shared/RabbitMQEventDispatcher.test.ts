@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { RabbitMQEventDispatcher } from '@/Shared/Infrastructure/Framework/RabbitMQEventDispatcher'
-import type { IRabbitMQService } from '@/Shared/Infrastructure/IRabbitMQService'
+import { RabbitMQEventDispatcher } from '@/Shared/Infrastructure/Events/Dispatchers/RabbitMQEventDispatcher'
+import type { IRabbitMQService } from '@/Shared/Infrastructure/Ports/Messaging/IRabbitMQService'
 import { DomainEvent } from '@/Shared/Domain/DomainEvent'
 
 // Mock DomainEvent

@@ -13,7 +13,7 @@
  * @internal - 基礎設施預設實現，由接線層決定是否使用
  */
 
-import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 
 /** 內部查詢條件類型定義 */
 type WhereCondition = { column: string; operator: string; value: unknown }

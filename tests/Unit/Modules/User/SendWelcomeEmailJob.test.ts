@@ -5,9 +5,9 @@
 
 import { describe, it, expect } from 'bun:test'
 import { SendWelcomeEmailJob, type SendWelcomeEmailData } from '@/Modules/User/Application/Jobs/SendWelcomeEmailJob'
-import type { IMailer } from '@/Shared/Infrastructure/IMailer'
-import type { ILogger } from '@/Shared/Infrastructure/ILogger'
-import type { ITranslator } from '@/Shared/Infrastructure/ITranslator'
+import type { IMailer } from '@/Shared/Infrastructure/Ports/Services/IMailer'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 
 describe('SendWelcomeEmailJob', () => {
 	it('should have correct job name', () => {

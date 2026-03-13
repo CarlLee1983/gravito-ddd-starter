@@ -102,7 +102,7 @@ export interface I${pascalCase}Repository extends IRepository<${pascalCase}> {
 
 		// 3. 生成 Repository 實作
 		const repository = flags.db 
-		? `import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+		? `import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import type { I${pascalCase}Repository } from '../../Domain/Repositories/I${pascalCase}Repository'
 import { ${pascalCase} } from '../../Domain/Aggregates/${pascalCase}'
 
@@ -192,7 +192,7 @@ export class ${pascalCase}Repository implements I${pascalCase}Repository {
 		await writeFile(join(modulePath, `Infrastructure/Repositories/${pascalCase}Repository.ts`), repository)
 
 		// 4. 生成註冊器 (registerRepositories)
-		const registerRepos = `import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+		const registerRepos = `import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import { ${pascalCase}Repository } from '../Repositories/${pascalCase}Repository'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 
@@ -206,7 +206,7 @@ export function register${pascalCase}Repositories(db: IDatabaseAccess): void {
 		await writeFile(join(modulePath, `Infrastructure/Providers/register${pascalCase}Repositories.ts`), registerRepos)
 
 		// 5. 生成 ServiceProvider
-		const serviceProvider = `import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
+		const serviceProvider = `import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
@@ -260,12 +260,12 @@ export function register${pascalCase}Routes(router: IModuleRouter, controller: $
 		await writeFile(join(modulePath, `Presentation/Routes/${moduleName.toLowerCase()}.routes.ts`), routes)
 
 		// 8. 生成 index.ts (Auto-Wiring Entry)
-		const index = `import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+		const index = `import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { ${pascalCase}ServiceProvider } from './Infrastructure/Providers/${pascalCase}ServiceProvider'
 import { register${pascalCase}Repositories } from './Infrastructure/Providers/register${pascalCase}Repositories'
 import { ${pascalCase}Controller } from './Presentation/Controllers/${pascalCase}Controller'
 import { register${pascalCase}Routes } from './Presentation/Routes/${moduleName.toLowerCase()}.routes'
-import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Framework/GravitoModuleRouter'
+import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
 
 export const ${pascalCase}Module: IModuleDefinition = {
 	name: '${pascalCase}',

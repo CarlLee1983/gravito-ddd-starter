@@ -19,20 +19,20 @@
  * - 單一責任：只負責依賴注入
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 import { resolveRepository } from '@wiring/RepositoryResolver'
 import { getCurrentORM } from '@wiring/RepositoryFactory'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'
 import { SendWelcomeEmailJob } from '../../Application/Jobs/SendWelcomeEmailJob'
-import { EventListenerRegistry } from '@/Shared/Infrastructure/EventListenerRegistry'
-import { JobRegistry } from '@/Shared/Infrastructure/JobRegistry'
+import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
+import { JobRegistry } from '@/Shared/Infrastructure/Registries/JobRegistry'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
-import type { IMailer } from '@/Shared/Infrastructure/IMailer'
-import type { ILogger } from '@/Shared/Infrastructure/ILogger'
-import type { ITranslator } from '@/Shared/Infrastructure/ITranslator'
-import type { IJobQueue } from '@/Shared/Infrastructure/IJobQueue'
+import type { IMailer } from '@/Shared/Infrastructure/Ports/Services/IMailer'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { IJobQueue } from '@/Shared/Infrastructure/Ports/Messaging/IJobQueue'
 
 /**
  * User 模組服務提供者實作類別

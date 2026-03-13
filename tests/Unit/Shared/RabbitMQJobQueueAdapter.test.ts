@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { RabbitMQJobQueueAdapter } from '@/Shared/Infrastructure/Framework/RabbitMQJobQueueAdapter'
-import type { IRabbitMQService } from '@/Shared/Infrastructure/IRabbitMQService'
+import { RabbitMQJobQueueAdapter } from '@/Shared/Infrastructure/Adapters/RabbitMQ/RabbitMQJobQueueAdapter'
+import type { IRabbitMQService } from '@/Shared/Infrastructure/Ports/Messaging/IRabbitMQService'
 
 describe('RabbitMQJobQueueAdapter', () => {
   let jobQueue: RabbitMQJobQueueAdapter

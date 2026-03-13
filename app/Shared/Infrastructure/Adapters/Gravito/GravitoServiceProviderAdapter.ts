@@ -10,7 +10,7 @@
  */
 
 import { ServiceProvider, type Container as GravitoContainer, type PlanetCore } from '@gravito/core'
-import type { ModuleServiceProvider, IContainer } from '@/Shared/Infrastructure/IServiceProvider'
+import type { ModuleServiceProvider, IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 
 /**
  * 容器適配器類別

@@ -7,7 +7,7 @@
  * - 職責：將 Gravito 框架中的 Stasis 快取管理員適配為系統定義的快取通訊協定，實現技術細節的隔離。
  */
 
-import type { ICacheService } from '@/Shared/Infrastructure/ICacheService'
+import type { ICacheService } from '@/Shared/Infrastructure/Ports/Services/ICacheService'
 import type { CacheManager } from '@gravito/stasis'
 
 /**

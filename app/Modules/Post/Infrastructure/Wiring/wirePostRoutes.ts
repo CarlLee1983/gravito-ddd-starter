@@ -11,7 +11,7 @@
  * - 降級方案也應遵守模組邊界
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 import { PostController } from '../../Presentation/Controllers/PostController'

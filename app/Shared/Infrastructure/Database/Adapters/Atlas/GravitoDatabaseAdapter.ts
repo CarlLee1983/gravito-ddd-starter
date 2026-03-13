@@ -7,8 +7,8 @@
  * - 職責：作為領域層與 Gravito Atlas ORM 之間的橋樑，處理資料庫連線檢查與查詢建構器的建立。
  */
 
-import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
-import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/IDatabaseConnectivityCheck'
+import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
 import { AtlasQueryBuilder } from './AtlasQueryBuilder'
 import * as Atlas from '@gravito/atlas'
 

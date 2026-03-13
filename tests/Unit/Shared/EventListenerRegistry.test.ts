@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { EventListenerRegistry } from '@/Shared/Infrastructure/EventListenerRegistry'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
-import type { IContainer } from '@/Shared/Infrastructure/IServiceProvider'
+import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 
 describe('EventListenerRegistry', () => {
 	beforeEach(() => {

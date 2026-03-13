@@ -16,9 +16,9 @@
  */
 
 import { BaseJob } from '@/Shared/Application/Jobs/BaseJob'
-import type { IMailer } from '@/Shared/Infrastructure/IMailer'
-import type { ILogger } from '@/Shared/Infrastructure/ILogger'
-import type { ITranslator } from '@/Shared/Infrastructure/ITranslator'
+import type { IMailer } from '@/Shared/Infrastructure/Ports/Services/IMailer'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * 發送歡迎信 Job 的業務資料

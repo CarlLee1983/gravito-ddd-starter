@@ -8,15 +8,15 @@
  * - 啟動時綁定中心化的事件監聽與 Job 處理程序（EventListenerRegistry、JobRegistry）
  */
 
-import { ModuleServiceProvider, type IContainer } from '../IServiceProvider'
-import { MemoryEventDispatcher } from '../Framework/MemoryEventDispatcher'
-import { RedisEventDispatcher } from '../Framework/RedisEventDispatcher'
+import { ModuleServiceProvider, type IContainer } from '../Ports/Core/IServiceProvider'
+import { MemoryEventDispatcher } from '../Events/Dispatchers/MemoryEventDispatcher'
+import { RedisEventDispatcher } from '../Events/Dispatchers/RedisEventDispatcher'
 import { SystemWorker } from '../../Application/SystemWorker'
-import { GravitoLoggerAdapter } from '../Framework/GravitoLoggerAdapter'
-import { EventListenerRegistry } from '../EventListenerRegistry'
-import { JobRegistry } from '../JobRegistry'
-import type { IRedisService } from '../IRedisService'
-import type { RedisJobQueueAdapter } from '../Framework/RedisJobQueueAdapter'
+import { GravitoLoggerAdapter } from '../Adapters/Gravito/GravitoLoggerAdapter'
+import { EventListenerRegistry } from '../Registries/EventListenerRegistry'
+import { JobRegistry } from '../Registries/JobRegistry'
+import type { IRedisService } from '../Ports/Messaging/IRedisService'
+import type { RedisJobQueueAdapter } from '../Adapters/Redis/RedisJobQueueAdapter'
 import type { IQueueWorker } from '../../Application/Jobs/IQueueWorker'
 
 /**

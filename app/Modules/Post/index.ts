@@ -3,7 +3,7 @@
  * @description Post 模組公開 API 導出與裝配定義
  */
 
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { PostServiceProvider } from './Infrastructure/Providers/PostServiceProvider'
 import { registerPostRepositories } from './Infrastructure/Providers/registerPostRepositories'
 import { wirePostRoutes } from './Infrastructure/Wiring/wirePostRoutes'

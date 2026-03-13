@@ -7,9 +7,9 @@
  * - 職責：規定每個獨立模組必須提供的組裝資訊，包括 DI 註冊、倉庫註冊與路由裝配。
  */
 
-import type { IDatabaseAccess } from '../IDatabaseAccess'
-import type { ModuleServiceProvider } from '../IServiceProvider'
-import type { IEventDispatcher } from '../IEventDispatcher'
+import type { IDatabaseAccess } from '../Ports/Database/IDatabaseAccess'
+import type { ModuleServiceProvider } from '../Ports/Core/IServiceProvider'
+import type { IEventDispatcher } from '../Ports/Messaging/IEventDispatcher'
 import type { IModuleRouter } from '../../Presentation/IModuleRouter'
 
 /**

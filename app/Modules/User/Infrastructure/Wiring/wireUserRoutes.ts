@@ -6,7 +6,7 @@
  * 僅依賴 Shared 的 IRouteRegistrationContext，不依賴 @gravito/core。
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { UserController } from '../../Presentation/Controllers/UserController'

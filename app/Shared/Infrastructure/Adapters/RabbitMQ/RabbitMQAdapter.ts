@@ -3,7 +3,7 @@
  * 管理 AMQP 連線和頻道
  */
 
-import type { IRabbitMQService, QueueOptions } from '../IRabbitMQService'
+import type { IRabbitMQService, QueueOptions } from '../../Ports/Messaging/IRabbitMQService'
 
 // Simple logger implementation
 const logger = {

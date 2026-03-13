@@ -11,8 +11,8 @@
  * ✅ UserRepository 僅依賴 IDatabaseAccess，無底層 if (db) 分支
  */
 
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
 import { UserRepository } from '../Persistence/UserRepository'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 

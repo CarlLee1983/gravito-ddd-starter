@@ -4,9 +4,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { JobRegistry } from '@/Shared/Infrastructure/JobRegistry'
-import type { IJobQueue } from '@/Shared/Infrastructure/IJobQueue'
-import type { IContainer } from '@/Shared/Infrastructure/IServiceProvider'
+import { JobRegistry } from '@/Shared/Infrastructure/Registries/JobRegistry'
+import type { IJobQueue } from '@/Shared/Infrastructure/Ports/Messaging/IJobQueue'
+import type { IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 import { BaseJob } from '@/Shared/Application/Jobs/BaseJob'
 
 // 簡單的 Mock Job

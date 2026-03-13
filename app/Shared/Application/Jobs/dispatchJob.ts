@@ -24,7 +24,7 @@
  * ```
  */
 
-import type { IJobQueue } from '@/Shared/Infrastructure/IJobQueue'
+import type { IJobQueue } from '@/Shared/Infrastructure/Ports/Messaging/IJobQueue'
 import type { BaseJob } from './BaseJob'
 
 /**

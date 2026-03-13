@@ -7,7 +7,7 @@
  * - 職責：將 Gravito 框架中的 Plasma Redis 用戶端適配為系統定義的 Redis 通訊協定，實現技術細節的隔離。
  */
 
-import type { IRedisService } from '@/Shared/Infrastructure/IRedisService'
+import type { IRedisService } from '@/Shared/Infrastructure/Ports/Messaging/IRedisService'
 import type { RedisClientContract } from '@gravito/plasma'
 
 /**

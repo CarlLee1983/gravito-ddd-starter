@@ -5,13 +5,13 @@
  * Role: Infrastructure Adapter / Provider
  */
 
-import { ModuleServiceProvider, type IContainer } from '../IServiceProvider'
-import { GravitoRedisAdapter } from '../Framework/GravitoRedisAdapter'
-import { GravitoCacheAdapter } from '../Framework/GravitoCacheAdapter'
-import { GravitoLoggerAdapter } from '../Framework/GravitoLoggerAdapter'
-import { GravitoTranslatorAdapter } from '../Framework/GravitoTranslatorAdapter'
-import { GravitoMailAdapter } from '../Framework/GravitoMailAdapter'
-import { RedisJobQueueAdapter } from '../Framework/RedisJobQueueAdapter'
+import { ModuleServiceProvider, type IContainer } from '../Ports/Core/IServiceProvider'
+import { GravitoRedisAdapter } from '../Adapters/Gravito/GravitoRedisAdapter'
+import { GravitoCacheAdapter } from '../Adapters/Gravito/GravitoCacheAdapter'
+import { GravitoLoggerAdapter } from '../Adapters/Gravito/GravitoLoggerAdapter'
+import { GravitoTranslatorAdapter } from '../Adapters/Gravito/GravitoTranslatorAdapter'
+import { GravitoMailAdapter } from '../Adapters/Gravito/GravitoMailAdapter'
+import { RedisJobQueueAdapter } from '../Adapters/Redis/RedisJobQueueAdapter'
 import { StorageManager } from '../Storage/StorageManager'
 import type { RedisClientContract } from '@gravito/plasma'
 import type { CacheManager } from '@gravito/stasis'

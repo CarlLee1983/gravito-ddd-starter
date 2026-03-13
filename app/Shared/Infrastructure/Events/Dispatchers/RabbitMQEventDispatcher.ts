@@ -12,8 +12,8 @@
  * Role: Infrastructure Adapter
  */
 
-import type { Event, EventHandler } from '../IEventDispatcher'
-import type { IRabbitMQService } from '../IRabbitMQService'
+import type { Event, EventHandler } from '../../Ports/Messaging/IEventDispatcher'
+import type { IRabbitMQService } from '../../Ports/Messaging/IRabbitMQService'
 import { BaseEventDispatcher } from './BaseEventDispatcher'
 
 // Simple logger implementation

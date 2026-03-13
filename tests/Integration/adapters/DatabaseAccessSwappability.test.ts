@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, beforeAll } from 'bun:test'
-import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import { createAtlasDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Atlas'
 import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
 

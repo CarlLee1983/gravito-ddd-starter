@@ -17,8 +17,8 @@
  * - 職責：持久化和查詢領域事件
  */
 
-import type { IEventStore, StoredEvent } from '../../IEventStore'
-import type { IRedisService } from '../../IRedisService'
+import type { IEventStore, StoredEvent } from '../../Ports/Database/IEventStore'
+import type { IRedisService } from '../../Ports/Messaging/IRedisService'
 
 export class RedisEventStore implements IEventStore {
 	/**

@@ -11,8 +11,8 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import type { IContainer, IServiceProvider } from '@/Shared/Infrastructure/IServiceProvider'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IContainer, IServiceProvider } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import { resetRegistry } from '@wiring'
 
 /**

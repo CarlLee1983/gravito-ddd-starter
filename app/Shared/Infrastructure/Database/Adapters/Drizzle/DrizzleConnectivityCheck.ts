@@ -9,7 +9,7 @@
  * @internal 此實現是基礎設施層細節
  */
 
-import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/IDatabaseConnectivityCheck'
+import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
 import { getDrizzleInstance } from './config'
 
 /**

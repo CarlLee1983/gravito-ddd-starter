@@ -40,7 +40,7 @@
  * @abstract
  */
 
-import type { IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import type { IQueryRepository } from './IQueryRepository'
 
 /**

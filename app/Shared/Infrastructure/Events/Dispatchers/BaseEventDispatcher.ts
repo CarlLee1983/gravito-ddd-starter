@@ -9,11 +9,11 @@
  * - 統一的失敗重試邏輯
  */
 
-import type { DomainEvent } from '../../Domain/DomainEvent'
-import type { IntegrationEvent } from '../../Domain/IntegrationEvent'
-import type { IEventDispatcher, Event, EventHandler } from '../IEventDispatcher'
-import type { IDeadLetterQueue } from './DeadLetterQueue'
-import { calculateDelay, shouldRetry, DEFAULT_RETRY_POLICY, type RetryPolicy } from './EventFailurePolicy'
+import type { DomainEvent } from '../../../Domain/DomainEvent'
+import type { IntegrationEvent } from '../../../Domain/IntegrationEvent'
+import type { IEventDispatcher, Event, EventHandler } from '../../Ports/Messaging/IEventDispatcher'
+import type { IDeadLetterQueue } from '../Policy/DeadLetterQueue'
+import { calculateDelay, shouldRetry, DEFAULT_RETRY_POLICY, type RetryPolicy } from '../Policy/EventFailurePolicy'
 
 /**
  * 事件分發器基類

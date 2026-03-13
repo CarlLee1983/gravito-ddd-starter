@@ -26,10 +26,10 @@ import { UserCreated } from '@/Modules/User/Domain/Events/UserCreated'
 import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
 import type { IPostRepository } from '@/Modules/Post/Domain/Repositories/IPostRepository'
 import type { IAuthorService } from '@/Modules/Post/Domain/Services/IAuthorService'
-import type { ILogger } from '@/Shared/Infrastructure/ILogger'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import { EntityNotFoundException, DuplicateEntityException } from '@/Shared/Domain/Exceptions'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
 
 // ============ ValueObject 驗證測試 ============
 

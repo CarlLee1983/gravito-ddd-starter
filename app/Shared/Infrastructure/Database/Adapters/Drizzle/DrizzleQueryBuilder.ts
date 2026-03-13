@@ -9,7 +9,7 @@
  * @internal 此實現是基礎設施層細節
  */
 
-import type { IQueryBuilder } from '@/Shared/Infrastructure/IDatabaseAccess'
+import type { IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import { and, eq, ne, gt, lt, gte, lte, like, inArray, between, asc, desc, countDistinct } from 'drizzle-orm'
 import { getDrizzleInstance } from './config'
 

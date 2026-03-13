@@ -1,6 +1,6 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, statSync } from 'node:fs'
 import { join, dirname } from 'node:path'
-import type { IStorageDisk } from '../../IStorageDisk'
+import type { IStorageDisk } from '../../Ports/Storage/IStorageDisk'
 
 /**
  * LocalDriver

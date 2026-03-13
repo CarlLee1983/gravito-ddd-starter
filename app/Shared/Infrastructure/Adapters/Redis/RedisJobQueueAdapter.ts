@@ -3,8 +3,8 @@
  * @description 基於 Redis 的通用工作隊列適配器
  */
 
-import type { IJobQueue, JobHandler } from '../IJobQueue'
-import type { IRedisService } from '../IRedisService'
+import type { IJobQueue, JobHandler } from '../../Ports/Messaging/IJobQueue'
+import type { IRedisService } from '../../Ports/Messaging/IRedisService'
 
 export class RedisJobQueueAdapter implements IJobQueue {
 	private readonly queueKey = 'system_jobs_queue'

@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import type { IRedisService } from '@/Shared/Infrastructure/IRedisService'
-import type { StoredEvent } from '@/Shared/Infrastructure/IEventStore'
+import type { IRedisService } from '@/Shared/Infrastructure/Ports/Messaging/IRedisService'
+import type { StoredEvent } from '@/Shared/Infrastructure/Ports/Database/IEventStore'
 import { RedisEventStore } from '@/Shared/Infrastructure/Database/EventStore/RedisEventStore'
 
 /**

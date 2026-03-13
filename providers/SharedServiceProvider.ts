@@ -3,16 +3,16 @@
  * @description 共享層基礎設施服務提供者
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/IServiceProvider'
-import { MemoryEventDispatcher } from '@/Shared/Infrastructure/Framework/MemoryEventDispatcher'
-import { RedisEventDispatcher } from '@/Shared/Infrastructure/Framework/RedisEventDispatcher'
-import { RabbitMQAdapter } from '@/Shared/Infrastructure/Framework/RabbitMQAdapter'
-import { RabbitMQEventDispatcher } from '@/Shared/Infrastructure/Framework/RabbitMQEventDispatcher'
+import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { MemoryEventDispatcher } from '@/Shared/Infrastructure/Events/Dispatchers/MemoryEventDispatcher'
+import { RedisEventDispatcher } from '@/Shared/Infrastructure/Events/Dispatchers/RedisEventDispatcher'
+import { RabbitMQAdapter } from '@/Shared/Infrastructure/Adapters/RabbitMQ/RabbitMQAdapter'
+import { RabbitMQEventDispatcher } from '@/Shared/Infrastructure/Events/Dispatchers/RabbitMQEventDispatcher'
 import { SystemWorker } from '@/Shared/Application/SystemWorker'
-import type { IRedisService } from '@/Shared/Infrastructure/IRedisService'
-import type { IRabbitMQService } from '@/Shared/Infrastructure/IRabbitMQService'
-import type { RedisJobQueueAdapter } from '@/Shared/Infrastructure/Framework/RedisJobQueueAdapter'
-import type { RabbitMQJobQueueAdapter } from '@/Shared/Infrastructure/Framework/RabbitMQJobQueueAdapter'
+import type { IRedisService } from '@/Shared/Infrastructure/Ports/Messaging/IRedisService'
+import type { IRabbitMQService } from '@/Shared/Infrastructure/Ports/Messaging/IRabbitMQService'
+import type { RedisJobQueueAdapter } from '@/Shared/Infrastructure/Adapters/Redis/RedisJobQueueAdapter'
+import type { RabbitMQJobQueueAdapter } from '@/Shared/Infrastructure/Adapters/RabbitMQ/RabbitMQJobQueueAdapter'
 
 /**
  * 共享服務提供者
