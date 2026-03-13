@@ -14,6 +14,7 @@
  */
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IUserMessages } from '@/Shared/Infrastructure/Ports/Messages/IUserMessages'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 
@@ -30,10 +31,12 @@ export class UserController {
 	 * 建構子
 	 * @param createUserService - 建立用戶應用服務
 	 * @param getUserService - 查詢用戶應用服務
+	 * @param userMessages - 用戶訊息服務
 	 */
 	constructor(
 		private createUserService: CreateUserService,
-		private getUserService: GetUserService
+		private getUserService: GetUserService,
+		private userMessages: IUserMessages
 	) {}
 
 	/**
@@ -72,7 +75,7 @@ export class UserController {
 			return ctx.json(
 				{
 					success: false,
-					message: 'Missing required fields: name, email',
+					message: this.userMessages.validationMissingFields(),
 				},
 				400,
 			)
@@ -88,7 +91,7 @@ export class UserController {
 		return ctx.json(
 			{
 				success: true,
-				message: 'User created successfully',
+				message: this.userMessages.userCreatedSuccessfully(),
 				data: userDto,
 			},
 			201,
@@ -109,7 +112,7 @@ export class UserController {
 			return ctx.json(
 				{
 					success: false,
-					message: 'User ID is required',
+					message: this.userMessages.validationUserIdRequired(),
 				},
 				400,
 			)
@@ -122,7 +125,7 @@ export class UserController {
 			return ctx.json(
 				{
 					success: false,
-					message: 'User not found',
+					message: this.userMessages.userNotFound(),
 				},
 				404,
 			)

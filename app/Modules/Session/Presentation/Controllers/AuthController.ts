@@ -2,10 +2,12 @@
  * @file AuthController.ts
  * @description 認證控制器
  *
- * 處理登入、登出和當前用戶查詢。
+ * 處理登入、登出和當前用戶查詢。使用 i18n 進行多語系訊息支援。
+ * 訊息管理已優化為方案 4（Message Service Object），提供簡潔的語法。
  */
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IAuthMessages } from '@/Shared/Infrastructure/Ports/Messages/IAuthMessages'
 import { CreateSessionService } from '../../Application/Services/CreateSessionService'
 import { RevokeSessionService } from '../../Application/Services/RevokeSessionService'
 import { InvalidCredentialsException } from '../../Domain/Exceptions/InvalidCredentialsException'
@@ -23,11 +25,13 @@ export class AuthController {
    * @param createSessionService - 建立 Session 服務
    * @param revokeSessionService - 撤銷 Session 服務
    * @param userProfileService - 用戶資料查詢服務
+   * @param authMessages - 認證訊息服務（簡寫方案）
    */
   constructor(
     private createSessionService: CreateSessionService,
     private revokeSessionService: RevokeSessionService,
-    private userProfileService: IUserProfileService
+    private userProfileService: IUserProfileService,
+    private authMessages: IAuthMessages
   ) {}
 
   /**
@@ -48,7 +52,7 @@ export class AuthController {
         return ctx.json(
           {
             success: false,
-            message: '電子郵件和密碼為必填',
+            message: this.authMessages.validationEmailPasswordRequired(),
           },
           400
         )
@@ -69,7 +73,7 @@ export class AuthController {
         return ctx.json(
           {
             success: false,
-            message: '無效的電子郵件或密碼',
+            message: this.authMessages.loginInvalidCredentials(),
           },
           401
         )
@@ -79,7 +83,7 @@ export class AuthController {
       return ctx.json(
         {
           success: false,
-          message: '登入失敗',
+          message: this.authMessages.loginFailed(),
         },
         500
       )
@@ -102,7 +106,7 @@ export class AuthController {
         return ctx.json(
           {
             success: false,
-            message: '未提供 Token',
+            message: this.authMessages.logoutTokenMissing(),
           },
           401
         )
@@ -112,14 +116,14 @@ export class AuthController {
 
       return ctx.json({
         success: true,
-        message: '登出成功',
+        message: this.authMessages.logoutSuccess(),
       })
     } catch (error) {
       console.error('[AuthController.logout] Error:', error)
       return ctx.json(
         {
           success: false,
-          message: '登出失敗',
+          message: this.authMessages.logoutFailed(),
         },
         500
       )
@@ -144,7 +148,7 @@ export class AuthController {
         return ctx.json(
           {
             success: false,
-            message: '未授權',
+            message: this.authMessages.profileUnauthorized(),
           },
           401
         )
@@ -156,7 +160,7 @@ export class AuthController {
         return ctx.json(
           {
             success: false,
-            message: '用戶不存在',
+            message: this.authMessages.profileNotFound(),
           },
           404
         )
@@ -172,7 +176,7 @@ export class AuthController {
       return ctx.json(
         {
           success: false,
-          message: '查詢失敗',
+          message: this.authMessages.profileQueryFailed(),
         },
         500
       )

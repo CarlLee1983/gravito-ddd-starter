@@ -5,6 +5,7 @@
  */
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IPostMessages } from '@/Shared/Infrastructure/Ports/Messages/IPostMessages'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 
@@ -25,10 +26,12 @@ export class PostController {
 	 *
 	 * @param createPostService - 建立文章應用服務
 	 * @param getPostService - 查詢文章應用服務
+	 * @param postMessages - 文章訊息服務
 	 */
 	constructor(
 		private createPostService: CreatePostService,
-		private getPostService: GetPostService
+		private getPostService: GetPostService,
+		private postMessages: IPostMessages
 	) {}
 
 	/**
@@ -59,7 +62,7 @@ export class PostController {
 			return ctx.json(
 				{
 					success: false,
-					message: 'ID is required',
+					message: this.postMessages.validationIdRequired(),
 				},
 				400,
 			)
@@ -72,7 +75,7 @@ export class PostController {
 			return ctx.json(
 				{
 					success: false,
-					message: 'Post not found',
+					message: this.postMessages.postNotFound(),
 				},
 				404,
 			)
@@ -99,7 +102,7 @@ export class PostController {
 			return ctx.json(
 				{
 					success: false,
-					message: 'Missing required fields: title, authorId',
+					message: this.postMessages.validationMissingFields(),
 				},
 				400,
 			)
@@ -116,7 +119,7 @@ export class PostController {
 		return ctx.json(
 			{
 				success: true,
-				message: 'Post created successfully',
+				message: this.postMessages.postCreatedSuccessfully(),
 				data: postDto,
 			},
 			201,

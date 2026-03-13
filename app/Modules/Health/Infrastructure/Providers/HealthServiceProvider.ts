@@ -8,7 +8,9 @@ import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/
 import type { IHealthCheckRepository } from '../../Domain/Repositories/IHealthCheckRepository'
 import { MemoryHealthCheckRepository } from '../Repositories/MemoryHealthCheckRepository'
 import { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
+import { HealthMessageService } from '../Services/HealthMessageService'
 import { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * HealthServiceProvider 類別
@@ -27,6 +29,11 @@ export class HealthServiceProvider extends ModuleServiceProvider {
 		// 1. 註冊 Repository (單例)
 		container.singleton('healthRepository', () => {
 			return new MemoryHealthCheckRepository()
+		})
+
+		// 1.5. 註冊訊息服務（供 Controller 使用）
+		container.singleton('healthMessages', (c) => {
+			return new HealthMessageService(c.make('translator') as ITranslator)
 		})
 
 		// 2. 註冊 Application Service（每次解析時建立新實例）

@@ -3,9 +3,11 @@
  * @description Session 模組路由接線
  *
  * 組裝 AuthController 並註冊認證路由。
+ * 使用 authMessages 服務實現方案 4（訊息簡寫方案）。
  */
 
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IAuthMessages } from '@/Shared/Infrastructure/Ports/Messages/IAuthMessages'
 import { AuthController } from '../../Presentation/Controllers/AuthController'
 import { registerAuthRoutes } from '../../Presentation/Routes/api'
 import type { IUserProfileService } from '@/Shared/Infrastructure/Ports/Auth/IUserProfileService'
@@ -25,9 +27,15 @@ export function wireSessionRoutes(ctx: IRouteRegistrationContext): void {
   const createSessionService = ctx.container.make('createSessionService') as CreateSessionService
   const revokeSessionService = ctx.container.make('revokeSessionService') as RevokeSessionService
   const userProfileService = ctx.container.make('userProfileService') as IUserProfileService
+  const authMessages = ctx.container.make('authMessages') as IAuthMessages
 
   // 組裝控制器
-  const controller = new AuthController(createSessionService, revokeSessionService, userProfileService)
+  const controller = new AuthController(
+    createSessionService,
+    revokeSessionService,
+    userProfileService,
+    authMessages
+  )
 
   // 註冊路由
   registerAuthRoutes(router as any, controller)

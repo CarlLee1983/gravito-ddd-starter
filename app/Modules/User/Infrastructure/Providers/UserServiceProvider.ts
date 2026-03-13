@@ -28,6 +28,7 @@ import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'
 import { SendWelcomeEmailJob } from '../../Application/Jobs/SendWelcomeEmailJob'
 import { UserCredentialVerifier } from '../Adapters/UserCredentialVerifier'
 import { UserProfileAdapter } from '../Adapters/UserProfileAdapter'
+import { UserMessageService } from '../Services/UserMessageService'
 import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
 import { JobRegistry } from '@/Shared/Infrastructure/Registries/JobRegistry'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
@@ -52,6 +53,11 @@ export class UserServiceProvider extends ModuleServiceProvider {
 	override register(container: IContainer): void {
 		// 1. 從 Registry 取得 Repository（ORM 選擇已由 Registry 處理）
 		container.singleton('userRepository', () => resolveRepository('user'))
+
+		// 1.5. 註冊訊息服務（供 Controller 使用）
+		container.singleton('userMessages', (c) => {
+			return new UserMessageService(c.make('translator') as ITranslator)
+		})
 
 		// 2. 實現 ICredentialVerifier Port（供 Session 模組使用）
 		container.singleton('credentialVerifier', (c) => {

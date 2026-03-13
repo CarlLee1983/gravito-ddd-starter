@@ -14,10 +14,13 @@
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import type { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
 import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
+import type { IHealthMessages } from '@/Shared/Infrastructure/Ports/Messages/IHealthMessages'
 import { createGravitoDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Database/Adapters/Atlas'
 import { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
 import { HealthController } from '../../Presentation/Controllers/HealthController'
+import { HealthMessageService } from '../Services/HealthMessageService'
 import { MemoryHealthCheckRepository } from '../Repositories/MemoryHealthCheckRepository'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * 執行時探測器適配器
@@ -78,13 +81,27 @@ export function wireHealthRoutes(ctx: IRouteRegistrationContext): void {
 	const repository = new MemoryHealthCheckRepository()
 	const databaseCheck = createGravitoDatabaseConnectivityCheck()
 
+	// 手動建立訊息服務（不依賴 DI 容器）
+	let translator: ITranslator
+	try {
+		translator = ctx.container.make('translator') as ITranslator
+	} catch {
+		// 降級：使用假 translator
+		translator = {
+			trans: (key: string) => key,
+			transChoice: (key: string) => key,
+			setLocale: () => {},
+		} as any
+	}
+	const healthMessages = new HealthMessageService(translator)
+
 	// 註冊 /health 路由
 	// 每個請求都建立新的 PerformHealthCheckService，以便使用 RuntimeInfrastructureProbeAdapter
 	// 這樣可以在請求時動態解析已初始化的服務
 	router.get('/health', (hctx) => {
 		const probe = new RuntimeInfrastructureProbeAdapter(databaseCheck, ctx.container)
 		const performHealthCheckService = new PerformHealthCheckService(repository, probe)
-		const controller = new HealthController(performHealthCheckService)
+		const controller = new HealthController(performHealthCheckService, healthMessages)
 		return controller.check(hctx)
 	})
 
@@ -92,7 +109,7 @@ export function wireHealthRoutes(ctx: IRouteRegistrationContext): void {
 	router.get('/health/history', (hctx) => {
 		const probe = new RuntimeInfrastructureProbeAdapter(databaseCheck, ctx.container)
 		const performHealthCheckService = new PerformHealthCheckService(repository, probe)
-		const controller = new HealthController(performHealthCheckService)
+		const controller = new HealthController(performHealthCheckService, healthMessages)
 		return controller.history(hctx)
 	})
 }

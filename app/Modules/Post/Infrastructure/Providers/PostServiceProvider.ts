@@ -11,8 +11,10 @@ import { WelcomePostAutomation } from '../../Application/Handlers/WelcomePostAut
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 import { UserToPostAdapter } from '../Adapters/UserToPostAdapter'
+import { PostMessageService } from '../Services/PostMessageService'
 import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
 import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * PostServiceProvider 類別
@@ -32,6 +34,11 @@ export class PostServiceProvider extends ModuleServiceProvider {
 	override register(container: IContainer): void {
 		// 從 Registry 取得 Repository（ORM 選擇由 RepositoryResolver 統一處理）
 		container.singleton('postRepository', () => resolveRepository('post'))
+
+		// 註冊訊息服務（供 Controller 使用）
+		container.singleton('postMessages', (c) => {
+			return new PostMessageService(c.make('translator') as ITranslator)
+		})
 
 		// 註冊防腐層適配器：User → Post（IAuthorService 實現）
 		container.singleton('authorService', (c) => {

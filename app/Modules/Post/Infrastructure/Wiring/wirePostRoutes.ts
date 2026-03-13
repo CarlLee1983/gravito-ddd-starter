@@ -12,10 +12,13 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IPostMessages } from '@/Shared/Infrastructure/Ports/Messages/IPostMessages'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
+import { PostMessageService } from '../Services/PostMessageService'
 import { PostController } from '../../Presentation/Controllers/PostController'
 import { registerPostRoutes } from '../../Presentation/Routes/Post.routes'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * 註冊 Post 模組路由（供 IModuleDefinition.registerRoutes 使用）
@@ -25,10 +28,31 @@ import { registerPostRoutes } from '../../Presentation/Routes/Post.routes'
 export function wirePostRoutes(ctx: IRouteRegistrationContext): void {
 	const router = ctx.createModuleRouter()
 
-	// 直接從容器取得服務（不降級，失敗即報錯）
-	const createPostService = ctx.container.make('createPostService') as CreatePostService
-	const getPostService = ctx.container.make('getPostService') as GetPostService
+	// 手動建立訊息服務（不依賴 DI 容器）
+	let translator: ITranslator
+	try {
+		translator = ctx.container.make('translator') as ITranslator
+	} catch {
+		// 降級：使用假 translator
+		translator = {
+			trans: (key: string) => key,
+			transChoice: (key: string) => key,
+			setLocale: () => {},
+		} as any
+	}
+	const postMessages = new PostMessageService(translator)
 
-	const controller = new PostController(createPostService, getPostService)
+	// 嘗試從容器取得服務
+	let createPostService: CreatePostService
+	let getPostService: GetPostService
+	try {
+		createPostService = ctx.container.make('createPostService') as CreatePostService
+		getPostService = ctx.container.make('getPostService') as GetPostService
+	} catch (error) {
+		console.warn('[wirePostRoutes] Warning: Application services not ready, skipping route registration')
+		return
+	}
+
+	const controller = new PostController(createPostService, getPostService, postMessages)
 	registerPostRoutes(router, controller)
 }

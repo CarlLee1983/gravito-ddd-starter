@@ -8,6 +8,7 @@
 import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
 import { MemorySessionRepository } from '../Persistence/MemorySessionRepository'
 import { SessionTokenValidator } from '../Adapters/SessionTokenValidator'
+import { AuthMessageService } from '../Services/AuthMessageService'
 import { CreateSessionService } from '../../Application/Services/CreateSessionService'
 import { ValidateSessionService } from '../../Application/Services/ValidateSessionService'
 import { RevokeSessionService } from '../../Application/Services/RevokeSessionService'
@@ -16,6 +17,8 @@ import type { ISessionRepository } from '../../Domain/Repositories/ISessionRepos
 import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
 import type { ICredentialVerifier } from '@/Shared/Infrastructure/Ports/Auth/ICredentialVerifier'
 import type { ITokenSigner } from '@/Shared/Infrastructure/Ports/Auth/ITokenSigner'
+import type { IAuthMessages } from '@/Shared/Infrastructure/Ports/Messages/IAuthMessages'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * Session 模組服務提供者
@@ -70,6 +73,12 @@ export class SessionServiceProvider extends ModuleServiceProvider {
       const sessionRepository = c.make('sessionRepository') as ISessionRepository
       const validateSessionService = c.make('validateSessionService') as ValidateSessionService
       return new RevokeSessionService(sessionRepository, validateSessionService)
+    })
+
+    // 7. 註冊 AuthMessageService（訊息簡寫方案）
+    container.singleton('authMessages', (c) => {
+      const translator = c.make('translator') as ITranslator
+      return new AuthMessageService(translator)
     })
   }
 }

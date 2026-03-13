@@ -5,6 +5,7 @@
  */
 
 import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IHealthMessages } from '@/Shared/Infrastructure/Ports/Messages/IHealthMessages'
 import type { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
 
 /**
@@ -16,10 +17,14 @@ import type { PerformHealthCheckService } from '../../Application/Services/Perfo
 export class HealthController {
 	/**
 	 * 建立 HealthController 實例
-	 * 
+	 *
 	 * @param service - 執行健康檢查的應用服務實例
+	 * @param healthMessages - 健康檢查訊息服務
 	 */
-	constructor(private service: PerformHealthCheckService) {}
+	constructor(
+		private service: PerformHealthCheckService,
+		private healthMessages: IHealthMessages
+	) {}
 
 	/**
 	 * 執行系統健康檢查
@@ -53,7 +58,7 @@ export class HealthController {
 				{
 					success: false,
 					status: 'unhealthy',
-					message: error.message || 'Health check failed',
+					message: this.healthMessages.healthCheckFailed(),
 				},
 				503,
 			)

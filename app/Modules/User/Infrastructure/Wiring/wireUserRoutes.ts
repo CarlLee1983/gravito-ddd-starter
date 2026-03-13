@@ -7,10 +7,13 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IUserMessages } from '@/Shared/Infrastructure/Ports/Messages/IUserMessages'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
+import { UserMessageService } from '../Services/UserMessageService'
 import { UserController } from '../../Presentation/Controllers/UserController'
 import { registerUserRoutes } from '../../Presentation/Routes/api'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * 註冊 User 模組路由（供 IModuleDefinition.registerRoutes 使用）
@@ -20,10 +23,31 @@ import { registerUserRoutes } from '../../Presentation/Routes/api'
 export function wireUserRoutes(ctx: IRouteRegistrationContext): void {
 	const router = ctx.createModuleRouter()
 
-	// 直接從容器取得服務（不降級，失敗即報錯）
-	const createUserService = ctx.container.make('createUserService') as CreateUserService
-	const getUserService = ctx.container.make('getUserService') as GetUserService
+	// 手動建立訊息服務（不依賴 DI 容器）
+	let translator: ITranslator
+	try {
+		translator = ctx.container.make('translator') as ITranslator
+	} catch {
+		// 降級：使用假 translator
+		translator = {
+			trans: (key: string) => key,
+			transChoice: (key: string) => key,
+			setLocale: () => {},
+		} as any
+	}
+	const userMessages = new UserMessageService(translator)
 
-	const controller = new UserController(createUserService, getUserService)
+	// 嘗試從容器取得服務
+	let createUserService: CreateUserService
+	let getUserService: GetUserService
+	try {
+		createUserService = ctx.container.make('createUserService') as CreateUserService
+		getUserService = ctx.container.make('getUserService') as GetUserService
+	} catch (error) {
+		console.warn('[wireUserRoutes] Warning: Application services not ready, skipping route registration')
+		return
+	}
+
+	const controller = new UserController(createUserService, getUserService, userMessages)
 	registerUserRoutes(router, controller)
 }
