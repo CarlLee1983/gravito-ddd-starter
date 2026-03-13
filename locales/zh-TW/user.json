@@ -1,0 +1,10 @@
+{
+  "validation": {
+    "missing_fields": "缺少必填欄位：名稱、電子郵件",
+    "user_id_required": "用戶 ID 為必填"
+  },
+  "user": {
+    "created_successfully": "用戶已成功建立",
+    "not_found": "用戶不存在"
+  }
+}

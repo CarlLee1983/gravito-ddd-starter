@@ -1,0 +1,10 @@
+{
+  "validation": {
+    "missing_fields": "缺少必填欄位：標題、作者 ID",
+    "id_required": "ID 為必填"
+  },
+  "post": {
+    "created_successfully": "文章已成功建立",
+    "not_found": "文章不存在"
+  }
+}

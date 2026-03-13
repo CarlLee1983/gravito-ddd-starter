@@ -1,0 +1,10 @@
+{
+  "validation": {
+    "missing_fields": "Missing required fields: name, email",
+    "user_id_required": "User ID is required"
+  },
+  "user": {
+    "created_successfully": "User created successfully",
+    "not_found": "User not found"
+  }
+}

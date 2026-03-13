@@ -1,0 +1,10 @@
+{
+  "validation": {
+    "missing_fields": "Missing required fields: title, authorId",
+    "id_required": "ID is required"
+  },
+  "post": {
+    "created_successfully": "Post created successfully",
+    "not_found": "Post not found"
+  }
+}

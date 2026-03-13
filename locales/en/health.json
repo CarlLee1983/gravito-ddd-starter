@@ -1,0 +1,5 @@
+{
+  "health": {
+    "check_failed": "Health check failed"
+  }
+}
