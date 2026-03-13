@@ -52,6 +52,14 @@ if ! bun run typecheck 2>&1 | head -20; then
   exit 1
 fi
 
+# 4. 架構邊界檢查
+echo "  → Running boundary check..."
+if ! bun run boundaries 2>&1 | head -30; then
+  echo "  ❌ Boundary check failed!"
+  echo "  💡 Check your module imports"
+  exit 1
+fi
+
 echo "✅ All checks passed!"
 exit 0
 EOF
@@ -169,7 +177,7 @@ echo ""
 echo "✅ Git hooks installed successfully!"
 echo ""
 echo "🔗 Installed hooks:"
-echo "   • pre-commit  - 檢查 format、lint、type"
+echo "   • pre-commit  - 檢查 format、lint、type、boundary"
 echo "   • prepare-commit-msg - 自動添加分支前綴 (可選)"
 echo "   • commit-msg - 驗證提交訊息格式"
 echo ""

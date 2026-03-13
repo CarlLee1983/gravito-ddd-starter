@@ -8,10 +8,9 @@
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
 import { AuthController } from '../../Presentation/Controllers/AuthController'
 import { registerAuthRoutes } from '../../Presentation/Routes/api'
-import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
+import type { IUserProfileService } from '@/Shared/Infrastructure/Ports/Auth/IUserProfileService'
 import type { CreateSessionService } from '../../Application/Services/CreateSessionService'
 import type { RevokeSessionService } from '../../Application/Services/RevokeSessionService'
-import { resolveRepository } from '@wiring/RepositoryResolver'
 
 /**
  * 註冊 Session 模組路由
@@ -25,10 +24,10 @@ export function wireSessionRoutes(ctx: IRouteRegistrationContext): void {
   // 從容器取得依賴
   const createSessionService = ctx.container.make('createSessionService') as CreateSessionService
   const revokeSessionService = ctx.container.make('revokeSessionService') as RevokeSessionService
-  const userRepository = resolveRepository('user') as IUserRepository
+  const userProfileService = ctx.container.make('userProfileService') as IUserProfileService
 
   // 組裝控制器
-  const controller = new AuthController(createSessionService, revokeSessionService, userRepository)
+  const controller = new AuthController(createSessionService, revokeSessionService, userProfileService)
 
   // 註冊路由
   registerAuthRoutes(router as any, controller)

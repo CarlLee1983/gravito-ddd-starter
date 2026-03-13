@@ -9,7 +9,7 @@ import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
 import { CreateSessionService } from '../../Application/Services/CreateSessionService'
 import { RevokeSessionService } from '../../Application/Services/RevokeSessionService'
 import { InvalidCredentialsException } from '../../Domain/Exceptions/InvalidCredentialsException'
-import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
+import type { IUserProfileService } from '@/Shared/Infrastructure/Ports/Auth/IUserProfileService'
 
 /**
  * 認證控制器
@@ -22,12 +22,12 @@ export class AuthController {
    *
    * @param createSessionService - 建立 Session 服務
    * @param revokeSessionService - 撤銷 Session 服務
-   * @param userRepository - User Repository
+   * @param userProfileService - 用戶資料查詢服務
    */
   constructor(
     private createSessionService: CreateSessionService,
     private revokeSessionService: RevokeSessionService,
-    private userRepository: IUserRepository
+    private userProfileService: IUserProfileService
   ) {}
 
   /**
@@ -150,9 +150,9 @@ export class AuthController {
         )
       }
 
-      // 查詢用戶
-      const user = await this.userRepository.findById(userId)
-      if (!user) {
+      // 查詢用戶資料
+      const userProfile = await this.userProfileService.findById(userId)
+      if (!userProfile) {
         return ctx.json(
           {
             success: false,
@@ -162,15 +162,10 @@ export class AuthController {
         )
       }
 
-      // 回傳用戶資訊（不含密碼）
+      // 回傳用戶資訊
       return ctx.json({
         success: true,
-        data: {
-          id: user.id,
-          name: user.name.value,
-          email: user.email.value,
-          createdAt: user.createdAt.toISOString(),
-        },
+        data: userProfile,
       })
     } catch (error) {
       console.error('[AuthController.me] Error:', error)

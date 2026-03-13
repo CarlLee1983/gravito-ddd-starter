@@ -27,6 +27,7 @@ import { GetUserService } from '../../Application/Services/GetUserService'
 import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'
 import { SendWelcomeEmailJob } from '../../Application/Jobs/SendWelcomeEmailJob'
 import { UserCredentialVerifier } from '../Adapters/UserCredentialVerifier'
+import { UserProfileAdapter } from '../Adapters/UserProfileAdapter'
 import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
 import { JobRegistry } from '@/Shared/Infrastructure/Registries/JobRegistry'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
@@ -56,6 +57,12 @@ export class UserServiceProvider extends ModuleServiceProvider {
 		container.singleton('credentialVerifier', (c) => {
 			const userRepository = c.make('userRepository') as IUserRepository
 			return new UserCredentialVerifier(userRepository)
+		})
+
+		// 2.5. 實現 IUserProfileService Port（供 Session 模組使用）
+		container.singleton('userProfileService', (c) => {
+			const userRepository = c.make('userRepository') as IUserRepository
+			return new UserProfileAdapter(userRepository)
 		})
 
 		// 3. Application Services（供 Controller 使用）

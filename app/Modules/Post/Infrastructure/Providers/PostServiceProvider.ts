@@ -13,7 +13,6 @@ import { GetPostService } from '../../Application/Services/GetPostService'
 import { UserToPostAdapter } from '../Adapters/UserToPostAdapter'
 import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
 import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
-import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
 
 /**
  * PostServiceProvider 類別
@@ -36,7 +35,7 @@ export class PostServiceProvider extends ModuleServiceProvider {
 
 		// 註冊防腐層適配器：User → Post（IAuthorService 實現）
 		container.singleton('authorService', (c) => {
-			const userRepository = c.make('userRepository') as IUserRepository
+			const userRepository = c.make('userRepository') as any
 			return new UserToPostAdapter(userRepository)
 		})
 
