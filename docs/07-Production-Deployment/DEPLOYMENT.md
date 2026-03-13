@@ -133,7 +133,7 @@ ENABLE_DB=true
 DB_CONNECTION=postgres
 DB_HOST=db.example.com
 DB_PORT=5432
-DB_USERNAME=app_user
+DB_USER=app_user
 DB_PASSWORD=secure_password_here
 DB_DATABASE=app_production
 
