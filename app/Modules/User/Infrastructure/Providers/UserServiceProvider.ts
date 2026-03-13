@@ -112,7 +112,8 @@ export class UserServiceProvider extends ModuleServiceProvider {
 		// 開發環境輸出 ORM 信息用於調試
 		if (process.env.NODE_ENV === 'development') {
 			const orm = getCurrentORM()
-			console.log(`👤 [User] Module loaded (ORM: ${orm})`)
+			const logger = core.container.make('logger') as ILogger
+			logger.debug(`👤 [User] Module loaded (ORM: ${orm})`)
 		}
 
 		// ✨ 事件監聽與 Job 路由已由中心化 Registry 管理

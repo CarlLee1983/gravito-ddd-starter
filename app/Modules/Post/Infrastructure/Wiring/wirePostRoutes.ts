@@ -4,17 +4,23 @@
  *
  * 責任：從容器取得 Application Services → 組裝 Controller → 註冊路由。
  * 僅依賴 Shared 的 IRouteRegistrationContext，不依賴 @gravito/core。
+ *
+ * 架構規則：
+ * - 避免直接 import 其他模組的具體實現（UserRepository）
+ * - 改為透過 RepositoryResolver 或容器取得，保持介面層級依賴
+ * - 降級方案也應遵守模組邊界
  */
 
 import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import { resolveRepository } from '@wiring/RepositoryResolver'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 import { PostController } from '../../Presentation/Controllers/PostController'
 import { registerPostRoutes } from '../../Presentation/Routes/Post.routes'
 import { PostRepository } from '../Repositories/PostRepository'
 import { UserToPostAdapter } from '../Adapters/UserToPostAdapter'
-import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
+import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
 
 /**
  * 註冊 Post 模組路由（供 IModuleDefinition.registerRoutes 使用）
@@ -33,6 +39,7 @@ export function wirePostRoutes(ctx: IRouteRegistrationContext): void {
 		getPostService = ctx.container.make('getPostService') as GetPostService
 	} catch (error) {
 		// 降級方案：如果容器中沒有服務，直接組裝
+		// 重要：即使在降級方案中，也應遵守模組邊界 - 透過 RepositoryResolver 取得 User Repository
 		console.warn(
 			`⚠️ [Post] Services not found in container, attempting direct instantiation: ${(error as Error).message}`
 		)
@@ -49,10 +56,13 @@ export function wirePostRoutes(ctx: IRouteRegistrationContext): void {
 				// eventDispatcher 尚未註冊，忽略
 			}
 
-			// 組裝基礎設施層
-			const postRepository = new PostRepository(db, eventDispatcher)
-			const userRepository = new UserRepository(db, eventDispatcher)
+			// === 重要：透過 RepositoryResolver 取得 User Repository（保持模組邊界）===
+			// 而非直接 import 和實例化 UserRepository 具體實現
+			const userRepository = resolveRepository('user') as IUserRepository
 			const authorService = new UserToPostAdapter(userRepository)
+
+			// 組裝 Post Repository 實例
+			const postRepository = new PostRepository(db, eventDispatcher)
 
 			// 組裝應用層服務
 			createPostService = new CreatePostService(postRepository, authorService)

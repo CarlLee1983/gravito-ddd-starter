@@ -9,12 +9,18 @@
  * - 使用 Post.reconstitute() 而非 fromDatabase()
  * - 提取 ValueObject 值進行持久化
  * - 完整事件分派機制
+ *
+ * Phase 4 改造：
+ * - 繼承 BaseEventSourcedRepository，消除重複的樂觀鎖/事件邏輯
+ * - 修正 EventStore 寫入 Bug (EventStore 應在 markEventsAsCommitted() 前執行)
  */
 
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 import type { IEventStore } from '@/Shared/Infrastructure/IEventStore'
+import { BaseEventSourcedRepository } from '@/Shared/Infrastructure/Database/Repositories/BaseEventSourcedRepository'
 import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
+import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
 import { Post } from '../../Domain/Aggregates/Post'
 import { Title } from '../../Domain/ValueObjects/Title'
 import { Content } from '../../Domain/ValueObjects/Content'
@@ -23,287 +29,189 @@ import { PostPublished } from '../../Domain/Events/PostPublished'
 import { PostArchived } from '../../Domain/Events/PostArchived'
 import { PostTitleChanged } from '../../Domain/Events/PostTitleChanged'
 import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
-import { OptimisticLockException } from '@/Shared/Application/OptimisticLockException'
 
 /**
  * PostRepository 類別
  *
  * 在 DDD 架構中屬於「基礎設施層 (Infrastructure Layer)」。
  * 責負將領域聚合根與資料庫之間的轉換與操作。
+ *
+ * 繼承 BaseEventSourcedRepository，享受統一的：
+ * - 樂觀鎖版本控制邏輯
+ * - 領域/整合事件分派
+ * - EventStore 持久化 (修正 Bug: EventStore 先於 markEventsAsCommitted())
  */
-export class PostRepository implements IPostRepository {
-  /**
-   * 建立 PostRepository 實例
-   *
-   * @param db - 資料庫存取介面實例 (Port)
-   * @param eventDispatcher - 領域事件分發器實例（可選）
-   * @param eventStore - 事件存儲實例（可選）
-   */
-  constructor(
-    private readonly db: IDatabaseAccess,
-    private readonly eventDispatcher?: IEventDispatcher,
-    private readonly eventStore?: IEventStore
-  ) {}
+export class PostRepository extends BaseEventSourcedRepository<Post> implements IPostRepository {
+	/**
+	 * 建立 PostRepository 實例
+	 *
+	 * @param db - 資料庫存取介面實例 (Port)
+	 * @param eventDispatcher - 領域事件分發器實例（可選）
+	 * @param eventStore - 事件存儲實例（可選）
+	 */
+	constructor(
+		db: IDatabaseAccess,
+		eventDispatcher?: IEventDispatcher,
+		eventStore?: IEventStore
+	) {
+		super(db, eventDispatcher, eventStore)
+	}
 
-  // ============================================
-  // 基礎 CRUD 操作（實現 IRepository<Post>）
-  // ============================================
+	// ============================================
+	// 業務相關方法（實現 IPostRepository）
+	// ============================================
 
-  /**
-   * 保存文章聚合根 (新增或更新)
-   * 支援樂觀鎖版本控制與事件存儲
-   *
-   * **Repository 責任**：
-   * 1. 在儲存時，標記聚合的事件為已提交（因為內存不需持久化層）
-   * 2. 若有 EventDispatcher，應分派未提交的事件
-   * 3. 若有 EventStore，應持久化事件
-   *
-   * @param entity - 文章聚合根（包含未提交事件）
-   * @throws OptimisticLockException - 版本衝突時拋出
-   * @returns Promise<void>
-   */
-  async save(entity: Post): Promise<void> {
-    const row = this.toRow(entity)
-    const existing = await this.findById(entity.id)
+	/**
+	 * 根據標題查找文章
+	 *
+	 * @param title - Title ValueObject
+	 * @returns 找到的 Post 聚合根或 null
+	 */
+	async findByTitle(title: Title): Promise<Post | null> {
+		const row = await this.db.table(this.getTableName()).where('title', '=', title.value).first()
+		return row ? this.toDomain(row) : null
+	}
 
-    if (existing) {
-      // 更新現有文章（使用樂觀鎖）
-      const dbRow = await this.db.table('posts').where('id', '=', entity.id).first()
-      const currentVersion = (dbRow?.version as number) ?? 0
-      const newVersion = currentVersion + 1
+	/**
+	 * 獲取特定作者的所有文章
+	 *
+	 * @param authorId - 作者 ID
+	 * @returns 該作者的文章列表
+	 */
+	async findByAuthor(authorId: string): Promise<Post[]> {
+		const rows = await this.db.table(this.getTableName()).where('author_id', '=', authorId).select()
+		return rows.map((row) => this.toDomain(row))
+	}
 
-      // 驗證版本衝突：檢查是否還有符合舊版本條件的記錄
-      const beforeUpdate = await this.db
-        .table('posts')
-        .where('id', '=', entity.id)
-        .where('version', '=', currentVersion)
-        .first()
+	// ============================================
+	// 實作抽象方法
+	// ============================================
 
-      if (!beforeUpdate) {
-        // 版本不匹配，表示已被其他操作更新
-        throw new OptimisticLockException('Post', entity.id, currentVersion)
-      }
+	/**
+	 * 取得資料表名稱
+	 * @protected
+	 */
+	protected getTableName(): string {
+		return 'posts'
+	}
 
-      // 條件更新：WHERE id = ? AND version = ?
-      await this.db
-        .table('posts')
-        .where('id', '=', entity.id)
-        .where('version', '=', currentVersion)
-        .update({ ...row, version: newVersion })
-    } else {
-      // 新增文章，初始版本為 0
-      await this.db.table('posts').insert({ ...row, version: 0 })
-    }
+	/**
+	 * 取得聚合根型別名稱
+	 * @protected
+	 */
+	protected getAggregateTypeName(): string {
+		return 'Post'
+	}
 
-    // ✨ 若注入了分發器，則分發領域事件和轉換後的整合事件
-    if (this.eventDispatcher) {
-      const domainEvents = entity.getUncommittedEvents()
+	/**
+	 * 將資料庫行轉換為 Domain Object
+	 *
+	 * @param row - 資料庫中的原始資料行
+	 * @returns 轉換後的領域聚合根
+	 * @protected
+	 */
+	protected toDomain(row: any): Post {
+		const title = Title.create(row.title as string)
+		const content = Content.create(row.content as string)
+		const createdAt = row.created_at instanceof Date ? row.created_at : new Date(row.created_at as string)
+		const isPublished = row.is_published === 1 || row.is_published === true
+		const isArchived = row.is_archived === 1 || row.is_archived === true
 
-      // 同時分派領域事件和轉換後的整合事件
-      const integrationEvents = domainEvents.map(event => this.toIntegrationEvent(event))
+		return Post.reconstitute(
+			row.id as string,
+			title,
+			content,
+			row.author_id as string,
+			createdAt,
+			isPublished,
+			isArchived
+		)
+	}
 
-      await this.eventDispatcher.dispatch([...domainEvents, ...integrationEvents])
-      entity.markEventsAsCommitted()
-    }
+	/**
+	 * 將 Domain Object 轉換為資料庫行格式
+	 *
+	 * @param post - Domain Entity 聚合根
+	 * @returns 符合資料庫結構的資料行對象
+	 * @protected
+	 */
+	protected toRow(post: Post): Record<string, unknown> {
+		return {
+			id: post.id,
+			title: post.title.value,
+			content: post.content.value,
+			author_id: post.authorId,
+			is_published: post.isPublished ? 1 : 0,
+			is_archived: post.isArchived ? 1 : 0,
+			created_at: post.createdAt.toISOString(),
+			updated_at: new Date().toISOString(),
+		}
+	}
 
-    // ✨ 若注入了事件存儲，則持久化事件
-    if (this.eventStore && entity.getUncommittedEvents().length > 0) {
-      const currentCount = await this.eventStore.countByAggregateId(entity.id)
-      const domainEvents = entity.getUncommittedEvents()
+	/**
+	 * 將領域事件轉換為整合事件 (ACL)
+	 * 這是跨 Bounded Context 邊界的轉換層
+	 *
+	 * @param event - 領域事件
+	 * @returns 整合事件，若不支援則回傳 null
+	 * @protected
+	 */
+	protected toIntegrationEvent(event: DomainEvent): IntegrationEvent | null {
+		if (event instanceof PostCreated) {
+			return toIntegrationEvent(
+				'PostCreated',
+				'Post', // 來源 Bounded Context
+				{
+					postId: event.postId,
+					title: event.title,
+					content: event.content,
+					authorId: event.authorId,
+					createdAt: event.createdAt.toISOString(),
+				},
+				event.postId
+			)
+		}
 
-      const storedEvents = domainEvents.map((event, index) => ({
-        id: crypto.randomUUID(),
-        eventId: event.eventId,
-        aggregateId: entity.id,
-        aggregateType: 'Post',
-        eventType: event.constructor.name,
-        eventData: JSON.stringify(event.toJSON()),
-        eventVersion: 1,
-        aggregateVersion: currentCount + index + 1,
-        occurredAt: event.occurredAt.toISOString(),
-      }))
+		if (event instanceof PostPublished) {
+			return toIntegrationEvent(
+				'PostPublished',
+				'Post',
+				{
+					postId: event.postId,
+					authorId: event.authorId,
+					publishedAt: event.occurredAt.toISOString(),
+				},
+				event.postId
+			)
+		}
 
-      await this.eventStore.append(storedEvents)
-    }
-  }
+		if (event instanceof PostArchived) {
+			return toIntegrationEvent(
+				'PostArchived',
+				'Post',
+				{
+					postId: event.postId,
+					authorId: event.authorId,
+					archivedAt: event.occurredAt.toISOString(),
+				},
+				event.postId
+			)
+		}
 
-  /**
-   * 根據 ID 查詢文章
-   *
-   * @param id - 文章唯一識別符
-   * @returns Promise 包含文章實體或 null (若找不到)
-   */
-  async findById(id: string): Promise<Post | null> {
-    const row = await this.db.table('posts').where('id', '=', id).first()
-    return row ? this.toDomain(row) : null
-  }
+		if (event instanceof PostTitleChanged) {
+			return toIntegrationEvent(
+				'PostTitleChanged',
+				'Post',
+				{
+					postId: event.postId,
+					oldTitle: event.oldTitle,
+					newTitle: event.newTitle,
+				},
+				event.postId
+			)
+		}
 
-  /**
-   * 根據 ID 刪除文章
-   *
-   * @param id - 文章唯一識別符
-   * @returns Promise<void>
-   */
-  async delete(id: string): Promise<void> {
-    await this.db.table('posts').where('id', '=', id).delete()
-  }
-
-  /**
-   * 查詢所有文章 (支援分頁)
-   *
-   * @param params - 查詢參數，包含 limit 與 offset
-   * @returns Promise 包含文章實體陣列
-   */
-  async findAll(params?: { limit?: number; offset?: number }): Promise<Post[]> {
-    let query = this.db.table('posts')
-    if (params?.offset) query = query.offset(params.offset)
-    if (params?.limit) query = query.limit(params.limit)
-    const rows = await query.select()
-    return rows.map((row) => this.toDomain(row))
-  }
-
-  /**
-   * 計算文章總筆數
-   *
-   * @returns Promise 包含文章總筆數
-   */
-  async count(): Promise<number> {
-    return this.db.table('posts').count()
-  }
-
-  // ============================================
-  // 業務相關方法（實現 IPostRepository）
-  // ============================================
-
-  /**
-   * 根據標題查找文章
-   *
-   * @param title - Title ValueObject
-   * @returns 找到的 Post 聚合根或 null
-   */
-  async findByTitle(title: Title): Promise<Post | null> {
-    const row = await this.db.table('posts').where('title', '=', title.value).first()
-    return row ? this.toDomain(row) : null
-  }
-
-  /**
-   * 獲取特定作者的所有文章
-   *
-   * @param authorId - 作者 ID
-   * @returns 該作者的文章列表
-   */
-  async findByAuthor(authorId: string): Promise<Post[]> {
-    const rows = await this.db.table('posts').where('author_id', '=', authorId).select()
-    return rows.map((row) => this.toDomain(row))
-  }
-
-  // ============================================
-  // 私有轉換方法（隱藏資料層細節）
-  // ============================================
-
-  /**
-   * 將資料庫行轉換為 Domain Object
-   *
-   * @param row - 資料庫中的原始資料行
-   * @returns 轉換後的領域聚合根
-   * @private
-   */
-  private toDomain(row: any): Post {
-    const title = Title.create(row.title as string)
-    const content = Content.create(row.content as string)
-    const createdAt = row.created_at instanceof Date ? row.created_at : new Date(row.created_at as string)
-    const isPublished = row.is_published === 1 || row.is_published === true
-    const isArchived = row.is_archived === 1 || row.is_archived === true
-
-    return Post.reconstitute(
-      row.id as string,
-      title,
-      content,
-      row.author_id as string,
-      createdAt,
-      isPublished,
-      isArchived
-    )
-  }
-
-  /**
-   * 將 Domain Object 轉換為資料庫行格式
-   *
-   * @param post - Domain Entity 聚合根
-   * @returns 符合資料庫結構的資料行對象
-   * @private
-   */
-  private toRow(post: Post): Record<string, unknown> {
-    return {
-      id: post.id,
-      title: post.title.value,
-      content: post.content.value,
-      author_id: post.authorId,
-      is_published: post.isPublished ? 1 : 0,
-      is_archived: post.isArchived ? 1 : 0,
-      created_at: post.createdAt.toISOString(),
-      updated_at: new Date().toISOString(),
-    }
-  }
-
-  /**
-   * 將領域事件轉換為整合事件 (ACL)
-   * 這是跨 Bounded Context 邊界的轉換層
-   *
-   * @param event - 領域事件
-   * @returns 整合事件
-   * @private
-   */
-  private toIntegrationEvent(event: any): IntegrationEvent {
-    if (event instanceof PostCreated) {
-      return toIntegrationEvent(
-        'PostCreated',
-        'Post', // 來源 Bounded Context
-        {
-          postId: event.postId,
-          title: event.title,
-          content: event.content,
-          authorId: event.authorId,
-          createdAt: event.createdAt.toISOString(),
-        },
-        event.postId
-      )
-    } else if (event instanceof PostPublished) {
-      return toIntegrationEvent(
-        'PostPublished',
-        'Post',
-        {
-          postId: event.postId,
-          authorId: event.authorId,
-          publishedAt: event.occurredAt.toISOString(),
-        },
-        event.postId
-      )
-    } else if (event instanceof PostArchived) {
-      return toIntegrationEvent(
-        'PostArchived',
-        'Post',
-        {
-          postId: event.postId,
-          authorId: event.authorId,
-          archivedAt: event.occurredAt.toISOString(),
-        },
-        event.postId
-      )
-    } else if (event instanceof PostTitleChanged) {
-      return toIntegrationEvent(
-        'PostTitleChanged',
-        'Post',
-        {
-          postId: event.postId,
-          oldTitle: event.oldTitle,
-          newTitle: event.newTitle,
-        },
-        event.postId
-      )
-    }
-
-    // 未知事件，傳遞原始事件
-    throw new Error(`Unknown Post event type: ${event.constructor.name}`)
-  }
+		// 不支援的事件型別回傳 null，由基底類別過濾
+		return null
+	}
 }
