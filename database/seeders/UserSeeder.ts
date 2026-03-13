@@ -15,8 +15,13 @@ export default async function seed(): Promise<void> {
 			created_at: new Date().toISOString(),
 		},
 	]
+
 	for (const user of users) {
-		await DB.table('users').insert(user)
+		const existing = await DB.table('users').where('id', '=', user.id).first()
+		if (!existing) {
+			await DB.table('users').insert(user)
+		}
 	}
-	console.log('UserSeeder: Seeding complete (2 users inserted)')
+
+	console.log('UserSeeder: Seeding complete')
 }

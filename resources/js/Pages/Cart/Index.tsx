@@ -1,17 +1,19 @@
 import { useState } from 'react'
-import { Link } from '@inertiajs/react'
-import { 
-  Trash2, 
-  Minus, 
-  Plus, 
-  ArrowLeft, 
-  CreditCard, 
-  ShieldCheck, 
-  Truck, 
+import { Link, router } from '@inertiajs/react'
+import {
+  Trash2,
+  Minus,
+  Plus,
+  ArrowLeft,
+  CreditCard,
+  ShieldCheck,
+  Truck,
   ChevronRight,
-  ShoppingBag
+  ShoppingBag,
+  Loader2
 } from 'lucide-react'
 import AppLayout from '../../Layouts/AppLayout'
+import { useAuth } from '../../hooks/useAuth'
 
 // Mock Data
 const initialCartItems = [
@@ -20,20 +22,86 @@ const initialCartItems = [
 ]
 
 export default function CartIndex() {
+  const { user } = useAuth()
   const [items, setItems] = useState(initialCartItems)
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
+  const [checkoutError, setCheckoutError] = useState<string | null>(null)
 
   const subtotal = items.reduce((acc, item) => acc + item.price * item.quantity, 0)
   const shipping = 0
   const total = subtotal + shipping
 
   const updateQuantity = (id: number, delta: number) => {
-    setItems(prev => prev.map(item => 
+    setItems(prev => prev.map(item =>
       item.id === id ? { ...item, quantity: Math.max(1, item.quantity + delta) } : item
     ))
   }
 
   const removeItem = (id: number) => {
     setItems(prev => prev.filter(item => item.id !== id))
+  }
+
+  const handleCheckout = async () => {
+    if (!user) {
+      setCheckoutError('請先登入才能進行結帳')
+      router.visit('/login')
+      return
+    }
+
+    if (items.length === 0) {
+      setCheckoutError('購物車是空的，請添加商品再結帳')
+      return
+    }
+
+    setIsCheckingOut(true)
+    setCheckoutError(null)
+
+    try {
+      const token = getCookie('auth_token')
+      if (!token) {
+        throw new Error('認證令牌遺失，請重新登入')
+      }
+
+      // 首先，確保購物車存在並加入商品
+      for (const item of items) {
+        await fetch(`/carts/${user.id}/items`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            productId: `product-${item.id}`,
+            quantity: item.quantity,
+          }),
+        })
+      }
+
+      // 然後執行結帳
+      const response = await fetch(`/carts/${user.id}/checkout`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        const errorMsg = data.message || data.error || '結帳失敗，請稍後重試'
+        throw new Error(errorMsg)
+      }
+
+      // 結帳成功，重定向到訂單確認頁或支付頁
+      router.visit('/orders')
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : '結帳失敗，請稍後重試'
+      setCheckoutError(errorMessage)
+      console.error('[CartCheckout] Error:', error)
+    } finally {
+      setIsCheckingOut(false)
+    }
   }
 
   return (
@@ -140,8 +208,26 @@ export default function CartIndex() {
             </div>
 
             <div className="space-y-3">
-              <button className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all hover:-translate-y-1 active:scale-95 flex items-center justify-center gap-2">
-                結帳付款 <ChevronRight size={20} />
+              {checkoutError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+                  <p className="text-xs text-red-600 font-bold">{checkoutError}</p>
+                </div>
+              )}
+              <button
+                onClick={handleCheckout}
+                disabled={isCheckingOut || items.length === 0}
+                className="w-full py-4 bg-blue-600 text-white rounded-2xl font-black text-lg shadow-xl shadow-blue-600/20 hover:bg-blue-700 transition-all hover:-translate-y-1 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {isCheckingOut ? (
+                  <>
+                    <Loader2 size={20} className="animate-spin" />
+                    處理中...
+                  </>
+                ) : (
+                  <>
+                    結帳付款 <ChevronRight size={20} />
+                  </>
+                )}
               </button>
               <p className="text-[10px] text-center text-slate-400 font-medium px-4">
                 按下結帳即代表您同意本站的服務條款與退貨政策。
@@ -161,4 +247,17 @@ export default function CartIndex() {
       </div>
     </AppLayout>
   )
+}
+
+// Cookie 工具函數
+function getCookie(name: string): string | null {
+  const nameEQ = `${name}=`
+  const cookies = document.cookie.split(';')
+  for (let cookie of cookies) {
+    cookie = cookie.trim()
+    if (cookie.indexOf(nameEQ) === 0) {
+      return cookie.substring(nameEQ.length)
+    }
+  }
+  return null
 }

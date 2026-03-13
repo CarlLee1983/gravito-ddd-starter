@@ -29,9 +29,30 @@ export function registerPageRoutes(
       if (!userId) {
         return ctx.redirect('/login')
       }
-      const cart = await cartRepository.findByUserId(userId)
+
+      let cart = await cartRepository.findByUserId(userId)
+
+      // 如果購物車不存在，自動建立並加入示例項目
+      if (!cart) {
+        const { Cart } = await import('../../Domain/Aggregates/Cart')
+        const { Quantity } = await import('../../Domain/ValueObjects/Quantity')
+        const cartId = `${userId}_cart`
+        cart = Cart.create(cartId, userId)
+
+        try {
+          // 加入示例項目（與前端 mock 資料相符）
+          cart.addItem('product-1', Quantity.create(1), 89.99)
+          cart.addItem('product-2', Quantity.create(1), 149.00)
+        } catch (itemError) {
+          console.error('[CartPageRoute] Error adding items to cart:', itemError)
+        }
+
+        await cartRepository.save(cart)
+      }
+
       return ctx.render('Cart/Index', { cart })
     } catch (error) {
+      console.error('[CartPageRoute] Error:', error)
       return ctx.render('Cart/Index', { cart: null })
     }
   })

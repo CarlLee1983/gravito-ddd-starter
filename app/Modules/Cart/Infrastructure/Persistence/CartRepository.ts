@@ -63,9 +63,23 @@ export class CartRepository extends BaseEventSourcedRepository<Cart> implements 
 	protected toDomain(row: any): Cart {
 		const createdAt = row.created_at instanceof Date ? row.created_at : new Date(row.created_at as string)
 
-		// 在內存實現中，項目會透過事件重建
-		// 在真實 DB 實現中，應從 cart_items 表查詢
+		// 從 JSON 欄位解析購物車項目
 		const items: Array<{ productId: string; quantity: number; price: number; createdAt: Date }> = []
+		try {
+			const storedItems = row.items ? (typeof row.items === 'string' ? JSON.parse(row.items) : row.items) : []
+			if (Array.isArray(storedItems)) {
+				items.push(
+					...storedItems.map((item: any) => ({
+						productId: item.productId,
+						quantity: item.quantity,
+						price: item.price,
+						createdAt: new Date(item.createdAt),
+					}))
+				)
+			}
+		} catch (error) {
+			console.error('[CartRepository] Error parsing items:', error)
+		}
 
 		return Cart.reconstitute(
 			row.id as string,
@@ -76,11 +90,20 @@ export class CartRepository extends BaseEventSourcedRepository<Cart> implements 
 	}
 
 	protected toRow(cart: Cart): Record<string, unknown> {
+		// 序列化購物車項目為 JSON
+		const items = cart.items.map((item) => ({
+			productId: item.productId,
+			quantity: item.quantity.value,
+			price: item.price,
+			createdAt: item.createdAt.toISOString(),
+		}))
+
 		return {
 			id: cart.id,
 			user_id: cart.userId,
 			created_at: cart.createdAt.toISOString(),
 			updated_at: new Date().toISOString(),
+			items: JSON.stringify(items),
 		}
 	}
 

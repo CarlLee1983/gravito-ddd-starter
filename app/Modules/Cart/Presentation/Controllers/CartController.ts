@@ -51,7 +51,7 @@ export class CartController {
 	async addItem(ctx: IHttpContext): Promise<Response> {
 		try {
 			const { userId } = ctx.params
-			const { productId, quantity } = ctx.body as any
+			const { productId, quantity } = await ctx.getJsonBody<{ productId: string; quantity: number }>()
 
 			if (!productId || !quantity) {
 				return ctx.json({ success: false, error: '缺少必要欄位' }, 400)
@@ -98,7 +98,7 @@ export class CartController {
 	async updateItemQuantity(ctx: IHttpContext): Promise<Response> {
 		try {
 			const { userId } = ctx.params
-			const { quantity } = ctx.body as any
+			const { quantity } = await ctx.getJsonBody<{ quantity: number }>()
 
 			if (!quantity) {
 				return ctx.json({ success: false, error: '缺少數量欄位' }, 400)
