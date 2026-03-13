@@ -11,17 +11,20 @@ import appConfig from './app'
 import cacheConfig from './cache'
 import databaseConfig from './database'
 import redisConfig from './redis'
+import queueConfig from './queue'
 import { storageConfig } from './storage'
 
 export { default as app } from './app'
 export { default as cache } from './cache'
 export { default as database } from './database'
 export { default as redis } from './redis'
+export { default as queue } from './queue'
 export { getOrbits } from './orbits'
 export { storageConfig as storage } from './storage'
 
 export type { AppConfig } from './types'
 export type { OrbitRegistrationOptions } from './orbits'
+export type { QueueConfig } from './queue'
 
 /** 是否啟用資料庫（ENABLE_DB !== 'false'） */
 const useDatabase = process.env.ENABLE_DB !== 'false'
@@ -39,6 +42,7 @@ export function buildConfig(portOverride?: number) {
 		...(useDatabase && { database: databaseConfig }),
 		cache: cacheConfig,
 		redis: redisConfig,
+		queue: queueConfig,
 		storage: storageConfig,
 	}
 }
