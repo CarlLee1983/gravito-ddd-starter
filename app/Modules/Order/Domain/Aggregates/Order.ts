@@ -172,7 +172,7 @@ export class Order extends AggregateRoot {
    * 檢查訂單是否為 Pending
    */
   isPending(): boolean {
-    return this.props.status.isPending()
+    return this._status?.isPending() ?? false
   }
 
   /**

@@ -1,0 +1,105 @@
+/**
+ * @file CartRepository.ts
+ * @description 購物車倉儲實現 (ORM 無關)
+ *
+ * 在 DDD 架構中的角色：
+ * - 基礎設施層 (Infrastructure Layer)：實作領域層定義的 Repository 介面
+ * - 職責：處理 Cart 實體與底層持久化存儲之間的轉換與操作
+ */
+
+import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventStore } from '@/Shared/Infrastructure/Ports/Database/IEventStore'
+import { BaseEventSourcedRepository } from '@/Shared/Infrastructure/Database/Repositories/BaseEventSourcedRepository'
+import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
+import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { Cart } from '../../Domain/Aggregates/Cart'
+import { CartCheckoutRequested } from '../../Domain/Events/CartCheckoutRequested'
+import type { ICartRepository } from '../../Domain/Repositories/ICartRepository'
+
+/**
+ * 購物車倉儲類別
+ *
+ * 繼承 BaseEventSourcedRepository，享受統一的：
+ * - 樂觀鎖版本控制邏輯
+ * - 領域/整合事件分派
+ * - EventStore 持久化
+ */
+export class CartRepository extends BaseEventSourcedRepository<Cart> implements ICartRepository {
+	/**
+	 * 建構子
+	 *
+	 * @param db - 資料庫存取介面實例
+	 * @param eventDispatcher - 領域事件分發器實例
+	 * @param eventStore - 事件存儲實例（選擇性）
+	 */
+	constructor(
+		db: IDatabaseAccess,
+		eventDispatcher?: IEventDispatcher,
+		eventStore?: IEventStore
+	) {
+		super(db, eventDispatcher, eventStore)
+	}
+
+	/**
+	 * 根據使用者 ID 查找購物車
+	 *
+	 * @param userId - 使用者 ID
+	 * @returns Promise 購物車或 null（若不存在）
+	 */
+	async findByUserId(userId: string): Promise<Cart | null> {
+		const cartId = `${userId}_cart`
+		return this.findById(cartId)
+	}
+
+	protected getTableName(): string {
+		return 'carts'
+	}
+
+	protected getAggregateTypeName(): string {
+		return 'Cart'
+	}
+
+	protected toDomain(row: any): Cart {
+		const createdAt = row.created_at instanceof Date ? row.created_at : new Date(row.created_at as string)
+
+		// 在內存實現中，項目會透過事件重建
+		// 在真實 DB 實現中，應從 cart_items 表查詢
+		const items: Array<{ productId: string; quantity: number; price: number; createdAt: Date }> = []
+
+		return Cart.reconstitute(
+			row.id as string,
+			row.user_id as string,
+			createdAt,
+			items
+		)
+	}
+
+	protected toRow(cart: Cart): Record<string, unknown> {
+		return {
+			id: cart.id,
+			user_id: cart.userId,
+			created_at: cart.createdAt.toISOString(),
+			updated_at: new Date().toISOString(),
+		}
+	}
+
+	protected toIntegrationEvent(event: DomainEvent): IntegrationEvent | null {
+		if (event instanceof CartCheckoutRequested) {
+			return toIntegrationEvent(
+				'CartCheckoutRequested',
+				'Cart',
+				{
+					cartId: event.cartId,
+					userId: event.userId,
+					items: event.items,
+					totalAmount: event.totalAmount,
+				},
+				event.userId
+			)
+		}
+
+		// 其他事件暫不發佈至其他 Bounded Context
+		return null
+	}
+}
