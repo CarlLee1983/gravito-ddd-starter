@@ -8,8 +8,9 @@
 
 - **Standard DDD Structure**: Clearly defined Domain, Application, Infrastructure, and Presentation layers.
 - **IoC & Dependency Injection**: Powered by Gravito Core container and Service Providers.
+- **Complete Event System** ✅: Domain events, event sourcing, exponential backoff retry, and dead-letter queue (H1-H5 complete)
 - **Reference Example**: Includes a fully implemented `User` module as a best-practice reference.
-- **Testing Ready**: Pre-configured integration and unit testing environment using Bun.
+- **Testing Ready**: 363+ unit tests with 100% pass rate. Pre-configured integration and unit testing environment using Bun.
 - **Developer Experience**: Hot-reload, type-safety, and modern tooling out of the box.
 
 ## 🚀 Quick Start
@@ -95,6 +96,17 @@ gravito-ddd-starter/
 
 所有自動生成的模組都會自動使用這些基礎類別！
 
+## 🎯 Architecture Status (H1-H5 Complete) ✅
+
+**Event-Driven System** (2026-03-13 Release):
+- ✅ **H1** - Repository interface definitions (all modules compliant)
+- ✅ **H3** - Event failure policy with exponential backoff (0ms → 1s → 2s → 4s → 8s)
+- ✅ **H4** - Unified event dispatcher (Memory, Redis, RabbitMQ)
+- ✅ **H5** - Failure handling and dead-letter queue (26 specialized tests)
+- ✅ **363/363 unit tests** passing with zero regressions
+
+See [EVENT_SYSTEM.md](./docs/02-Architecture/EVENT_SYSTEM.md) for complete details.
+
 ## 📚 Documentation
 
 Learn the architecture and best practices:
@@ -105,6 +117,7 @@ Learn the architecture and best practices:
 
 ### 📖 Core Documentation
 - **[ARCHITECTURE.md](./docs/ARCHITECTURE.md)** - DDD architecture, patterns, and data flow
+- **[EVENT_SYSTEM.md](./docs/02-Architecture/EVENT_SYSTEM.md)** ✅ **NEW** - Complete event-driven system guide
 - **[MODULE_GUIDE.md](./docs/MODULE_GUIDE.md)** - Creating new modules with best practices
 - **[MODULE_ADD_CHECKLIST.md](./docs/MODULE_ADD_CHECKLIST.md)** - New module setup checklist
 - **[API_GUIDELINES.md](./docs/API_GUIDELINES.md)** - REST API design standards

@@ -10,6 +10,9 @@
 ### 2. [核心架構設計](./02-Architecture/CORE_DESIGN.md)
 深入理解 PlanetCore 容器、依賴注入 (DI) 與系統抽象化原則。
 
+### 2B. [事件驅動系統](./02-Architecture/EVENT_SYSTEM.md) ✅ **完成**
+領域事件、事件分發、重試機制和死信隊列的完整實現。支援三種分發策略（Memory、Redis、RabbitMQ）。
+
 ### 3. [領域驅動設計 (DDD) 實踐](./03-DDD-Design/DDD_PATTERNS.md)
 聚合根、值物件、領域事件與防腐層 (ACL) 的實作規範。
 
