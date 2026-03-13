@@ -32,7 +32,8 @@ export abstract class DomainException extends Error {
 	) {
 		super(message)
 		this.name = this.constructor.name
-		Object.setPrototypeOf(this, DomainException.prototype)
+		// 確保正確的原型鏈，使 instanceof 檢查正常運作
+		Object.setPrototypeOf(this, new.target.prototype)
 	}
 
 	/**

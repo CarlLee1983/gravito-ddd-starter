@@ -28,6 +28,7 @@ import type { IPostRepository } from '@/Modules/Post/Domain/Repositories/IPostRe
 import type { IAuthorService } from '@/Modules/Post/Domain/Services/IAuthorService'
 import type { ILogger } from '@/Shared/Infrastructure/ILogger'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/IDatabaseAccess'
+import { EntityNotFoundException, DuplicateEntityException } from '@/Shared/Domain/Exceptions'
 import type { IEventDispatcher } from '@/Shared/Infrastructure/IEventDispatcher'
 
 // ============ ValueObject 驗證測試 ============
@@ -362,7 +363,7 @@ describe('Phase 3: CreatePostService Workflow', () => {
         content: 'Content',
         authorId: 'nonexistent',
       })
-    ).rejects.toThrow('作者不存在')
+    ).rejects.toThrow(EntityNotFoundException)
   })
 
   it('should prevent duplicate title registration', async () => {
@@ -383,7 +384,7 @@ describe('Phase 3: CreatePostService Workflow', () => {
         content: 'New content',
         authorId: 'author-16',
       })
-    ).rejects.toThrow('標題已被使用')
+    ).rejects.toThrow(DuplicateEntityException)
   })
 
   it('should persist post with events', async () => {
@@ -463,7 +464,7 @@ describe('Phase 3: WelcomePostAutomation (Cross-Bounded Context)', () => {
     await automation.handle(integrationEvent)
 
     expect(savedPost).not.toBeNull()
-    expect(savedPost?.title.value).toContain('歡迎來到我的部落格')
+    expect(savedPost?.title.value).toContain('John Doe 的歡迎文章')
     expect(savedPost?.authorId).toBe('user-1')
   })
 

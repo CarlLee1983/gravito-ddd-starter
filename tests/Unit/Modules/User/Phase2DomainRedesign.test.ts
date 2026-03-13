@@ -20,6 +20,7 @@ import { UserCreated } from '@/Modules/User/Domain/Events/UserCreated'
 import { UserDTO } from '@/Modules/User/Application/DTOs/UserDTO'
 import { CreateUserService } from '@/Modules/User/Application/Services/CreateUserService'
 import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
+import { DuplicateEntityException } from '@/Shared/Domain/Exceptions'
 
 // ============ ValueObject 驗證測試 ============
 
@@ -367,7 +368,7 @@ describe('Phase 2: CreateUserService Workflow', () => {
         name: 'Henry Hall',
         email: 'taken@example.com',
       })
-    ).rejects.toThrow('電子郵件已被使用')
+    ).rejects.toThrow(DuplicateEntityException)
   })
 
   it('should persist user with events', async () => {
