@@ -62,9 +62,9 @@ export default function CartIndex() {
         throw new Error('認證令牌遺失，請重新登入')
       }
 
-      // 首先，確保購物車存在並加入商品
+      // 首先，確保購物車存在並加入商品（忽略已存在的商品）
       for (const item of items) {
-        await fetch(`/carts/${user.id}/items`, {
+        const addResponse = await fetch(`/carts/${user.id}/items`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -75,6 +75,11 @@ export default function CartIndex() {
             quantity: item.quantity,
           }),
         })
+
+        // 如果商品已存在（狀態 400），忽略錯誤並繼續
+        if (!addResponse.ok && addResponse.status !== 400) {
+          throw new Error(`無法加入商品 ${item.name}`)
+        }
       }
 
       // 然後執行結帳
