@@ -98,7 +98,7 @@ export class RabbitMQEventDispatcher extends BaseEventDispatcher {
    */
   async startConsuming(): Promise<void> {
     if (this.isConsuming) {
-      logger.warn('Consumer already started')
+      this.logger?.warn('Consumer already started')
       return
     }
 
@@ -130,18 +130,18 @@ export class RabbitMQEventDispatcher extends BaseEventDispatcher {
             await this.executeHandlers(eventName, eventData)
             ack()
           } catch (error) {
-            logger.error(`Error processing message from ${queueName}:`, error)
+            this.logger?.error(`Error processing message from ${queueName}:`, error)
             nack(true) // 重新加入隊列
           }
         })
 
-        logger.info(`Consumer started for event: ${binding.eventName} (queue: ${queueName})`)
+        this.logger?.info(`Consumer started for event: ${binding.eventName} (queue: ${queueName})`)
       }
 
       this.isConsuming = true
-      logger.info('RabbitMQ event consumers started')
+      this.logger?.info('RabbitMQ event consumers started')
     } catch (error) {
-      logger.error('Failed to start consuming:', error)
+      this.logger?.error('Failed to start consuming:', error)
       throw error
     }
   }

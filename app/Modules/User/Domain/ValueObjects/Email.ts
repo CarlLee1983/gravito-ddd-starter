@@ -7,7 +7,7 @@
 
 import { ValueObject } from '@/Shared/Domain/ValueObject'
 
-interface EmailProps {
+interface EmailProps extends Record<string, unknown> {
   readonly value: string
 }
 

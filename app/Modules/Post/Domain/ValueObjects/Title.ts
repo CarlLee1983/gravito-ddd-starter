@@ -7,7 +7,7 @@
 
 import { ValueObject } from '@/Shared/Domain/ValueObject'
 
-interface TitleProps {
+interface TitleProps extends Record<string, unknown> {
   readonly value: string
 }
 

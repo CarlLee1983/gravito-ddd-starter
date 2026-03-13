@@ -8,7 +8,7 @@
 
 import { ValueObject } from '@/Shared/Domain/ValueObject'
 
-interface ContentProps {
+interface ContentProps extends Record<string, unknown> {
   readonly value: string
 }
 

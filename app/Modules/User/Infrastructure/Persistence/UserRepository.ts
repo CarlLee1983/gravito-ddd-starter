@@ -115,8 +115,9 @@ export class UserRepository extends BaseEventSourcedRepository<User> implements 
 		const email = Email.create(row.email as string)
 		const name = UserName.create(row.name as string)
 		const createdAt = row.created_at instanceof Date ? row.created_at : new Date(row.created_at as string)
+		const passwordHash = row.password_hash as string | undefined
 
-		return User.reconstitute(row.id as string, name, email, createdAt)
+		return User.reconstitute(row.id as string, name, email, createdAt, passwordHash)
 	}
 
 	/**
@@ -131,6 +132,7 @@ export class UserRepository extends BaseEventSourcedRepository<User> implements 
 			id: user.id,
 			name: user.name.value,
 			email: user.email.value,
+			password_hash: user.passwordHash ?? null,
 			created_at: user.createdAt.toISOString(),
 			updated_at: new Date().toISOString(),
 		}

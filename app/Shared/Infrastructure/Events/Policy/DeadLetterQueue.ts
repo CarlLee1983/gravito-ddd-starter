@@ -6,7 +6,7 @@
  */
 
 import type { DeadLetterEntry } from './EventFailurePolicy'
-import type { ILogger } from '../Ports/Services/ILogger'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
 
 /**
  * 死信隊列介面

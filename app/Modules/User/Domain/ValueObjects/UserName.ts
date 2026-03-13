@@ -7,7 +7,7 @@
 
 import { ValueObject } from '@/Shared/Domain/ValueObject'
 
-interface UserNameProps {
+interface UserNameProps extends Record<string, unknown> {
   readonly value: string
 }
 

@@ -11,7 +11,6 @@
 import { Title } from '../../Domain/ValueObjects/Title'
 import { PostDTO } from '../DTOs/PostDTO'
 import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
-import type { IAuthorService } from '../../Domain/Services/IAuthorService'
 import type { IPostQueryService } from '../Queries/IPostQueryService'
 import type { PostReadModel } from '../ReadModels/PostReadModel'
 
@@ -32,12 +31,8 @@ export class GetPostService implements IPostQueryService {
    * 建立 GetPostService 實例
    *
    * @param repository - 文章倉儲介面
-   * @param authorService - 作者服務 Port（用於獲取作者資訊）
    */
-  constructor(
-    private repository: IPostRepository,
-    private authorService: IAuthorService
-  ) {}
+  constructor(private repository: IPostRepository) {}
 
   /**
    * 按 ID 查詢單個文章 (IQuerySide 介面)

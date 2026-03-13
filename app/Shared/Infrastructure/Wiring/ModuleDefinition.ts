@@ -11,6 +11,7 @@ import type { IDatabaseAccess } from '../Ports/Database/IDatabaseAccess'
 import type { ModuleServiceProvider } from '../Ports/Core/IServiceProvider'
 import type { IEventDispatcher } from '../Ports/Messaging/IEventDispatcher'
 import type { IModuleRouter } from '../../Presentation/IModuleRouter'
+import type { IAuthRouter } from '../../Presentation/IAuthRouter'
 
 /**
  * 路由註冊用 Context（框架無關）
@@ -21,6 +22,8 @@ export interface IRouteRegistrationContext {
 	container: { make(name: string): unknown }
 	/** 建立模組用路由實例 */
 	createModuleRouter(): IModuleRouter
+	/** 建立認證路由實例（選填，用於需要 JWT Guard 的模組） */
+	createAuthRouter?(): IAuthRouter
 }
 
 /**

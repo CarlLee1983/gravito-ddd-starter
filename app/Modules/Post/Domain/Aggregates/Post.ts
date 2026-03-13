@@ -31,7 +31,7 @@ export class Post extends AggregateRoot {
   private _title!: Title
   private _content!: Content
   private _authorId!: string
-  private _createdAt!: Date
+  protected _createdAt!: Date
   private _isPublished: boolean = false
   private _isArchived: boolean = false
 

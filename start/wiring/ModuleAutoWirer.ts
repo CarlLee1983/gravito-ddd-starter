@@ -11,10 +11,12 @@ import type { PlanetCore } from '@gravito/core'
 import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
 import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
 import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
+import { createGravitoAuthRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoAuthRouter'
 import type {
 	IModuleDefinition,
 	IRouteRegistrationContext,
 } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { ITokenValidator } from '@/Shared/Infrastructure/Ports/Auth/ITokenValidator'
 
 /**
  * 模組自動裝配器類別
@@ -73,6 +75,18 @@ export class ModuleAutoWirer {
 					const routeCtx: IRouteRegistrationContext = {
 						container: core.container,
 						createModuleRouter: () => createGravitoModuleRouter(core),
+						createAuthRouter: () => {
+							// 嘗試從容器取得 ITokenValidator 實現
+							try {
+								const tokenValidator = core.container.make(
+									'tokenValidator'
+								) as ITokenValidator
+								return createGravitoAuthRouter(core, tokenValidator)
+							} catch {
+								// 若未註冊 tokenValidator，拋出清晰的錯誤訊息
+								throw new Error('ITokenValidator 未實現，無法創建 Auth Router（確保 Session 模組已裝配並正確實現 ITokenValidator）')
+							}
+						},
 					}
 					moduleDef.registerRoutes(routeCtx)
 				}

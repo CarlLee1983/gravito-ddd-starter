@@ -51,8 +51,7 @@ export class PostServiceProvider extends ModuleServiceProvider {
 		// 註冊應用層讀取服務（CQRS 讀側）
 		container.singleton('getPostService', (c) => {
 			return new GetPostService(
-				c.make('postRepository'),
-				c.make('authorService')
+				c.make('postRepository')
 			)
 		})
 
@@ -82,10 +81,10 @@ export class PostServiceProvider extends ModuleServiceProvider {
 	/**
 	 * 啟動時執行模組初始化邏輯
 	 *
-	 * @param core - 啟動上下文 (Gravito 核心實例)
+	 * @param _core - 啟動上下文 (Gravito 核心實例)
 	 * @returns void
 	 */
-	override boot(core: any): void {
+	override boot(_core: any): void {
 		// 開發環境輸出 ORM 信息用於調試
 		if (process.env.NODE_ENV === 'development') {
 			const orm = getCurrentORM()

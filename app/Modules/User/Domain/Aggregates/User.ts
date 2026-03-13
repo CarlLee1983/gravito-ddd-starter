@@ -20,12 +20,6 @@ import { Email } from '../ValueObjects/Email'
 import { UserName } from '../ValueObjects/UserName'
 import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
 
-interface UserProps {
-  readonly name: UserName
-  readonly email: Email
-  readonly createdAt: Date
-}
-
 /**
  * 用戶聚合根
  *
@@ -35,7 +29,8 @@ interface UserProps {
 export class User extends AggregateRoot {
   private _name!: UserName
   private _email!: Email
-  private _createdAt!: Date
+  private _passwordHash?: string
+  protected _createdAt!: Date
 
   /**
    * 私有建構子，強制使用靜態工廠方法建立實體
@@ -76,19 +71,42 @@ export class User extends AggregateRoot {
    * @param name - 用戶名稱 ValueObject
    * @param email - 用戶電子郵件 ValueObject
    * @param createdAt - 建立時間
+   * @param passwordHash - 密碼雜湊值（選填，向後相容）
    * @returns 還原後的 User 實體
    */
   static reconstitute(
     id: string,
     name: UserName,
     email: Email,
-    createdAt: Date
+    createdAt: Date,
+    passwordHash?: string
   ): User {
     const user = new User(id)
     user._name = name
     user._email = email
+    user._passwordHash = passwordHash
     // 防禦性複製 Date 物件，防止外部代碼修改內部狀態
     user._createdAt = new Date(createdAt.getTime())
+    return user
+  }
+
+  /**
+   * 建立帶密碼的新用戶聚合根
+   *
+   * @param id - 唯一識別碼
+   * @param name - 用戶名稱 ValueObject
+   * @param email - 用戶電子郵件 ValueObject
+   * @param passwordHash - 密碼雜湊值
+   * @returns 新的 User 實體（包含未提交事件）
+   */
+  static createWithPassword(
+    id: string,
+    name: UserName,
+    email: Email,
+    passwordHash: string
+  ): User {
+    const user = User.create(id, name, email)
+    user._passwordHash = passwordHash
     return user
   }
 
@@ -151,6 +169,17 @@ export class User extends AggregateRoot {
     this.raiseEvent(new UserEmailChanged(this.id, newEmail.value))
   }
 
+  /**
+   * 驗證原文密碼
+   *
+   * @param plain - 原文密碼
+   * @returns Promise<boolean> 是否匹配
+   */
+  async verifyPassword(plain: string): Promise<boolean> {
+    if (!this._passwordHash) return false
+    return await Bun.password.verify(plain, this._passwordHash)
+  }
+
   // ============ Getters （只讀屬性） ============
 
   /** 取得用戶名稱 ValueObject */
@@ -161,6 +190,11 @@ export class User extends AggregateRoot {
   /** 取得用戶電子郵件 ValueObject */
   get email(): Email {
     return this._email
+  }
+
+  /** 取得密碼雜湊值（供 Repository 保存） */
+  get passwordHash(): string | undefined {
+    return this._passwordHash
   }
 
   /** 取得建立時間 */

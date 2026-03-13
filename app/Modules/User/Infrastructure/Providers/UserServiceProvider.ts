@@ -26,6 +26,7 @@ import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { SendWelcomeEmail } from '../../Application/Handlers/SendWelcomeEmail'
 import { SendWelcomeEmailJob } from '../../Application/Jobs/SendWelcomeEmailJob'
+import { UserCredentialVerifier } from '../Adapters/UserCredentialVerifier'
 import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
 import { JobRegistry } from '@/Shared/Infrastructure/Registries/JobRegistry'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
@@ -51,7 +52,13 @@ export class UserServiceProvider extends ModuleServiceProvider {
 		// 1. 從 Registry 取得 Repository（ORM 選擇已由 Registry 處理）
 		container.singleton('userRepository', () => resolveRepository('user'))
 
-		// 2. Application Services（供 Controller 使用）
+		// 2. 實現 ICredentialVerifier Port（供 Session 模組使用）
+		container.singleton('credentialVerifier', (c) => {
+			const userRepository = c.make('userRepository') as IUserRepository
+			return new UserCredentialVerifier(userRepository)
+		})
+
+		// 3. Application Services（供 Controller 使用）
 		container.singleton('createUserService', (c) => {
 			return new CreateUserService(c.make('userRepository') as IUserRepository)
 		})
@@ -59,7 +66,7 @@ export class UserServiceProvider extends ModuleServiceProvider {
 			return new GetUserService(c.make('userRepository') as IUserRepository)
 		})
 
-		// 3. 註冊 Job（單例）
+		// 4. 註冊 Job（單例）
 		container.singleton('sendWelcomeEmailJob', (c) => {
 			return new SendWelcomeEmailJob(
 				c.make('mailer') as IMailer,
@@ -68,7 +75,7 @@ export class UserServiceProvider extends ModuleServiceProvider {
 			)
 		})
 
-		// 4. 向 JobRegistry 聲明 Job（用於中心化綁定）
+		// 5. 向 JobRegistry 聲明 Job（用於中心化綁定）
 		JobRegistry.register({
 			moduleName: 'User',
 			jobs: [
@@ -79,7 +86,7 @@ export class UserServiceProvider extends ModuleServiceProvider {
 			],
 		})
 
-		// 5. 註冊歡迎信 Handler (單例) - 現在 dispatch Job 而非直接發送
+		// 6. 註冊歡迎信 Handler (單例) - 現在 dispatch Job 而非直接發送
 		container.singleton('sendWelcomeEmailHandler', (c) => {
 			return new SendWelcomeEmail(
 				c.make('jobQueue') as IJobQueue,
