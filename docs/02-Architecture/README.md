@@ -119,6 +119,17 @@
 - 複雜業務 → 完整 DDD + Domain Service
 - 避免過度設計
 
+### 5. Infrastructure 層最佳實踐（新增 2026-03-13）
+- **Port 介面分類** - 按功能分離到 `Ports/` 目錄
+  - `Ports/Core/` - 日誌、健康檢查等核心介面
+  - `Ports/Database/` - ORM 無關數據庫訪問
+  - `Ports/Messaging/` - 事件分發和消息隊列
+  - `Ports/Services/` - Redis、快取等應用服務
+  - `Ports/Storage/` - 文件存儲（S3 等）
+- **完全不使用 console.log** - 統一使用 ILogger 介面
+- **改進查詢錯誤處理** - 異常不再被靜默吞掉
+- **Repository 層消除重複** - 統一基類和工廠實現
+
 ---
 
 ## 🔗 相關資源
@@ -141,4 +152,4 @@
 ← [快速上手](../01-Getting-Started/)
 → [DDD 設計](../03-DDD-Design/)
 
-最後更新: 2026-03-11
+最後更新: 2026-03-13

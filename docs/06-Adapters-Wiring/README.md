@@ -8,12 +8,71 @@
 
 | 文檔 | 用途 |
 |------|------|
-| **[ADAPTER_INFRASTRUCTURE_GUIDE.md](./ADAPTER_INFRASTRUCTURE_GUIDE.md)** | 基礎設施適配層設計 |
+| **[ADAPTER_INFRASTRUCTURE_GUIDE.md](./ADAPTER_INFRASTRUCTURE_GUIDE.md)** | 基礎設施適配層設計與 Port 分類 |
 | **[WIRING_GUIDE.md](./WIRING_GUIDE.md)** | 依賴組裝和模組註冊 |
 | **[WIRING_QUICK_REFERENCE.md](./WIRING_QUICK_REFERENCE.md)** | 快速參考 |
 | **[ADAPTER_INTEGRATION_EXAMPLES.md](./ADAPTER_INTEGRATION_EXAMPLES.md)** | 完整集成範例 |
 | **[ADAPTERS_AND_EXTENSIONS.md](./ADAPTERS_AND_EXTENSIONS.md)** | 適配器設計模式 |
 | **[SMART_FACTORY_OPTIMIZATION.md](./SMART_FACTORY_OPTIMIZATION.md)** | 工廠優化技巧 |
+| **[INFRASTRUCTURE_DIRECTORY_STRUCTURE.md](./INFRASTRUCTURE_DIRECTORY_STRUCTURE.md)** | Infrastructure 層新目錄結構（2026-03-13） |
+
+---
+
+## 🎯 最近改進 (2026-03-13)
+
+### Infrastructure 層結構優化 ✅
+
+基礎設施層已完成重大重組，改善代碼組織和可維護性：
+
+#### 新的 Ports/ 目錄結構
+```
+src/Shared/Infrastructure/Ports/
+├── Core/
+│   ├── ILogger.ts              # 統一日誌介面（取代所有 console.log）
+│   └── IHealthCheck.ts          # 健康檢查介面
+├── Database/
+│   ├── IDatabaseAccess.ts       # ORM 無關數據庫訪問
+│   └── IDatabaseConnectivityCheck.ts
+├── Messaging/
+│   ├── IEventDispatcher.ts      # 事件分發器介面
+│   └── IDeadLetterQueue.ts      # 死信隊列介面
+├── Services/
+│   ├── IRedisService.ts         # Redis 快取介面
+│   └── ICacheService.ts         # 應用層快取
+└── Storage/
+    └── IS3Service.ts            # S3 存儲介面（預留）
+```
+
+#### Adapters/ 按來源分類
+```
+src/Shared/Infrastructure/Adapters/
+├── Gravito/                     # Gravito 框架適配器
+├── RabbitMQ/                    # RabbitMQ 消息隊列適配
+├── Redis/                       # Redis 快取適配
+└── S3/                          # AWS S3 存儲適配（預留）
+```
+
+#### Events/ 事件系統獨立組織
+```
+src/Shared/Infrastructure/Events/
+├── MemoryEventDispatcher.ts
+├── RedisEventDispatcher.ts
+├── RabbitMQEventDispatcher.ts
+├── MemoryDeadLetterQueue.ts
+└── RedisDeadLetterQueue.ts
+```
+
+### 品質改善
+- ✅ **安全漏洞修復** - 消除 2 個 CRITICAL（XSS、容器遞迴）
+- ✅ **日誌統一** - 74 個 console.log → ILogger
+- ✅ **查詢錯誤不再沉默** - 改進異常傳播
+- ✅ **Repository 去重** - 消除 ~300 行重複代碼
+
+### 為何重組？
+1. **可發現性** - 按功能而非隨意聚集
+2. **可維護性** - 清晰的層級和責任邊界
+3. **可擴展性** - 新增 Port/Adapter 時無需改動舊代碼
+4. **框架無關性** - Port 介面完全獨立於 Gravito 框架
 
 ---
 
@@ -137,4 +196,4 @@ export const registerUser = (core: PlanetCore) => {
 ← [數據庫 ORM](../05-Database-ORM/)
 → [生產部署](../07-Production-Deployment/)
 
-最後更新: 2026-03-11
+最後更新: 2026-03-13
