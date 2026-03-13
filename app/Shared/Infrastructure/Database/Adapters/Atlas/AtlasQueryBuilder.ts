@@ -10,6 +10,7 @@
  */
 
 import type { IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
 import * as Atlas from '@gravito/atlas'
 
 /**
@@ -39,8 +40,12 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	/**
 	 * 建構子
 	 * @param tableName - 目標資料表名稱
+	 * @param logger - 日誌服務（可選）
 	 */
-	constructor(private tableName: string) {}
+	constructor(
+		private tableName: string,
+		private logger?: ILogger
+	) {}
 
 	/**
 	 * 添加 WHERE 查詢條件
@@ -59,15 +64,16 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 * 取得符合條件的第一筆記錄
 	 *
 	 * @returns 回傳第一筆記錄物件，若找不到則回傳 null
+	 * @throws 拋出資料庫查詢錯誤
 	 */
 	async first(): Promise<Record<string, unknown> | null> {
 		try {
 			let query = (getDB() as any).table(this.tableName)
-			console.log(`[AtlasQueryBuilder] FIRST from table: ${this.tableName}`)
+			this.logger?.debug(`FIRST from table: ${this.tableName}`, { tableName: this.tableName })
 
 			// 應用累積的 WHERE 條件
 			for (const cond of this.whereConditions) {
-				console.log(`[AtlasQueryBuilder] WHERE ${cond.column} ${cond.operator} ${cond.value}`)
+				this.logger?.debug(`WHERE ${cond.column} ${cond.operator} ${cond.value}`, { condition: cond })
 				query = this.applyWhere(query, cond)
 			}
 
@@ -82,16 +88,18 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 
 			// 調用 .get() 來實際執行查詢
 			const result = await query.get()
-			console.log(`[AtlasQueryBuilder] FIRST result type: ${typeof result}, isArray: ${Array.isArray(result)}, length: ${result ? (Array.isArray(result) ? result.length : 'not-array') : 'null'}`)
+			this.logger?.debug(`FIRST result type: ${typeof result}, isArray: ${Array.isArray(result)}`, { resultType: typeof result, isArray: Array.isArray(result) })
 
 			// .get() 返回陣列，取第一個元素
 			const rows = Array.isArray(result) ? result : []
-			console.log(`[AtlasQueryBuilder] Returning ${rows.length ? 'one row' : 'no rows'}`)
+			this.logger?.debug(`Returning ${rows.length ? 'one row' : 'no rows'}`, { rowCount: rows.length })
 
 			return rows[0] || null
 		} catch (error) {
-			console.error(`Error in first(): ${error}`)
-			return null
+			const err = error instanceof Error ? error : new Error(String(error))
+			err.message = `AtlasQueryBuilder.first() failed: ${err.message}`
+			this.logger?.error(`Error in first()`, err)
+			throw err
 		}
 	}
 
@@ -99,15 +107,16 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 * 取得符合條件的所有多筆記錄
 	 *
 	 * @returns 記錄物件陣列
+	 * @throws 拋出資料庫查詢錯誤
 	 */
 	async select(): Promise<Record<string, unknown>[]> {
 		try {
 			let query = (getDB() as any).table(this.tableName)
-			console.log(`[AtlasQueryBuilder] SELECT from table: ${this.tableName}`)
+			this.logger?.debug(`SELECT from table: ${this.tableName}`, { tableName: this.tableName })
 
 			// 應用所有 WHERE 條件
 			for (const cond of this.whereConditions) {
-				console.log(`[AtlasQueryBuilder] WHERE ${cond.column} ${cond.operator} ${cond.value}`)
+				this.logger?.debug(`WHERE ${cond.column} ${cond.operator} ${cond.value}`, { condition: cond })
 				query = this.applyWhere(query, cond)
 			}
 
@@ -129,15 +138,17 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 
 			// 調用 .get() 來實際執行查詢
 			const result = await query.get()
-			console.log(`[AtlasQueryBuilder] SELECT result type: ${typeof result}, isArray: ${Array.isArray(result)}, count: ${Array.isArray(result) ? result.length : 'unknown'}`)
+			this.logger?.debug(`SELECT result type: ${typeof result}, isArray: ${Array.isArray(result)}`, { resultType: typeof result, isArray: Array.isArray(result) })
 
 			// .get() 返回陣列
 			const rows = Array.isArray(result) ? result : []
-			console.log(`[AtlasQueryBuilder] Returning ${rows.length} rows`)
+			this.logger?.debug(`Returning ${rows.length} rows`, { rowCount: rows.length })
 			return rows
 		} catch (error) {
-			console.error(`Error in select(): ${error}`)
-			return []
+			const err = error instanceof Error ? error : new Error(String(error))
+			err.message = `AtlasQueryBuilder.select() failed: ${err.message}`
+			this.logger?.error(`Error in select()`, err)
+			throw err
 		}
 	}
 
@@ -151,7 +162,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 		try {
 			await (getDB() as any).table(this.tableName).insert(data)
 		} catch (error) {
-			console.error(`Error in insert(): ${error}`)
+			this.logger?.error(`Error in insert()`, error instanceof Error ? error : new Error(String(error)))
 			throw error
 		}
 	}
@@ -173,7 +184,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 
 			await query.update(data)
 		} catch (error) {
-			console.error(`Error in update(): ${error}`)
+			this.logger?.error(`Error in update()`, error instanceof Error ? error : new Error(String(error)))
 			throw error
 		}
 	}
@@ -194,7 +205,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 
 			await query.delete()
 		} catch (error) {
-			console.error(`Error in delete(): ${error}`)
+			this.logger?.error(`Error in delete()`, error instanceof Error ? error : new Error(String(error)))
 			throw error
 		}
 	}
@@ -238,6 +249,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 * 計算符合條件的記錄總筆數
 	 *
 	 * @returns 符合條件的總筆數
+	 * @throws 拋出資料庫查詢錯誤
 	 */
 	async count(): Promise<number> {
 		try {
@@ -252,8 +264,10 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 			const count = await query.count()
 			return count || 0
 		} catch (error) {
-			console.error(`Error in count(): ${error}`)
-			return 0
+			const err = error instanceof Error ? error : new Error(String(error))
+			err.message = `AtlasQueryBuilder.count() failed: ${err.message}`
+			this.logger?.error(`Error in count()`, err)
+			throw err
 		}
 	}
 

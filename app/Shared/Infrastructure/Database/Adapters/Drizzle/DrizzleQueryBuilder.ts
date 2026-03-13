@@ -10,6 +10,7 @@
  */
 
 import type { IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
 import { and, eq, ne, gt, lt, gte, lte, like, inArray, between, asc, desc, countDistinct } from 'drizzle-orm'
 import { getDrizzleInstance } from './config'
 
@@ -33,11 +34,13 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
    * @param db - Drizzle 資料庫實例
    * @param tableName - 資料表名稱
    * @param tableSchema - Drizzle 資料表 Schema 定義
+   * @param logger - 日誌服務（可選）
    */
   constructor(
     private db: ReturnType<typeof getDrizzleInstance>,
     private tableName: string,
-    private tableSchema: any
+    private tableSchema: any,
+    private logger?: ILogger
   ) {}
 
   /**
@@ -93,6 +96,7 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
    * 取得符合條件的第一筆記錄
    *
    * @returns 回傳第一筆記錄物件，若找不到則回傳 null
+   * @throws 拋出資料庫查詢錯誤
    */
   async first(): Promise<Record<string, unknown> | null> {
     try {
@@ -108,8 +112,10 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
 
       return results[0] || null
     } catch (error) {
-      console.error(`Error in first(): ${error}`)
-      return null
+      const err = error instanceof Error ? error : new Error(String(error))
+      err.message = `DrizzleQueryBuilder.first() failed: ${err.message}`
+      this.logger?.error(`Error in first()`, err)
+      throw err
     }
   }
 
@@ -117,6 +123,7 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
    * 取得符合條件的所有多筆記錄
    *
    * @returns 記錄物件陣列
+   * @throws 拋出資料庫查詢錯誤
    */
   async select(): Promise<Record<string, unknown>[]> {
     try {
@@ -143,8 +150,10 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
 
       return await query
     } catch (error) {
-      console.error(`Error in select(): ${error}`)
-      return []
+      const err = error instanceof Error ? error : new Error(String(error))
+      err.message = `DrizzleQueryBuilder.select() failed: ${err.message}`
+      this.logger?.error(`Error in select()`, err)
+      throw err
     }
   }
 
@@ -158,7 +167,7 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
     try {
       await this.db.insert(this.tableSchema).values(data)
     } catch (error) {
-      console.error(`Error in insert(): ${error}`)
+      this.logger?.error(`Error in insert()`, error instanceof Error ? error : new Error(String(error)))
       throw error
     }
   }
@@ -179,7 +188,7 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
 
       await query
     } catch (error) {
-      console.error(`Error in update(): ${error}`)
+      this.logger?.error(`Error in update()`, error instanceof Error ? error : new Error(String(error)))
       throw error
     }
   }
@@ -199,7 +208,7 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
 
       await query
     } catch (error) {
-      console.error(`Error in delete(): ${error}`)
+      this.logger?.error(`Error in delete()`, error instanceof Error ? error : new Error(String(error)))
       throw error
     }
   }
@@ -243,6 +252,7 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
    * 計算符合條件的記錄總筆數
    *
    * @returns 符合條件的總筆數 (預設使用 id 進行 count)
+   * @throws 拋出資料庫查詢錯誤
    */
   async count(): Promise<number> {
     try {
@@ -260,8 +270,10 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
 
       return result[0]?.count || 0
     } catch (error) {
-      console.error(`Error in count(): ${error}`)
-      return 0
+      const err = error instanceof Error ? error : new Error(String(error))
+      err.message = `DrizzleQueryBuilder.count() failed: ${err.message}`
+      this.logger?.error(`Error in count()`, err)
+      throw err
     }
   }
 
