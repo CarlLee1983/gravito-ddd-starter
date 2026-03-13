@@ -23,11 +23,11 @@ export function registerPostRoutes(
 	controller: PostController,
 ): void {
 	/** 取得文章列表 */
-	router.get('/api/Post', [exceptionHandlingMiddleware], (ctx) => controller.index(ctx))
+	router.get('/api/posts', [exceptionHandlingMiddleware], (ctx) => controller.index(ctx))
 
 	/** 取得單一文章 */
-	router.get('/api/Post/:id', [exceptionHandlingMiddleware], (ctx) => controller.show(ctx))
+	router.get('/api/posts/:id', [exceptionHandlingMiddleware], (ctx) => controller.show(ctx))
 
 	/** 建立新文章 - 可能拋出 EntityNotFoundException 或 DuplicateEntityException */
-	router.post('/api/Post', [exceptionHandlingMiddleware], (ctx) => controller.store(ctx))
+	router.post('/api/posts', [exceptionHandlingMiddleware], (ctx) => controller.store(ctx))
 }

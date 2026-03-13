@@ -31,10 +31,6 @@ export function wirePortalRoutes(ctx: IRouteRegistrationContext): void {
   }
 
   const controller = new PortalController(productQuery)
-  
-  router.get('/test-module-router', async (ctx) => {
-    return ctx.text('Module router success')
-  })
 
   // 1. 註冊 API 路由 (/api/portal/...)
   console.log('[PortalWiring] Calling registerPortalRoutes')

@@ -37,8 +37,23 @@ export { SessionServiceProvider } from './Infrastructure/Providers/SessionServic
 
 /**
  * 模組定義物件（用於自動裝配）
+ *
+ * 🔒 Session 為內部服務模組
+ *
+ * 架構角色：
+ * - 由 Auth 模組獨占使用
+ * - 管理用戶認證會話的生命週期
+ * - 不對外公開 HTTP 路由
+ *
+ * 生命週期：
+ * - 登入時：Auth.LoginService → SessionRepository.create()
+ * - 驗證時：Auth.ValidateSessionService → ISessionRepository.validate()
+ * - 登出時：Auth.LogoutService → ISessionRepository.revoke()
+ *
+ * 無需實現 registerRoutes()，因為會話操作完全由 Auth 模組管理
  */
 export const SessionModule: IModuleDefinition = {
   name: 'Session',
   provider: SessionServiceProvider,
+  // Session 為內部服務，無需 HTTP 路由層 (Presentation)
 }

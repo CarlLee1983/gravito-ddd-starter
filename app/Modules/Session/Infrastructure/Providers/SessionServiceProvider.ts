@@ -37,7 +37,13 @@ export class SessionServiceProvider extends ModuleServiceProvider {
 
     // 2. 註冊 Session Repository（記憶體實現）
     container.singleton('sessionRepository', (c) => {
-      const eventDispatcher = c.make('eventDispatcher') as IEventDispatcher | undefined
+      let eventDispatcher: IEventDispatcher | undefined
+      try {
+        eventDispatcher = c.make('eventDispatcher') as IEventDispatcher
+      } catch {
+        // eventDispatcher 可能在路由裝配階段不可用，使用 undefined
+        eventDispatcher = undefined
+      }
       return new MemorySessionRepository(eventDispatcher)
     })
 

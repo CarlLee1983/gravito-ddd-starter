@@ -22,32 +22,52 @@ import type { ILogger } from '@/Shared/Infrastructure/Ports/Core/ILogger'
 export function wireProductRoutes(ctx: IRouteRegistrationContext): void {
   const router = ctx.createModuleRouter()
 
-  // 嘗試從容器取得服務
-  let productRepository: any
-  let logger: ILogger
-  let queryService: IProductQueryService
-  let createProductService: CreateProductService
-  let getProductService: GetProductService
+  console.log('[wireProductRoutes] Starting route registration...')
 
+  // 直接取得服務，讓任何錯誤暴露在日誌中
+  console.log('[wireProductRoutes] Resolving productRepository...')
+  const productRepository = ctx.container.make('productRepository')
+  console.log('[wireProductRoutes] ✓ productRepository resolved')
+
+  console.log('[wireProductRoutes] Resolving logger...')
+  let logger: ILogger
   try {
-    productRepository = ctx.container.make('productRepository')
     logger = ctx.container.make('logger') as ILogger
-    queryService = ctx.container.make('productQueryService') as IProductQueryService
-    createProductService = ctx.container.make('createProductService') as CreateProductService
-    getProductService = ctx.container.make('getProductService') as GetProductService
-  } catch (error) {
-    console.warn('[wireProductRoutes] Warning: Application services not ready, skipping route registration')
-    return
+  } catch {
+    // logger 服務可能在路由裝配階段不可用，使用降級實現
+    logger = {
+      debug: () => {},
+      info: () => {},
+      warn: () => {},
+      error: () => {},
+    } as any
   }
+  console.log('[wireProductRoutes] ✓ logger resolved')
+
+  console.log('[wireProductRoutes] Resolving productQueryService...')
+  const queryService = ctx.container.make('productQueryService') as IProductQueryService
+  console.log('[wireProductRoutes] ✓ productQueryService resolved')
+
+  console.log('[wireProductRoutes] Resolving createProductService...')
+  const createProductService = ctx.container.make('createProductService') as CreateProductService
+  console.log('[wireProductRoutes] ✓ createProductService resolved')
+
+  console.log('[wireProductRoutes] Resolving getProductService...')
+  const getProductService = ctx.container.make('getProductService') as GetProductService
+  console.log('[wireProductRoutes] ✓ getProductService resolved')
 
   // 建立控制器
+  console.log('[wireProductRoutes] Creating ProductController...')
   const controller = new ProductController(
     createProductService,
     getProductService,
     queryService,
     logger
   )
+  console.log('[wireProductRoutes] ✓ ProductController created')
 
   // 設置路由
+  console.log('[wireProductRoutes] Registering routes...')
   registerProductRoutes(router, controller)
+  console.log('[wireProductRoutes] ✅ Product routes registered successfully')
 }

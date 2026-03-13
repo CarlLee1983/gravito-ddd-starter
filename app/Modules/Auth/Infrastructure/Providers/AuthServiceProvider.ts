@@ -20,7 +20,9 @@ import type { IAuthMessages } from '@/Shared/Infrastructure/Ports/Messages/IAuth
 import type { ISessionRepository } from '@/Modules/Session/Domain/Repositories/ISessionRepository'
 import { ValidateSessionService } from '@/Modules/Session/Application/Services/ValidateSessionService'
 import type { ITokenValidator } from '@/Shared/Infrastructure/Ports/Auth/ITokenValidator'
+import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
 import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
+import { AuthMessageService } from '../Services/AuthMessageService'
 
 /**
  * Auth 模組服務提供者實作類別
@@ -32,6 +34,22 @@ export class AuthServiceProvider extends ModuleServiceProvider {
    * @param container - DI 容器
    */
   override register(container: IContainer): void {
+    // 0. 訊息服務 - AuthMessages (必須優先註冊，支持降級)
+    container.singleton('authMessages', (c) => {
+      let translator: ITranslator
+      try {
+        translator = c.make('translator') as ITranslator
+      } catch {
+        // translator 可能在路由裝配階段不可用，使用降級實現
+        translator = {
+          trans: (key: string) => key,
+          transChoice: (key: string) => key,
+          setLocale: () => {},
+        } as any
+      }
+      return new AuthMessageService(translator)
+    })
+
     // 1. 應用服務 - LoginService
     container.singleton('loginService', (c) => {
       return new LoginService(

@@ -25,6 +25,10 @@ export function wireAuthRoutes(ctx: IRouteRegistrationContext): void {
   try {
     authController = ctx.container.make('authController') as AuthController
   } catch (error) {
+    console.error('[wireAuthRoutes] Error: Failed to resolve authController', {
+      message: (error as Error).message,
+      hint: '可能缺少依賴: userProfileService, authMessages, 或其他 Auth 服務'
+    })
     console.warn('[wireAuthRoutes] Warning: authController not ready, skipping route registration')
     return
   }
