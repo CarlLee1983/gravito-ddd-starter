@@ -6,7 +6,7 @@
 
 ### 1. Domain Layer - 值物件 (Value Objects)
 
-**`src/Modules/Product/Domain/ValueObjects/ProductStatus.ts`**
+**`app/Modules/Product/Domain/ValueObjects/ProductStatus.ts`**
 
 ```typescript
 import { ValueObject } from '@/Shared/Domain/ValueObject'
@@ -47,7 +47,7 @@ export class ProductStatus extends ValueObject {
 }
 ```
 
-**`src/Modules/Product/Domain/ValueObjects/ProductPrice.ts`**
+**`app/Modules/Product/Domain/ValueObjects/ProductPrice.ts`**
 
 ```typescript
 import { ValueObject } from '@/Shared/Domain/ValueObject'
@@ -80,7 +80,7 @@ export class ProductPrice extends ValueObject {
 
 ### 2. Domain Layer - 聚合根 (Aggregate Root)
 
-**`src/Modules/Product/Domain/Entities/Product.ts`**
+**`app/Modules/Product/Domain/Entities/Product.ts`**
 
 ```typescript
 import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
@@ -119,7 +119,7 @@ export class Product extends AggregateRoot {
    * 存檔產品
    */
   archive(): void {
-    if (!this.status.equals(ProductStatus.archived())) {
+    if (this.status.equals(ProductStatus.archived())) {
       throw new Error('Product is already archived')
     }
     this.status = ProductStatus.archived()
@@ -155,9 +155,11 @@ export class Product extends AggregateRoot {
 
 ### 3. Domain Layer - 倉庫介面 (Repository Interface)
 
-**`src/Modules/Product/Domain/Repositories/IProductRepository.ts`**
+**`app/Modules/Product/Domain/Repositories/IProductRepository.ts`**
 
 ```typescript
+import { Product, ProductStatusType } from '../Entities/Product'
+
 /**
  * 產品倉庫介面
  * 定義資料存取操作的抽象
@@ -197,7 +199,7 @@ export interface IProductRepository {
 
 ### 4. Application Layer - DTO
 
-**`src/Modules/Product/Application/DTOs/CreateProductDTO.ts`**
+**`app/Modules/Product/Application/DTOs/CreateProductDTO.ts`**
 
 ```typescript
 /**
@@ -216,7 +218,7 @@ export interface CreateProductDTO {
 
 ### 5. Application Layer - 應用服務 (Application Service)
 
-**`src/Modules/Product/Application/Services/CreateProductService.ts`**
+**`app/Modules/Product/Application/Services/CreateProductService.ts`**
 
 ```typescript
 import { IProductRepository } from '../../Domain/Repositories/IProductRepository'
@@ -266,7 +268,7 @@ export class CreateProductService {
 
 ### 6. Presentation Layer - 控制器 (Controller)
 
-**`src/Modules/Product/Presentation/Controllers/ProductController.ts`**
+**`app/Modules/Product/Presentation/Controllers/ProductController.ts`**
 
 ```typescript
 import { Context } from '@gravito/core'
@@ -281,7 +283,8 @@ export class ProductController {
   private createProductService: CreateProductService
 
   constructor(private context: Context) {
-    const productRepository = context.get<IProductRepository>('ProductRepository')
+    // 使用容器解析依賴 (符合 PlanetCore 規範)
+    const productRepository = context.container.make<IProductRepository>('ProductRepository')
     this.createProductService = new CreateProductService(productRepository)
   }
 
@@ -312,7 +315,7 @@ export class ProductController {
    * GET /api/products
    */
   async list() {
-    const repository = this.context.get<IProductRepository>('ProductRepository')
+    const repository = this.context.container.make<IProductRepository>('ProductRepository')
     const products = await repository.findAll()
 
     return new Response(
@@ -331,7 +334,7 @@ export class ProductController {
    * GET /api/products/:id
    */
   async show(id: string) {
-    const repository = this.context.get<IProductRepository>('ProductRepository')
+    const repository = this.context.container.make<IProductRepository>('ProductRepository')
     const product = await repository.findById(id)
 
     if (!product) {
@@ -359,18 +362,17 @@ export class ProductController {
 
 ### 7. Infrastructure Layer - 倉庫實作 (Repository Implementation)
 
-**`src/Modules/Product/Infrastructure/Repositories/ProductRepository.ts`**
+**`app/Modules/Product/Infrastructure/Repositories/ProductRepository.ts`**
 
 ```typescript
 import { IProductRepository } from '../../Domain/Repositories/IProductRepository'
 import { Product } from '../../Domain/Entities/Product'
+import { ProductStatusType } from '../../Domain/ValueObjects/ProductStatus'
 
 /**
  * 產品倉庫實作
- * 在實際應用中，此處會連接到資料庫
  */
 export class ProductRepository implements IProductRepository {
-  // 此處在實際應用中應使用資料庫驅動程式
   private products = new Map<string, Product>()
 
   async findById(id: string): Promise<Product | null> {
@@ -406,58 +408,67 @@ export class ProductRepository implements IProductRepository {
 }
 ```
 
-### 8. 模組公開 API
+### 8. 模組公開 API 與 自動裝配 (IModuleDefinition)
 
-**`src/Modules/Product/index.ts`**
+**`app/Modules/Product/index.ts`**
 
 ```typescript
-export { Product } from './Domain/Entities/Product'
-export { ProductStatus } from './Domain/ValueObjects/ProductStatus'
-export { ProductPrice } from './Domain/ValueObjects/ProductPrice'
-export { IProductRepository } from './Domain/Repositories/IProductRepository'
-export { CreateProductService } from './Application/Services/CreateProductService'
-export { ProductController } from './Presentation/Controllers/ProductController'
-export { ProductRepository } from './Infrastructure/Repositories/ProductRepository'
+import { ModuleServiceProvider } from '@/Shared/Infrastructure/IServiceProvider'
+import { ProductController } from './Presentation/Controllers/ProductController'
+import { ProductRepository } from './Infrastructure/Repositories/ProductRepository'
+import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
+
+/**
+ * 模組服務提供者
+ */
+export class ProductServiceProvider extends ModuleServiceProvider {
+  override register(container: any): void {
+    // 註冊模組專用服務
+    console.log('[Product] Provider registered')
+  }
+}
+
+/**
+ * 符合 IModuleDefinition 的模組定義
+ * 用於 ModuleAutoWirer 自動裝配
+ */
+export const ProductModule: IModuleDefinition = {
+  name: 'Product',
+  
+  provider: ProductServiceProvider,
+
+  registerRepositories(db, eventDispatcher) {
+    // 註冊倉庫到全域 RepositoryRegistry (供工廠使用)
+    // 並在容器中註冊單例
+    console.log('[Product] Registering repositories...')
+    // 在真實環境中，此處應使用 db 適配器
+  },
+
+  registerRoutes({ createModuleRouter }) {
+    const router = createModuleRouter()
+    
+    router.post('/', ProductController, 'create')
+    router.get('/', ProductController, 'list')
+    router.get('/:id', ProductController, 'show')
+  }
+}
 ```
 
 ## 快速開始
 
-### 1. 複製該 Modules 結構
+### 1. 建立模組目錄結構
 
 ```bash
-mkdir -p src/Modules/Product/{Domain/{Entities,ValueObjects,Repositories,Services,Events},Application/{Services,DTOs},Presentation/{Controllers,Resources,Routes},Infrastructure/{Repositories}}
+mkdir -p app/Modules/Product/{Domain/{Entities,ValueObjects,Repositories,Services,Events},Application/{Services,DTOs},Presentation/{Controllers,Resources,Routes},Infrastructure/{Repositories}}
 ```
 
-### 2. 複製所有檔案到對應目錄
+### 2. 佈線機制 (Auto-Wiring)
 
-### 3. 在 `src/app.ts` 中註冊
-
-```typescript
-import { ProductRepository } from './Modules/Product/Infrastructure/Repositories/ProductRepository'
-
-export function createApp() {
-  // ... 其他設定
-
-  // 註冊 Product 倉庫
-  container.singleton('ProductRepository', () => new ProductRepository())
-
-  return app
-}
-```
-
-### 4. 在路由中使用
-
-```typescript
-import { ProductController } from './Modules/Product/Presentation/Controllers/ProductController'
-
-export function setupRoutes(app: Application) {
-  const productController = new ProductController(app.context)
-
-  app.post('/api/products', (req) => productController.create(req))
-  app.get('/api/products', () => productController.list())
-  app.get('/api/products/:id', (req) => productController.show(req.params.id))
-}
-```
+得益於 `ModuleAutoWirer`，你**不需要**手動在 `app.ts` 或 `routes.ts` 中註冊。
+只要 `app/Modules/Product/index.ts` 導出了符合 `IModuleDefinition` 的對象，系統啟動時會自動完成：
+- 註冊 Service Provider
+- 註冊 Repository 工廠
+- 裝配 API 路由
 
 ## 測試範例
 
@@ -490,6 +501,8 @@ describe('CreateProductService', () => {
     expect(saved).toBeDefined()
     expect(saved?.name).toBe('Test Product')
   })
+})
+```
 
   it('should throw error if SKU already exists', async () => {
     const repository = new ProductRepository()

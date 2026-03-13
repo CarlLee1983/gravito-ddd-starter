@@ -5,7 +5,7 @@
 ## 核心概念
 
 - **Input Validation**: 使用 Zod 進行 DTO 驗證
-- **Domain Events**: 領域事件用於跨模組通訊
+- **Domain Events**: 領域事件用於跨模組通訊 (整合 @gravito/core 事件系統)
 - **Error Handling**: 自定義例外和錯誤回應
 - **Rich Domain Model**: 帶複雜業務邏輯的實體
 
@@ -13,7 +13,7 @@
 
 ### 1. Domain Layer - 自定義例外
 
-**`src/Modules/BlogPost/Domain/Exceptions/BlogPostException.ts`**
+**`app/Modules/BlogPost/Domain/Exceptions/BlogPostException.ts`**
 
 ```typescript
 /**
@@ -68,28 +68,28 @@ export class ValidationException extends BlogPostException {
 
 ### 2. Domain Layer - 領域事件
 
-**`src/Modules/BlogPost/Domain/Events/BlogPostCreatedEvent.ts`**
+**`app/Modules/BlogPost/Domain/Events/BlogPostCreatedEvent.ts`**
 
 ```typescript
 import { DomainEvent } from '@/Shared/Domain/DomainEvent'
 
 /**
  * 部落格文章已建立事件
- * 當新文章發佈時引發
+ * 當新文章建立時引發
  */
 export class BlogPostCreatedEvent extends DomainEvent {
   constructor(
     readonly id: string,
     readonly title: string,
     readonly authorId: string,
-    readonly publishedAt: Date = new Date()
+    readonly createdAt: Date = new Date()
   ) {
     super('BlogPost.Created', id)
   }
 }
 ```
 
-**`src/Modules/BlogPost/Domain/Events/BlogPostPublishedEvent.ts`**
+**`app/Modules/BlogPost/Domain/Events/BlogPostPublishedEvent.ts`**
 
 ```typescript
 import { DomainEvent } from '@/Shared/Domain/DomainEvent'
@@ -110,7 +110,7 @@ export class BlogPostPublishedEvent extends DomainEvent {
 
 ### 3. Domain Layer - 值物件帶驗證
 
-**`src/Modules/BlogPost/Domain/ValueObjects/BlogPostTitle.ts`**
+**`app/Modules/BlogPost/Domain/ValueObjects/BlogPostTitle.ts`**
 
 ```typescript
 import { ValueObject } from '@/Shared/Domain/ValueObject'
@@ -159,55 +159,9 @@ export class BlogPostTitle extends ValueObject {
 }
 ```
 
-**`src/Modules/BlogPost/Domain/ValueObjects/BlogPostContent.ts`**
-
-```typescript
-import { ValueObject } from '@/Shared/Domain/ValueObject'
-import { ValidationException } from '../Exceptions/BlogPostException'
-
-/**
- * 部落格文章內容值物件
- * 內容應至少 20 個字元
- */
-export class BlogPostContent extends ValueObject {
-  readonly value: string
-  readonly length: number
-  readonly readingTime: number // 分鐘
-
-  constructor(value: string) {
-    super()
-    this.validate(value)
-    this.value = value.trim()
-    this.length = this.value.length
-    this.readingTime = Math.ceil(this.value.split(/\s+/).length / 200) // 200 words/min
-  }
-
-  private validate(value: string): void {
-    const trimmed = value.trim()
-
-    if (trimmed.length < 20) {
-      throw new ValidationException(
-        'Content must be at least 20 characters',
-        { content: 'Content is too short' }
-      )
-    }
-  }
-
-  equals(other: any): boolean {
-    return (
-      other instanceof BlogPostContent && other.value === this.value
-    )
-  }
-
-  toString(): string {
-    return this.value
-  }
-}
-```
-
 ### 4. Domain Layer - 聚合根帶事件
 
-**`src/Modules/BlogPost/Domain/Entities/BlogPost.ts`**
+**`app/Modules/BlogPost/Domain/Entities/BlogPost.ts`**
 
 ```typescript
 import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
@@ -243,9 +197,9 @@ export class BlogPost extends AggregateRoot {
     this._status = status
     this._publishedAt = publishedAt
 
-    // 如果在建構時已發佈，記錄事件
-    if (status === 'published' && !publishedAt) {
-      this.recordEvent(new BlogPostPublishedEvent(id, title.value))
+    // 如果是新建立的，記錄建立事件
+    if (this.isNew()) {
+      this.recordEvent(new BlogPostCreatedEvent(id, title.value, authorId))
     }
   }
 
@@ -258,10 +212,6 @@ export class BlogPost extends AggregateRoot {
     return this._publishedAt
   }
 
-  get viewCount(): number {
-    return this._viewCount
-  }
-
   /**
    * 發佈文章
    */
@@ -270,37 +220,13 @@ export class BlogPost extends AggregateRoot {
       throw new InvalidStatusTransitionException('published', 'published')
     }
 
-    if (this._status === 'archived') {
-      throw new InvalidStatusTransitionException('archived', 'published')
-    }
-
     this._status = 'published'
     this._publishedAt = new Date()
 
+    // 記錄發佈事件
     this.recordEvent(
-      new BlogPostPublishedEvent(this.id, this.title.value)
+      new BlogPostPublishedEvent(this.id, this.title.value, this._publishedAt)
     )
-  }
-
-  /**
-   * 存檔文章
-   */
-  archive(): void {
-    if (this._status === 'archived') {
-      throw new InvalidStatusTransitionException('archived', 'archived')
-    }
-
-    this._status = 'archived'
-  }
-
-  /**
-   * 記錄一次瀏覽
-   */
-  recordView(): void {
-    if (this._status !== 'published') {
-      throw new Error('Only published posts can be viewed')
-    }
-    this._viewCount++
   }
 
   /**
@@ -312,13 +238,9 @@ export class BlogPost extends AggregateRoot {
       authorId: this.authorId,
       title: this.title.value,
       content: this.content.value,
-      tags: this.tags,
       status: this._status,
       publishedAt: this._publishedAt,
-      viewCount: this._viewCount,
-      readingTime: this.content.readingTime,
-      createdAt: this.createdAt,
-      updatedAt: this.updatedAt
+      createdAt: this.createdAt
     }
   }
 }
@@ -326,7 +248,7 @@ export class BlogPost extends AggregateRoot {
 
 ### 5. Application Layer - DTO 帶 Zod 驗證
 
-**`src/Modules/BlogPost/Application/DTOs/CreateBlogPostDTO.ts`**
+**`app/Modules/BlogPost/Application/DTOs/CreateBlogPostDTO.ts`**
 
 ```typescript
 import { z } from 'zod'
@@ -342,10 +264,6 @@ export const createBlogPostSchema = z.object({
   content: z
     .string()
     .min(20, 'Content must be at least 20 characters'),
-  tags: z
-    .array(z.string())
-    .default([])
-    .optional(),
   authorId: z
     .string()
     .uuid('Invalid author ID format')
@@ -356,14 +274,14 @@ export type CreateBlogPostDTO = z.infer<typeof createBlogPostSchema>
 
 ### 6. Application Layer - 應用服務
 
-**`src/Modules/BlogPost/Application/Services/CreateBlogPostService.ts`**
+**`app/Modules/BlogPost/Application/Services/CreateBlogPostService.ts`**
 
 ```typescript
 import { IBlogPostRepository } from '../../Domain/Repositories/IBlogPostRepository'
 import { BlogPost } from '../../Domain/Entities/BlogPost'
 import { BlogPostTitle } from '../../Domain/ValueObjects/BlogPostTitle'
 import { BlogPostContent } from '../../Domain/ValueObjects/BlogPostContent'
-import { CreateBlogPostDTO, createBlogPostSchema } from '../DTOs/CreateBlogPostDTO'
+import { createBlogPostSchema } from '../DTOs/CreateBlogPostDTO'
 import { ValidationException } from '../../Domain/Exceptions/BlogPostException'
 
 /**
@@ -373,14 +291,10 @@ export class CreateBlogPostService {
   constructor(private repository: IBlogPostRepository) {}
 
   async execute(input: unknown): Promise<string> {
-    // 驗證輸入 DTO
+    // 1. 驗證輸入 DTO (Zod)
     const result = createBlogPostSchema.safeParse(input)
     if (!result.success) {
       const errors = result.error.flatten().fieldErrors
-      const errorMessage = Object.entries(errors)
-        .map(([field, msgs]) => `${field}: ${msgs?.join(', ')}`)
-        .join('; ')
-
       throw new ValidationException(
         'Invalid blog post data',
         Object.fromEntries(
@@ -391,44 +305,30 @@ export class CreateBlogPostService {
 
     const dto = result.data
 
-    try {
-      // 建立值物件
-      const title = new BlogPostTitle(dto.title)
-      const content = new BlogPostContent(dto.content)
+    // 2. 建立值物件與聚合根
+    const title = new BlogPostTitle(dto.title)
+    const content = new BlogPostContent(dto.content)
 
-      // 建立聚合根
-      const id = crypto.randomUUID()
-      const post = new BlogPost(
-        id,
-        dto.authorId,
-        title,
-        content,
-        dto.tags || []
-      )
+    const id = crypto.randomUUID()
+    const post = new BlogPost(id, dto.authorId, title, content)
 
-      // 保存
-      await this.repository.save(post)
+    // 3. 保存 (Repository 會負責分派領域事件)
+    await this.repository.save(post)
 
-      return id
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error
-      }
-      throw new Error('Failed to create blog post')
-    }
+    return id
   }
 }
 ```
 
-### 7. Presentation Layer - 控制器帶錯誤處理
+### 7. Presentation Layer - 控制器
 
-**`src/Modules/BlogPost/Presentation/Controllers/BlogPostController.ts`**
+**`app/Modules/BlogPost/Presentation/Controllers/BlogPostController.ts`**
 
 ```typescript
 import { Context } from '@gravito/core'
 import { CreateBlogPostService } from '../../Application/Services/CreateBlogPostService'
 import { IBlogPostRepository } from '../../Domain/Repositories/IBlogPostRepository'
-import { BlogPostException } from '../../Domain/Exceptions/BlogPostException'
+import { BlogPostException, ValidationException } from '../../Domain/Exceptions/BlogPostException'
 
 /**
  * 部落格文章控制器
@@ -437,7 +337,7 @@ export class BlogPostController {
   private createService: CreateBlogPostService
 
   constructor(private context: Context) {
-    const repository = context.get<IBlogPostRepository>('BlogPostRepository')
+    const repository = context.container.make<IBlogPostRepository>('BlogPostRepository')
     this.createService = new CreateBlogPostService(repository)
   }
 
@@ -456,10 +356,7 @@ export class BlogPostController {
           data: { id },
           message: 'Blog post created successfully'
         }),
-        {
-          status: 201,
-          headers: { 'Content-Type': 'application/json' }
-        }
+        { status: 201, headers: { 'Content-Type': 'application/json' } }
       )
     } catch (error) {
       return this.handleError(error)
@@ -467,161 +364,69 @@ export class BlogPostController {
   }
 
   /**
-   * 獲取部落格文章
-   * GET /api/blog-posts/:id
-   */
-  async show(id: string) {
-    try {
-      const repository = this.context.get<IBlogPostRepository>('BlogPostRepository')
-      const post = await repository.findById(id)
-
-      if (!post) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Blog post not found'
-          }),
-          {
-            status: 404,
-            headers: { 'Content-Type': 'application/json' }
-          }
-        )
-      }
-
-      // 記錄瀏覽
-      post.recordView()
-      await repository.save(post)
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          data: post.toPlainObject()
-        }),
-        {
-          headers: { 'Content-Type': 'application/json' }
-        }
-      )
-    } catch (error) {
-      return this.handleError(error)
-    }
-  }
-
-  /**
-   * 發佈部落格文章
-   * PATCH /api/blog-posts/:id/publish
-   */
-  async publish(id: string) {
-    try {
-      const repository = this.context.get<IBlogPostRepository>('BlogPostRepository')
-      const post = await repository.findById(id)
-
-      if (!post) {
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'Blog post not found'
-          }),
-          { status: 404, headers: { 'Content-Type': 'application/json' } }
-        )
-      }
-
-      post.publish()
-      await repository.save(post)
-
-      return new Response(
-        JSON.stringify({
-          success: true,
-          data: post.toPlainObject(),
-          message: 'Blog post published successfully'
-        }),
-        {
-          headers: { 'Content-Type': 'application/json' }
-        }
-      )
-    } catch (error) {
-      return this.handleError(error)
-    }
-  }
-
-  /**
-   * 錯誤處理
+   * 錯誤處理與回應轉換
    */
   private handleError(error: unknown) {
-    console.error('Controller error:', error)
-
     if (error instanceof BlogPostException) {
       return new Response(
         JSON.stringify({
           success: false,
           error: error.message,
           code: error.code,
-          ...(error instanceof ValidationException && {
-            errors: error.errors
-          })
+          ...(error instanceof ValidationException && { errors: error.errors })
         }),
-        {
-          status: error.statusCode,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      )
-    }
-
-    if (error instanceof Error) {
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: error.message
-        }),
-        {
-          status: 500,
-          headers: { 'Content-Type': 'application/json' }
-        }
+        { status: error.statusCode, headers: { 'Content-Type': 'application/json' } }
       )
     }
 
     return new Response(
-      JSON.stringify({
-        success: false,
-        error: 'An unexpected error occurred'
-      }),
-      {
-        status: 500,
-        headers: { 'Content-Type': 'application/json' }
-      }
+      JSON.stringify({ success: false, error: 'Internal Server Error' }),
+      { status: 500, headers: { 'Content-Type': 'application/json' } }
     )
   }
 }
 ```
 
-### 8. Infrastructure Layer - 事件發佈
+### 8. 模組入口與事件訂閱 (Auto-Wiring)
 
-**`src/Modules/BlogPost/Infrastructure/Subscribers/BlogPostEventSubscriber.ts`**
+**`app/Modules/BlogPost/index.ts`**
 
 ```typescript
-import { BlogPostCreatedEvent } from '../../Domain/Events/BlogPostCreatedEvent'
-import { BlogPostPublishedEvent } from '../../Domain/Events/BlogPostPublishedEvent'
+import { ModuleServiceProvider } from '@/Shared/Infrastructure/IServiceProvider'
+import { BlogPostController } from './Presentation/Controllers/BlogPostController'
+import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
 
 /**
- * 部落格文章事件訂閱者
- * 監聽領域事件並執行副作用
+ * 部落格文章模組服務提供者
  */
-export class BlogPostEventSubscriber {
-  /**
-   * 監聽文章建立事件
-   */
-  onPostCreated(event: BlogPostCreatedEvent): void {
-    console.log(`📝 Blog post "${event.title}" created by author ${event.authorId}`)
-    // 可以在這裡發送通知、寄送郵件等
+export class BlogPostServiceProvider extends ModuleServiceProvider {
+  override register(container: any): void {
+    // 可以在這裡註冊事件訂閱者 (Subscribers)
   }
+}
 
-  /**
-   * 監聽文章發佈事件
-   */
-  onPostPublished(event: BlogPostPublishedEvent): void {
-    console.log(
-      `📢 Blog post "${event.title}" published at ${event.publishedAt}`
-    )
-    // 可以在這裡清除快取、發送社群媒體通知等
+/**
+ * 模組定義 (符合 ModuleAutoWirer 規範)
+ */
+export const BlogPostModule: IModuleDefinition = {
+  name: 'BlogPost',
+  
+  provider: BlogPostServiceProvider,
+
+  registerRepositories(db, eventDispatcher) {
+    console.log('[BlogPost] Registering repositories and subscribing to events...')
+    
+    // 範例：訂閱領域事件
+    if (eventDispatcher) {
+       eventDispatcher.listen('BlogPost.Created', (event: any) => {
+         console.log(`📢 系統通知: 新文章 "${event.title}" 已建立`)
+       })
+    }
+  },
+
+  registerRoutes({ createModuleRouter }) {
+    const router = createModuleRouter()
+    router.post('/', BlogPostController, 'create')
   }
 }
 ```
@@ -633,49 +438,35 @@ export class BlogPostEventSubscriber {
 ```typescript
 import { describe, it, expect } from 'bun:test'
 import { CreateBlogPostService } from '@/Modules/BlogPost/Application/Services/CreateBlogPostService'
-import { BlogPostRepository } from '@/Modules/BlogPost/Infrastructure/Repositories/BlogPostRepository'
 import { ValidationException } from '@/Modules/BlogPost/Domain/Exceptions/BlogPostException'
+
+// Mock Repository
+const mockRepository: any = {
+  save: async () => {}
+}
 
 describe('CreateBlogPostService', () => {
   it('should create a valid blog post', async () => {
-    const repository = new BlogPostRepository()
-    const service = new CreateBlogPostService(repository)
+    const service = new CreateBlogPostService(mockRepository)
 
     const dto = {
       title: 'My First Blog Post',
       content: 'This is the content of my first blog post. It should be long enough.',
-      authorId: '550e8400-e29b-41d4-a716-446655440000',
-      tags: ['javascript', 'tutorial']
+      authorId: '550e8400-e29b-41d4-a716-446655440000'
     }
 
     const id = await service.execute(dto)
     expect(id).toBeDefined()
-
-    const saved = await repository.findById(id)
-    expect(saved?.title.value).toBe('My First Blog Post')
+    expect(typeof id).toBe('string')
   })
 
-  it('should reject title that is too short', async () => {
-    const repository = new BlogPostRepository()
-    const service = new CreateBlogPostService(repository)
+  it('should throw ValidationException for short title', async () => {
+    const service = new CreateBlogPostService(mockRepository)
 
     const dto = {
       title: 'Bad',
-      content: 'This is a long enough content for the blog post.',
+      content: 'Valid content but title is too short.',
       authorId: '550e8400-e29b-41d4-a716-446655440000'
-    }
-
-    expect(service.execute(dto)).rejects.toThrow(ValidationException)
-  })
-
-  it('should reject invalid author ID', async () => {
-    const repository = new BlogPostRepository()
-    const service = new CreateBlogPostService(repository)
-
-    const dto = {
-      title: 'Valid Title Here',
-      content: 'This is a long enough content for the blog post.',
-      authorId: 'invalid-uuid'
     }
 
     expect(service.execute(dto)).rejects.toThrow(ValidationException)
