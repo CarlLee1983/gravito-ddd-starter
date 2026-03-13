@@ -1,5 +1,5 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync, unlinkSync, statSync } from 'node:fs'
-import { join, dirname } from 'node:path'
+import { join, dirname, resolve } from 'node:path'
 import type { IStorageDisk } from '../../Ports/Storage/IStorageDisk'
 
 /**
@@ -18,7 +18,21 @@ export class LocalDriver implements IStorageDisk {
   }
 
   private getFullPath(location: string): string {
-    return join(this.root, location);
+    // 防止路徑遍歷攻擊
+    if (location.includes('..') || location.startsWith('/')) {
+      throw new Error(`Invalid location path: ${location}`)
+    }
+
+    const fullPath = join(this.root, location)
+    const resolved = resolve(fullPath)
+    const rootResolved = resolve(this.root)
+
+    // 驗證解析後的路徑確實在 root 目錄內
+    if (!resolved.startsWith(rootResolved)) {
+      throw new Error('Path traversal detected')
+    }
+
+    return resolved
   }
 
   async exists(location: string): Promise<boolean> {

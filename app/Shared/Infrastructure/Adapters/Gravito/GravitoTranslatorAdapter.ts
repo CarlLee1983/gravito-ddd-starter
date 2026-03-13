@@ -24,6 +24,8 @@ export class GravitoTranslatorAdapter implements ITranslator {
 	}
 
 	setLocale(locale: string): void {
+		// WARNING: 此類為 singleton，若需要請求級別的 locale 隔離，應使用 context-aware 存儲
+		// 例如：AsyncLocalStorage 或請求上下文
 		this.locale = locale
 	}
 }

@@ -86,6 +86,9 @@ export class MemoryDeadLetterQueue implements IDeadLetterQueue {
 /**
  * Redis 死信隊列實現（用於生產環境）
  * 存儲在 Redis 的有序集合中，便於查詢和管理
+ *
+ * NOTE: 此實現使用 RedisClientContract 的完整功能集，包括 hash、sorted set 操作。
+ * 為支持多種 Redis 實現，這裡使用 `any` 型別。未來可抽象為更完整的 IRedisService。
  */
 export class RedisDeadLetterQueue implements IDeadLetterQueue {
 	private readonly queueKey = 'dead_letter_queue'
@@ -99,7 +102,7 @@ export class RedisDeadLetterQueue implements IDeadLetterQueue {
 
 		// 存儲到 Redis Hash
 		const key = `${this.queueKey}:${id}`
-		await this.redis.hset(key, JSON.stringify(dlqEntry))
+		await this.redis.hset(key, 'data', JSON.stringify(dlqEntry))
 
 		// 存儲索引（用於快速查詢和統計）
 		await this.redis.zadd(this.indexKey, Date.now(), id)

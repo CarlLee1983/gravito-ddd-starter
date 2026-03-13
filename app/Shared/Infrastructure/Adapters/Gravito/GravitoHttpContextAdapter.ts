@@ -125,7 +125,12 @@ export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
     ${viteEntry}
 </head>
 <body class="bg-gray-50">
-    <div id="app" data-page='${JSON.stringify(page)}'></div>
+    <div id="app"></div>
+    <script id="page-data" type="application/json">${JSON.stringify(page).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/'/g, '\\u0027').replace(/"/g, '&quot;')}</script>
+    <script>
+      const pageData = JSON.parse(document.getElementById('page-data').textContent);
+      window.__INITIAL_PAGE__ = pageData;
+    </script>
 </body>
 </html>
 			`.trim()

@@ -16,7 +16,6 @@ import { GravitoLoggerAdapter } from '../Adapters/Gravito/GravitoLoggerAdapter'
 import { EventListenerRegistry } from '../Registries/EventListenerRegistry'
 import { JobRegistry } from '../Registries/JobRegistry'
 import type { IRedisService } from '../Ports/Messaging/IRedisService'
-import type { RedisJobQueueAdapter } from '../Adapters/Redis/RedisJobQueueAdapter'
 import type { IQueueWorker } from '../../Application/Jobs/IQueueWorker'
 
 /**

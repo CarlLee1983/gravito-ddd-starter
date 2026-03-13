@@ -31,13 +31,15 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 		})
 
 		// 1. 註冊 Redis 適配器
-		container.singleton('redis', (c) => {
+		// 注意：Gravito 框架已預先註冊了 'redis' 服務，我們包裝它為適配器版本
+		container.singleton('redis-adapter', (c) => {
 			const rawRedis = (c as any).make('redis') as RedisClientContract | undefined
 			return rawRedis ? new GravitoRedisAdapter(rawRedis) : null
 		})
 
 		// 2. 註冊 Cache 適配器
-		container.singleton('cache', (c) => {
+		// 注意：Gravito 框架已預先註冊了 'cache' 服務，我們包裝它為適配器版本
+		container.singleton('cache-adapter', (c) => {
 			const rawCache = (c as any).make('cache') as CacheManager | undefined
 			return rawCache ? new GravitoCacheAdapter(rawCache) : null
 		})
@@ -59,7 +61,7 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 
 		// 6. 註冊 JobQueue 適配器
 		container.singleton('jobQueue', (c) => {
-			const redis = c.make('redis')
+			const redis = c.make('redis-adapter')
 			return new RedisJobQueueAdapter(redis)
 		})
 	}

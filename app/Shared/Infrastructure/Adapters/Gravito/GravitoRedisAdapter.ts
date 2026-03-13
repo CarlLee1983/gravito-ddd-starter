@@ -57,10 +57,19 @@ export class GravitoRedisAdapter implements IRedisService {
 
 	/**
 	 * 刪除指定的鍵
-	 * @param key - 鍵名
+	 * @param keys - 鍵名（可以有多個）
+	 * @returns 刪除的鍵數量
 	 */
-	async del(key: string): Promise<void> {
-		await this.redis.del(key)
+	async del(...keys: string[]): Promise<number> {
+		if (keys.length === 0) return 0
+		// Gravito Plasma 的 RedisClientContract.del() 接受單個鍵
+		// 為了支持多個鍵，我們逐個刪除
+		let deletedCount = 0
+		for (const key of keys) {
+			const result = await (this.redis as any).del(key)
+			if (result) deletedCount += typeof result === 'number' ? result : 1
+		}
+		return deletedCount
 	}
 
 	/**
@@ -99,4 +108,5 @@ export class GravitoRedisAdapter implements IRedisService {
 	async llen(key: string): Promise<number> {
 		return this.redis.llen(key) ?? 0
 	}
+
 }

@@ -38,12 +38,12 @@ export interface IRedisService {
 	set(key: string, value: string, expiresInSeconds?: number): Promise<void>
 
 	/**
-	 * 刪除 key
+	 * 刪除一個或多個 key
 	 *
-	 * @param {string} key - 要刪除的 key
-	 * @returns {Promise<void>}
+	 * @param {string[]} keys - 要刪除的 key 列表
+	 * @returns {Promise<number>} 刪除的 key 數量
 	 */
-	del(key: string): Promise<void>
+	del(...keys: string[]): Promise<number>
 
 	/**
 	 * 檢查 key 是否存在
@@ -81,4 +81,5 @@ export interface IRedisService {
 	 * @returns 列表中的元素數量
 	 */
 	llen(key: string): Promise<number>
+
 }

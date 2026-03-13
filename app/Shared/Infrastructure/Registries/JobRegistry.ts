@@ -134,7 +134,7 @@ export class JobRegistry {
 					const handler: JobHandler = async (payload: JobPayload) => {
 						try {
 							// 執行 Job.handle()
-							await jobInstance.handle(payload.data)
+							await jobInstance.handle(payload.data as Record<string, unknown>)
 						} catch (error) {
 							// 錯誤處理由 jobQueue 決定是否重試
 							// 此處拋出異常告訴隊列該 Job 執行失敗
