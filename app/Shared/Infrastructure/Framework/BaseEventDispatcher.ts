@@ -91,6 +91,7 @@ export abstract class BaseEventDispatcher implements IEventDispatcher {
 		eventData: any
 	): Promise<void> {
 		let lastError: Error | null = null
+		let shouldRetryError = false
 		const handlerName = handler.name || 'Anonymous'
 
 		for (let attempt = 1; attempt <= this.retryPolicy.maxRetries; attempt++) {
@@ -107,8 +108,10 @@ export abstract class BaseEventDispatcher implements IEventDispatcher {
 				)
 
 				// 判斷是否應該重試
-				if (!shouldRetry(error, attempt, this.retryPolicy.maxRetries)) {
-					throw lastError
+				shouldRetryError = shouldRetry(error, attempt, this.retryPolicy.maxRetries)
+				if (!shouldRetryError) {
+					// 不可重試或已達最大重試次數，跳出循環處理
+					break
 				}
 
 				// 計算延遲時間
@@ -119,7 +122,7 @@ export abstract class BaseEventDispatcher implements IEventDispatcher {
 			}
 		}
 
-		// 所有重試都失敗了
+		// 處理失敗情況（包括所有重試都失敗或不可重試的錯誤）
 		if (lastError) {
 			// 記錄到死信隊列
 			if (this.deadLetterQueue) {
