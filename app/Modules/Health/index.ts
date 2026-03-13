@@ -5,7 +5,7 @@
 
 import type { IModuleDefinition } from '@/Shared/Infrastructure/Framework/ModuleDefinition'
 import { HealthServiceProvider } from './Infrastructure/Providers/HealthServiceProvider'
-import { registerHealthWithGravito } from '@/Shared/Infrastructure/Framework/GravitoHealthAdapter'
+import { wireHealthRoutes } from './Infrastructure/Wiring/wireHealthRoutes'
 
 // Domain
 export { HealthStatus, type HealthStatusType } from './Domain/ValueObjects/HealthStatus'
@@ -28,12 +28,15 @@ export { HealthController } from './Presentation/Controllers/HealthController'
 export { registerHealthRoutes } from './Presentation/Routes/health.routes'
 
 /**
- * 裝配器專用的模組定義物件
+ * 模組定義物件
  * 使模組可被自動掃描裝配 (Auto-Wiring)
+ *
+ * 注意：Health 模組無需 registerRepositories()，
+ * 因為使用 MemoryHealthCheckRepository（無需 DI 容器）
  */
 export const HealthModule: IModuleDefinition = {
 	name: 'Health',
 	provider: HealthServiceProvider,
-	// Health 模組使用整合適配器進行路由與服務組裝
-	registerRoutes: registerHealthWithGravito
+	// 使用模組內部的 wiring 層（對齊 User/Post 模組架構）
+	registerRoutes: wireHealthRoutes
 }
