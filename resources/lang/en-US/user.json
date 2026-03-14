@@ -1,5 +1,0 @@
-{
-  "welcome_subject": "Welcome aboard, {name}!",
-  "welcome_body": "Dear {name}, thank you for joining our blog platform. Happy writing!",
-  "created_log": "New user created: {id}"
-}

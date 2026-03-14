@@ -1,6 +1,6 @@
 /**
  * @file GravitoTranslatorAdapter.ts
- * @description 多語系翻譯適配器，從 locales/ 目錄加載 JSON 翻譯檔
+ * @description 多語系翻譯適配器，從 resources/lang/ 目錄加載 JSON 翻譯檔
  */
 
 import type { ITranslator } from '../../Ports/Services/ITranslator'
@@ -12,17 +12,17 @@ export class GravitoTranslatorAdapter implements ITranslator {
 	private translations: Map<string, Record<string, any>> = new Map()
 	private defaultLocale: string = 'en'
 
-	constructor(localesPath: string = resolve(process.cwd(), 'locales')) {
+	constructor(localesPath: string = resolve(process.cwd(), 'resources/lang')) {
 		this.loadLocale('en', localesPath)
 		this.loadLocale('zh-TW', localesPath)
 	}
 
 	/**
-	 * 加載指定語系的翻譯檔
+	 * 加載指定語系的翻譯檔 (從 resources/lang/{locale}/ 加載)
 	 */
-	private loadLocale(locale: string, localesPath: string): void {
+	private loadLocale(locale: string, langPath: string): void {
 		try {
-			const localePath = resolve(localesPath, locale)
+			const localePath = resolve(langPath, locale)
 			if (!existsSync(localePath)) return
 
 			const files = require('fs').readdirSync(localePath).filter((f: string) => f.endsWith('.json'))

@@ -1,5 +1,10 @@
 {
-  "welcome_subject": "歡迎加入，{name}！",
-  "welcome_body": "親愛的 {name}，感謝您註冊我們的部落格平台。祝您寫作愉快！",
-  "created_log": "新用戶已建立：{id}"
+  "validation": {
+    "missing_fields": "缺少必填欄位：名稱、電子郵件",
+    "user_id_required": "用戶 ID 為必填"
+  },
+  "user": {
+    "created_successfully": "用戶已成功建立",
+    "not_found": "用戶不存在"
+  }
 }
