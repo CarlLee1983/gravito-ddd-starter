@@ -14,13 +14,18 @@ import type { IOrderRepository } from '../../Domain/Repositories/IOrderRepositor
  *
  * @param router - 模組路由器
  * @param orderRepository - 訂單 Repository
+ * @param pageGuardMiddleware - 頁面認證中間件（可選）
  */
 export function registerPageRoutes(
   router: IModuleRouter,
-  orderRepository: IOrderRepository
+  orderRepository: IOrderRepository,
+  pageGuardMiddleware?: any
 ): void {
+  // 受保護頁面使用 middleware
+  const middlewares = pageGuardMiddleware ? [pageGuardMiddleware] : []
+
   // 訂單列表頁面（已登入用戶）
-  router.get('/orders', [], async (ctx: IHttpContext) => {
+  router.get('/orders', middlewares, async (ctx: IHttpContext) => {
     const userId = ctx.get('authenticatedUserId') as string | undefined
     if (!userId) {
       return ctx.redirect('/login')
@@ -34,7 +39,7 @@ export function registerPageRoutes(
   })
 
   // 訂單詳細頁面
-  router.get('/orders/:id', [], async (ctx: IHttpContext) => {
+  router.get('/orders/:id', middlewares, async (ctx: IHttpContext) => {
     const userId = ctx.get('authenticatedUserId') as string | undefined
     if (!userId) {
       return ctx.redirect('/login')
@@ -52,7 +57,7 @@ export function registerPageRoutes(
   })
 
   // 訂單分析/統計頁面
-  router.get('/orders/analytics/dashboard', [], async (ctx: IHttpContext) => {
+  router.get('/orders/analytics/dashboard', middlewares, async (ctx: IHttpContext) => {
     const userId = ctx.get('authenticatedUserId') as string | undefined
     if (!userId) {
       return ctx.redirect('/login')

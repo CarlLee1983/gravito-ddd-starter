@@ -14,12 +14,14 @@ import type { IUserQueryService } from '../../Application/Queries/IUserQueryServ
  *
  * @param router - 模組路由器
  * @param queryService - 用戶查詢服務
+ * @param pageGuardMiddleware - 頁面認證中間件（可選，用於 /profile）
  */
 export function registerPageRoutes(
   router: IModuleRouter,
-  queryService: IUserQueryService
+  queryService: IUserQueryService,
+  pageGuardMiddleware?: any
 ): void {
-  // 用戶列表頁面
+  // 用戶列表頁面（公開）
   router.get('/users', [], async (ctx: IHttpContext) => {
     try {
       const users = await queryService.findAll()
@@ -29,7 +31,7 @@ export function registerPageRoutes(
     }
   })
 
-  // 用戶詳細頁面（檔案）
+  // 用戶詳細頁面（檔案，公開）
   router.get('/users/:id', [], async (ctx: IHttpContext) => {
     try {
       const { id } = ctx.params
@@ -43,8 +45,9 @@ export function registerPageRoutes(
     }
   })
 
-  // 個人檔案頁面（已登入用戶）
-  router.get('/profile', [], async (ctx: IHttpContext) => {
+  // 個人檔案頁面（受保護）
+  const profileMiddlewares = pageGuardMiddleware ? [pageGuardMiddleware] : []
+  router.get('/profile', profileMiddlewares, async (ctx: IHttpContext) => {
     const userId = ctx.get('authenticatedUserId') as string | undefined
     if (!userId) {
       return ctx.redirect('/login')

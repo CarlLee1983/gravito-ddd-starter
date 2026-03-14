@@ -12,15 +12,15 @@ import type { PlaceOrderService } from '../../Application/Services/PlaceOrderSer
 
 export function wireOrderRoutes(ctx: IRouteRegistrationContext): void {
   const router = ctx.createModuleRouter()
-  
+
   // 從容器獲取依賴
   const repository = ctx.container.make('orderRepository') as IOrderRepository
   const placeOrderService = ctx.container.make('placeOrderService') as PlaceOrderService
-  
+
   const controller = new OrderController(placeOrderService, repository)
 
   registerOrderRoutes(router, controller)
 
-  // 註冊頁面路由
-  registerPageRoutes(router, repository)
+  // 註冊頁面路由（使用 Page Guard 中間件）
+  registerPageRoutes(router, repository, ctx.pageGuardMiddleware)
 }
