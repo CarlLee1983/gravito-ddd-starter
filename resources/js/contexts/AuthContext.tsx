@@ -1,30 +1,10 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react'
-
-/**
- * Cookie 工具函數
- */
-function setCookie(name: string, value: string, days: number = 7) {
-  const date = new Date()
-  date.setTime(date.getTime() + days * 24 * 60 * 60 * 1000)
-  const expires = `expires=${date.toUTCString()}`
-  document.cookie = `${name}=${value};${expires};path=/`
-}
-
-function getCookie(name: string): string | null {
-  const nameEQ = `${name}=`
-  const cookies = document.cookie.split(';')
-  for (let cookie of cookies) {
-    cookie = cookie.trim()
-    if (cookie.indexOf(nameEQ) === 0) {
-      return cookie.substring(nameEQ.length)
-    }
-  }
-  return null
-}
-
-function removeCookie(name: string) {
-  setCookie(name, '', -1)
-}
+import {
+  getToken,
+  setTokenStorage,
+  clearToken,
+  getTokenFromCookie,
+} from '../utils/tokenManager'
 
 /**
  * 用戶基本資訊型別
@@ -61,11 +41,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   /**
-   * 初始化：檢查 Cookie 中的 token 並恢復登入狀態
+   * 初始化：檢查 Token 並恢復登入狀態
    */
   useEffect(() => {
     const initAuth = async () => {
-      const token = getCookie('auth_token')
+      const token = getToken() || getTokenFromCookie()
       if (token) {
         try {
           // 呼叫 /api/auth/me 恢復用戶狀態
@@ -81,15 +61,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
               setUser(data.data)
             } else {
               // 無效的 token，清除
-              removeCookie('auth_token')
+              clearToken()
             }
           } else if (response.status === 401) {
             // Token 已過期或無效
-            removeCookie('auth_token')
+            clearToken()
           }
         } catch (error) {
           console.error('Failed to restore auth state:', error)
-          removeCookie('auth_token')
+          clearToken()
         }
       }
       setLoading(false)
@@ -117,8 +97,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.message || '登入失敗')
       }
 
-      // 保存 token 到 Cookie（自動在頁面請求中發送）
-      setCookie('auth_token', data.data.accessToken, 7) // 7 天過期
+      // 保存 token 到 localStorage（前端 JS 請求使用）
+      setTokenStorage(data.data.accessToken, 7 * 24 * 60 * 60) // 7 天過期
+      // 注：Cookie 由後端通過 Set-Cookie header 設定
 
       // 查詢當前用戶
       const meResponse = await fetch('/api/auth/me', {
@@ -157,8 +138,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         throw new Error(data.message || '註冊失敗')
       }
 
-      // 保存 token 到 Cookie（自動登入 + 自動在頁面請求中發送）
-      setCookie('auth_token', data.data.accessToken, 7) // 7 天過期
+      // 保存 token 到 localStorage（前端 JS 請求使用）
+      setTokenStorage(data.data.accessToken, 7 * 24 * 60 * 60) // 7 天過期
+      // 注：Cookie 由後端通過 Set-Cookie header 設定
 
       // 查詢當前用戶
       const meResponse = await fetch('/api/auth/me', {
@@ -183,7 +165,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
    */
   const logout = async () => {
     try {
-      const token = getCookie('auth_token')
+      const token = getToken()
       if (token) {
         await fetch('/api/auth/logout', {
           method: 'POST',
@@ -193,7 +175,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         })
       }
     } finally {
-      removeCookie('auth_token')
+      clearToken()
       setUser(null)
     }
   }
