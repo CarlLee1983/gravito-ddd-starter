@@ -8,6 +8,7 @@
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { ProductController } from '../../Presentation/Controllers/ProductController'
+import { ProductPageController } from '../../Presentation/Controllers/ProductPageController'
 import { CreateProductService } from '../../Application/Services/CreateProductService'
 import { GetProductService } from '../../Application/Services/GetProductService'
 import { registerProductRoutes } from '../../Presentation/Routes/api'
@@ -26,10 +27,6 @@ export function wireProductRoutes(ctx: IRouteRegistrationContext): void {
   console.log('[wireProductRoutes] Starting route registration...')
 
   // 直接取得服務，讓任何錯誤暴露在日誌中
-  console.log('[wireProductRoutes] Resolving productRepository...')
-  const productRepository = ctx.container.make('productRepository')
-  console.log('[wireProductRoutes] ✓ productRepository resolved')
-
   console.log('[wireProductRoutes] Resolving logger...')
   let logger: ILogger
   try {
@@ -72,7 +69,8 @@ export function wireProductRoutes(ctx: IRouteRegistrationContext): void {
   registerProductRoutes(router, controller)
 
   console.log('[wireProductRoutes] Registering page routes...')
-  registerPageRoutes(router, queryService)
+  const pageController = new ProductPageController(queryService)
+  registerPageRoutes(router, pageController)
 
   console.log('[wireProductRoutes] ✅ Product routes registered successfully')
 }

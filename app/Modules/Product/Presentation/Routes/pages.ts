@@ -7,39 +7,21 @@
 
 import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
-import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
+import type { ProductPageController } from '../Controllers/ProductPageController'
 
 /**
  * 註冊產品頁面路由
  *
  * @param router - 模組路由器
- * @param queryService - 產品查詢服務
+ * @param pageController - Product 頁面控制器（處理頁面邏輯）
  */
 export function registerPageRoutes(
   router: IModuleRouter,
-  queryService: IProductQueryService
+  pageController: ProductPageController
 ): void {
   // 產品列表頁面（公開）
-  router.get('/products', async (ctx: IHttpContext) => {
-    try {
-      const products = await queryService.findAll()
-      return ctx.render('Product/Index', { products })
-    } catch (error) {
-      return ctx.render('Product/Index', { products: [] })
-    }
-  })
+  router.get('/products', (ctx: IHttpContext) => pageController.showIndex(ctx))
 
   // 產品詳細頁面（公開）
-  router.get('/products/:id', async (ctx: IHttpContext) => {
-    try {
-      const { id } = ctx.params
-      const product = await queryService.findById(id!)
-      if (!product) {
-        return ctx.render('404')
-      }
-      return ctx.render('Product/Detail', { product })
-    } catch (error) {
-      return ctx.render('404')
-    }
-  })
+  router.get('/products/:id', (ctx: IHttpContext) => pageController.showDetail(ctx))
 }
