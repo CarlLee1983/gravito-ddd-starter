@@ -14,16 +14,14 @@ import type { ICartRepository } from '../../Domain/Repositories/ICartRepository'
  *
  * @param router - 模組路由器
  * @param cartRepository - 購物車 Repository
- * @param pageGuardMiddleware - 頁面認證中間件（可選）
  */
 export function registerPageRoutes(
   router: IModuleRouter,
-  cartRepository: ICartRepository,
-  pageGuardMiddleware?: any
+  cartRepository: ICartRepository
 ): void {
   // 購物車頁面（受保護）
-  const middlewares = pageGuardMiddleware ? [pageGuardMiddleware] : []
-  router.get('/cart', middlewares, async (ctx: IHttpContext) => {
+  // 字串 'pageGuardMiddleware' 會自動從容器中解析
+  router.get('/cart', ['pageGuardMiddleware'], async (ctx: IHttpContext) => {
     try {
       const userId = ctx.get('authenticatedUserId') as string | undefined
       if (!userId) {

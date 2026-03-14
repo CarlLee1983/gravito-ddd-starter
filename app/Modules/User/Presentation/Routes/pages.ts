@@ -14,15 +14,13 @@ import type { IUserQueryService } from '../../Application/Queries/IUserQueryServ
  *
  * @param router - 模組路由器
  * @param queryService - 用戶查詢服務
- * @param pageGuardMiddleware - 頁面認證中間件（可選，用於 /profile）
  */
 export function registerPageRoutes(
   router: IModuleRouter,
-  queryService: IUserQueryService,
-  pageGuardMiddleware?: any
+  queryService: IUserQueryService
 ): void {
   // 用戶列表頁面（公開）
-  router.get('/users', [], async (ctx: IHttpContext) => {
+  router.get('/users', async (ctx: IHttpContext) => {
     try {
       const users = await queryService.findAll()
       return ctx.render('User/Index', { users })
@@ -32,7 +30,7 @@ export function registerPageRoutes(
   })
 
   // 用戶詳細頁面（檔案，公開）
-  router.get('/users/:id', [], async (ctx: IHttpContext) => {
+  router.get('/users/:id', async (ctx: IHttpContext) => {
     try {
       const { id } = ctx.params
       const user = await queryService.findById(id!)
@@ -46,8 +44,8 @@ export function registerPageRoutes(
   })
 
   // 個人檔案頁面（受保護）
-  const profileMiddlewares = pageGuardMiddleware ? [pageGuardMiddleware] : []
-  router.get('/profile', profileMiddlewares, async (ctx: IHttpContext) => {
+  // 字串 'pageGuardMiddleware' 會自動從容器中解析
+  router.get('/profile', ['pageGuardMiddleware'], async (ctx: IHttpContext) => {
     const userId = ctx.get('authenticatedUserId') as string | undefined
     if (!userId) {
       return ctx.redirect('/login')

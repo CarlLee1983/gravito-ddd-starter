@@ -12,28 +12,24 @@ import type { AuthController } from '../Controllers/AuthController'
  *
  * @param router - 模組路由器
  * @param authController - Auth 控制器實例
- * @param jwtGuardMiddleware - JWT Guard 中間件
  */
 export function registerAuthRoutes(
   router: IModuleRouter,
-  authController: AuthController,
-  jwtGuardMiddleware?: any
+  authController: AuthController
 ): void {
-  // 登入路由
-  router.post('/api/auth/login', [], (ctx: IHttpContext) => authController.login(ctx))
+  // 登入路由（公開）
+  router.post('/api/auth/login', (ctx: IHttpContext) => authController.login(ctx))
 
-  // 註冊路由
-  router.post('/api/auth/register', [], (ctx: IHttpContext) => authController.register(ctx))
+  // 註冊路由（公開）
+  router.post('/api/auth/register', (ctx: IHttpContext) => authController.register(ctx))
 
   // 登出路由（需 JWT Guard）
-  const logoutMiddlewares = jwtGuardMiddleware ? [jwtGuardMiddleware] : []
-  router.post('/api/auth/logout', logoutMiddlewares, (ctx: IHttpContext) => authController.logout(ctx))
+  // 字串 'jwtGuardMiddleware' 會自動從容器中解析
+  router.post('/api/auth/logout', ['jwtGuardMiddleware'], (ctx: IHttpContext) => authController.logout(ctx))
 
   // 取得當前用戶路由（需 JWT Guard）
-  const meMiddlewares = jwtGuardMiddleware ? [jwtGuardMiddleware] : []
-  router.get('/api/auth/me', meMiddlewares, (ctx: IHttpContext) => authController.me(ctx))
+  router.get('/api/auth/me', ['jwtGuardMiddleware'], (ctx: IHttpContext) => authController.me(ctx))
 
   // 刷新 Token 路由（需 JWT Guard）
-  const refreshMiddlewares = jwtGuardMiddleware ? [jwtGuardMiddleware] : []
-  router.post('/api/auth/refresh', refreshMiddlewares, (ctx: IHttpContext) => authController.refresh(ctx))
+  router.post('/api/auth/refresh', ['jwtGuardMiddleware'], (ctx: IHttpContext) => authController.refresh(ctx))
 }

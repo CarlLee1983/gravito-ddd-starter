@@ -14,15 +14,13 @@ import type { IPostQueryService } from '../../Application/Queries/IPostQueryServ
  *
  * @param router - 模組路由器
  * @param queryService - 文章查詢服務
- * @param pageGuardMiddleware - 頁面認證中間件（可選，用於 /posts/create）
  */
 export function registerPageRoutes(
   router: IModuleRouter,
-  queryService: IPostQueryService,
-  pageGuardMiddleware?: any
+  queryService: IPostQueryService
 ): void {
   // 文章列表頁面（公開）
-  router.get('/posts', [], async (ctx: IHttpContext) => {
+  router.get('/posts', async (ctx: IHttpContext) => {
     try {
       const posts = await queryService.findAll()
       return ctx.render('Post/Index', { posts })
@@ -32,7 +30,7 @@ export function registerPageRoutes(
   })
 
   // 文章詳細頁面（公開）
-  router.get('/posts/:id', [], async (ctx: IHttpContext) => {
+  router.get('/posts/:id', async (ctx: IHttpContext) => {
     try {
       const { id } = ctx.params
       const post = await queryService.findById(id!)
@@ -46,8 +44,8 @@ export function registerPageRoutes(
   })
 
   // 新建文章頁面（受保護）
-  const createMiddlewares = pageGuardMiddleware ? [pageGuardMiddleware] : []
-  router.get('/posts/create', createMiddlewares, async (ctx: IHttpContext) => {
+  // 字串 'pageGuardMiddleware' 會自動從容器中解析
+  router.get('/posts/create', ['pageGuardMiddleware'], async (ctx: IHttpContext) => {
     const userId = ctx.get('authenticatedUserId') as string | undefined
     if (!userId) {
       return ctx.redirect('/login')

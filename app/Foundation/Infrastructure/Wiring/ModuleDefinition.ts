@@ -12,7 +12,7 @@ import type { ModuleServiceProvider } from '../Ports/Core/IServiceProvider'
 import type { IEventDispatcher } from '../Ports/Messaging/IEventDispatcher'
 import type { IModuleRouter } from '../../Presentation/IModuleRouter'
 import type { IAuthRouter } from '../../Presentation/IAuthRouter'
-import type { Middleware } from '../../Presentation/IModuleRouter'
+import type { IMiddlewareResolver } from './IMiddlewareResolver'
 
 /**
  * 路由註冊用 Context（框架無關）
@@ -25,8 +25,8 @@ export interface IRouteRegistrationContext {
 	createModuleRouter(): IModuleRouter
 	/** 建立認證路由實例（選填，用於需要 JWT Guard 的模組） */
 	createAuthRouter?(): IAuthRouter
-	/** 頁面路由 Guard 中間件（用於受保護的頁面路由） */
-	pageGuardMiddleware?: Middleware
+	/** Middleware 解析器（用於懶取所需 Middleware） */
+	middlewareResolver: IMiddlewareResolver
 }
 
 /**

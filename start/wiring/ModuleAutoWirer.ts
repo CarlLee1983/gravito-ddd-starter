@@ -12,6 +12,7 @@ import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database
 import { createGravitoServiceProvider, GravitoContainerAdapter } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
 import { createGravitoModuleRouter } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
 import { createGravitoAuthRouter } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoAuthRouter'
+import { GravitoMiddlewareResolver } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoMiddlewareResolver'
 import type {
 	IModuleDefinition,
 	IRouteRegistrationContext,
@@ -86,13 +87,8 @@ export class ModuleAutoWirer {
 		// 第三階段：裝配 Presentation 層 (需要服務和 Repository 都已註冊)
 		const activeModules: string[] = []
 
-		// 先嘗試獲取 pageGuardMiddleware（用於所有模組）
-		let pageGuardMiddleware: any = undefined
-		try {
-			pageGuardMiddleware = core.container.make('pageGuardMiddleware')
-		} catch {
-			console.warn('[AutoWirer] ⚠️ pageGuardMiddleware not available, page authentication may not work')
-		}
+		// 建立 Middleware 解析器（用於所有模組）
+		const middlewareResolver = new GravitoMiddlewareResolver(core.container)
 
 		for (const { def, file } of modulesFound) {
 			if (def.registerRoutes) {
@@ -102,7 +98,7 @@ export class ModuleAutoWirer {
 						container: core.container,
 						createModuleRouter: () => {
 							console.log(`[AutoWirer] 📍 Creating router for module: ${def.name}`)
-							return createGravitoModuleRouter(core)
+							return createGravitoModuleRouter(core, middlewareResolver)
 						},
 						createAuthRouter: () => {
 							try {
@@ -114,7 +110,7 @@ export class ModuleAutoWirer {
 								throw new Error(`ITokenValidator 未實現，無法為模組 ${def.name} 建立 Auth Router`)
 							}
 						},
-						pageGuardMiddleware,
+						middlewareResolver,
 					}
 					def.registerRoutes(routeCtx)
 					console.log(`[AutoWirer] ✅ Routes wired successfully for module: ${def.name}`)

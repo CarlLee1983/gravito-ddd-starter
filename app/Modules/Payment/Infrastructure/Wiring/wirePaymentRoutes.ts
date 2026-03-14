@@ -20,6 +20,6 @@ export function wirePaymentRoutes(ctx: IRouteRegistrationContext): void {
 
   registerPaymentRoutes(router, controller)
 
-  // 註冊頁面路由（支付結果頁面為公開頁面，但傳遞 middleware 以保持一致性）
-  registerPageRoutes(router, ctx.pageGuardMiddleware)
+  // 註冊頁面路由（支付結果頁面為公開頁面）
+  registerPageRoutes(router)
 }

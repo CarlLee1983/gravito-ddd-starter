@@ -21,6 +21,6 @@ export function wireOrderRoutes(ctx: IRouteRegistrationContext): void {
 
   registerOrderRoutes(router, controller)
 
-  // 註冊頁面路由（使用 Page Guard 中間件）
-  registerPageRoutes(router, repository, ctx.pageGuardMiddleware)
+  // 註冊頁面路由
+  registerPageRoutes(router, repository)
 }

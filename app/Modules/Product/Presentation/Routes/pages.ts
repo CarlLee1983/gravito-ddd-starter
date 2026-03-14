@@ -19,8 +19,8 @@ export function registerPageRoutes(
   router: IModuleRouter,
   queryService: IProductQueryService
 ): void {
-  // 產品列表頁面
-  router.get('/products', [], async (ctx: IHttpContext) => {
+  // 產品列表頁面（公開）
+  router.get('/products', async (ctx: IHttpContext) => {
     try {
       const products = await queryService.findAll()
       return ctx.render('Product/Index', { products })
@@ -29,8 +29,8 @@ export function registerPageRoutes(
     }
   })
 
-  // 產品詳細頁面
-  router.get('/products/:id', [], async (ctx: IHttpContext) => {
+  // 產品詳細頁面（公開）
+  router.get('/products/:id', async (ctx: IHttpContext) => {
     try {
       const { id } = ctx.params
       const product = await queryService.findById(id!)

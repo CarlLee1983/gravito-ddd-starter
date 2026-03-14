@@ -81,6 +81,7 @@
   },
   "devDependencies": {
     "@gravito/pulse": "^3.4.0",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/vite": "^4.2.1",
     "@types/amqplib": "^0.10.8",
     "@types/react": "^19.2.14",

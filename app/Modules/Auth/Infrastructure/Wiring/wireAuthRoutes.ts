@@ -29,24 +29,16 @@ export function wireAuthRoutes(ctx: IRouteRegistrationContext): void {
     // tokenValidator 可能不可用，/login 和 /register 會跳過重定向邏輯
   }
 
-  // 建立 Page Controller 實例並註冊頁面路由（傳遞容器以便解決 middleware）
+  // 建立 Page Controller 實例並註冊頁面路由
   const pageController = new AuthPageController(tokenValidator)
-  registerPageRoutes(router, pageController, ctx.container)
-
-  // 嘗試從容器取得 JWT Guard 中間件（用於 API 路由）
-  let jwtGuardMiddleware: any = undefined
-  try {
-    jwtGuardMiddleware = ctx.container.make('jwtGuardMiddleware')
-  } catch (error) {
-    console.warn('[wireAuthRoutes] Warning: jwtGuardMiddleware not available, API authentication may not work')
-  }
+  registerPageRoutes(router, pageController)
 
   // 嘗試從容器取得依賴（用於 API 路由）
   let authController: AuthController
   try {
     authController = ctx.container.make('authController') as AuthController
-    // 註冊 API 路由（使用 JWT Guard 中間件）
-    registerAuthRoutes(router, authController, jwtGuardMiddleware)
+    // 註冊 API 路由（JWT Guard 中間件透過字串解析）
+    registerAuthRoutes(router, authController)
   } catch (error) {
     console.error('[wireAuthRoutes] Error: Failed to resolve authController', {
       message: (error as Error).message,

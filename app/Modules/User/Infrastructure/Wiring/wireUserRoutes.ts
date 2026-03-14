@@ -56,7 +56,7 @@ export function wireUserRoutes(ctx: IRouteRegistrationContext): void {
 	// 註冊頁面路由
 	try {
 		const queryService = ctx.container.make('userQueryService') as IUserQueryService
-		registerPageRoutes(router, queryService, ctx.pageGuardMiddleware)
+		registerPageRoutes(router, queryService)
 	} catch {
 		console.warn('[wireUserRoutes] Warning: userQueryService not available for page routes')
 	}

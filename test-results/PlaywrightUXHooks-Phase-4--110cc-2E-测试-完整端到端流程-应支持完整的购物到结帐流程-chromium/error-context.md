@@ -1,0 +1,200 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - complementary [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - generic [ref=e7]: G
+        - generic [ref=e8]:
+          - generic [ref=e9]: Gravito
+          - generic [ref=e10]: Framework DDD
+      - navigation [ref=e11]:
+        - link "控制面板" [ref=e12] [cursor=pointer]:
+          - /url: /dashboard
+          - img [ref=e13]
+          - generic [ref=e18]: 控制面板
+        - link "商品列表" [ref=e19] [cursor=pointer]:
+          - /url: /products
+          - img [ref=e20]
+          - generic [ref=e23]: 商品列表
+        - link "我的購物車" [ref=e24] [cursor=pointer]:
+          - /url: /cart
+          - img [ref=e25]
+          - generic [ref=e29]: 我的購物車
+        - link "數據分析" [ref=e30] [cursor=pointer]:
+          - /url: /analytics
+          - img [ref=e31]
+          - generic [ref=e33]: 數據分析
+      - generic [ref=e34]:
+        - button "安全登出" [ref=e35]:
+          - img [ref=e36]
+          - generic [ref=e39]: 安全登出
+        - paragraph [ref=e40]: © 2026 Gravito Platform v1.1.0
+  - generic [ref=e41]:
+    - banner [ref=e42]:
+      - heading "精選商品" [level=1] [ref=e44]
+      - generic [ref=e45]:
+        - button [ref=e46]:
+          - img [ref=e47]
+        - link [ref=e51] [cursor=pointer]:
+          - /url: https://github.com/gravito-framework
+          - img [ref=e52]
+        - generic [ref=e56]:
+          - generic [ref=e57]:
+            - paragraph [ref=e58]: 使用者
+            - paragraph
+          - generic [ref=e59]: "?"
+    - main [ref=e60]:
+      - generic [ref=e61]:
+        - generic [ref=e62]:
+          - img "Banner" [ref=e64]
+          - generic [ref=e65]:
+            - generic [ref=e66]:
+              - img [ref=e67]
+              - text: Seasonal Sale
+            - heading "提升您的 數位工作效率" [level=2] [ref=e69]:
+              - text: 提升您的
+              - text: 數位工作效率
+            - paragraph [ref=e70]: 挑選最適合您開發環境的頂尖硬體。限時優惠中，全館免運費。
+            - button "探索新品" [ref=e71]
+        - generic [ref=e72]:
+          - generic [ref=e73]:
+            - button "全部" [ref=e74]
+            - button "配件" [ref=e75]
+            - button "顯示器" [ref=e76]
+            - button "辦公用具" [ref=e77]
+            - button "傢俱" [ref=e78]
+            - button "音頻" [ref=e79]
+          - generic [ref=e80]:
+            - generic [ref=e81]:
+              - img [ref=e82]
+              - textbox "搜尋商品..." [ref=e85]
+            - button [ref=e86]:
+              - img [ref=e87]
+        - generic [ref=e89]:
+          - generic [ref=e90]:
+            - generic [ref=e91]:
+              - img "Gravito Pro Wireless Mouse" [ref=e92]
+              - generic [ref=e93]: New
+              - button [ref=e94]:
+                - img [ref=e95]
+              - button "加入購物車" [ref=e98]:
+                - img [ref=e99]
+                - text: 加入購物車
+            - generic [ref=e101]:
+              - generic [ref=e102]:
+                - generic [ref=e103]: 配件
+                - generic [ref=e104]:
+                  - img [ref=e105]
+                  - generic [ref=e107]: "4.8"
+              - heading "Gravito Pro Wireless Mouse" [level=3] [ref=e108]
+              - generic [ref=e109]:
+                - generic [ref=e110]: $89.99
+                - generic [ref=e111]: 124 則評論
+          - generic [ref=e112]:
+            - generic [ref=e113]:
+              - img "Mechanical Keyboard v2" [ref=e114]
+              - generic [ref=e115]: Best Seller
+              - button [ref=e116]:
+                - img [ref=e117]
+              - button "加入購物車" [ref=e120]:
+                - img [ref=e121]
+                - text: 加入購物車
+            - generic [ref=e123]:
+              - generic [ref=e124]:
+                - generic [ref=e125]: 配件
+                - generic [ref=e126]:
+                  - img [ref=e127]
+                  - generic [ref=e129]: "4.9"
+              - heading "Mechanical Keyboard v2" [level=3] [ref=e130]
+              - generic [ref=e131]:
+                - generic [ref=e132]: $149.00
+                - generic [ref=e133]: 89 則評論
+          - generic [ref=e134]:
+            - generic [ref=e135]:
+              - img "USB-C Docking Station" [ref=e136]
+              - button [ref=e137]:
+                - img [ref=e138]
+              - button "加入購物車" [ref=e141]:
+                - img [ref=e142]
+                - text: 加入購物車
+            - generic [ref=e144]:
+              - generic [ref=e145]:
+                - generic [ref=e146]: 辦公用具
+                - generic [ref=e147]:
+                  - img [ref=e148]
+                  - generic [ref=e150]: "4.5"
+              - heading "USB-C Docking Station" [level=3] [ref=e151]
+              - generic [ref=e152]:
+                - generic [ref=e153]: $49.99
+                - generic [ref=e154]: 56 則評論
+          - generic [ref=e155]:
+            - generic [ref=e156]:
+              - img "UltraWide 34 Monitor" [ref=e157]
+              - button [ref=e158]:
+                - img [ref=e159]
+              - button "加入購物車" [ref=e162]:
+                - img [ref=e163]
+                - text: 加入購物車
+            - generic [ref=e165]:
+              - generic [ref=e166]:
+                - generic [ref=e167]: 顯示器
+                - generic [ref=e168]:
+                  - img [ref=e169]
+                  - generic [ref=e171]: "4.7"
+              - heading "UltraWide 34 Monitor" [level=3] [ref=e172]
+              - generic [ref=e173]:
+                - generic [ref=e174]: $499.00
+                - generic [ref=e175]: 210 則評論
+          - generic [ref=e176]:
+            - generic [ref=e177]:
+              - img "Ergonomic Desk Chair" [ref=e178]
+              - generic [ref=e179]: Limited
+              - button [ref=e180]:
+                - img [ref=e181]
+              - button "加入購物車" [ref=e184]:
+                - img [ref=e185]
+                - text: 加入購物車
+            - generic [ref=e187]:
+              - generic [ref=e188]:
+                - generic [ref=e189]: 傢俱
+                - generic [ref=e190]:
+                  - img [ref=e191]
+                  - generic [ref=e193]: "4.6"
+              - heading "Ergonomic Desk Chair" [level=3] [ref=e194]
+              - generic [ref=e195]:
+                - generic [ref=e196]: $299.00
+                - generic [ref=e197]: 42 則評論
+          - generic [ref=e198]:
+            - generic [ref=e199]:
+              - img "Noise Cancelling Headphones" [ref=e200]
+              - button [ref=e201]:
+                - img [ref=e202]
+              - button "加入購物車" [ref=e205]:
+                - img [ref=e206]
+                - text: 加入購物車
+            - generic [ref=e208]:
+              - generic [ref=e209]:
+                - generic [ref=e210]: 音頻
+                - generic [ref=e211]:
+                  - img [ref=e212]
+                  - generic [ref=e214]: "4.8"
+              - heading "Noise Cancelling Headphones" [level=3] [ref=e215]
+              - generic [ref=e216]:
+                - generic [ref=e217]: $199.99
+                - generic [ref=e218]: 156 則評論
+        - button "載入更多商品" [ref=e220]:
+          - text: 載入更多商品
+          - img [ref=e221]
+        - generic [ref=e224]:
+          - generic [ref=e225]:
+            - generic [ref=e226]:
+              - img [ref=e227]
+              - generic [ref=e230]: "3"
+            - generic [ref=e231]:
+              - paragraph [ref=e232]: 購物車合計
+              - paragraph [ref=e233]: $328.98
+          - link "去結帳" [ref=e234] [cursor=pointer]:
+            - /url: /cart
+```
