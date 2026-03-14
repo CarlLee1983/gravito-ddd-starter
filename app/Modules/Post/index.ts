@@ -41,7 +41,7 @@ export type { PostReadModel } from './Application/ReadModels/PostReadModel'
 export type { IPostQueryService } from './Application/Queries/IPostQueryService'
 
 // Presentation
-export { registerPostRoutes } from './Presentation/Routes/Post.routes'
+export { registerPostRoutes } from './Presentation/Routes/api'
 export { PostController } from './Presentation/Controllers/PostController'
 
 // Infrastructure

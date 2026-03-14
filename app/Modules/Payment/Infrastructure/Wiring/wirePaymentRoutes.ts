@@ -6,7 +6,7 @@
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { PaymentController } from '../../Presentation/Controllers/PaymentController'
 import { PaymentPageController } from '../../Presentation/Controllers/PaymentPageController'
-import { registerPaymentRoutes } from '../../Presentation/Routes/payment.routes'
+import { registerPaymentRoutes } from '../../Presentation/Routes/api'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { IPaymentRepository } from '../../Domain/Repositories/IPaymentRepository'
 

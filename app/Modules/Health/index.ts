@@ -25,7 +25,7 @@ export { HealthServiceProvider } from './Infrastructure/Providers/HealthServiceP
 
 // Presentation
 export { HealthController } from './Presentation/Controllers/HealthController'
-export { registerHealthRoutes } from './Presentation/Routes/health.routes'
+export { registerHealthRoutes } from './Presentation/Routes/api'
 
 /**
  * 模組定義物件
