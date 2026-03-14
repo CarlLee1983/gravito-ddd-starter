@@ -21,9 +21,6 @@ import { registerPageRoutes } from '../../Presentation/Routes/pages'
 export function wireAuthRoutes(ctx: IRouteRegistrationContext): void {
   const router = ctx.createModuleRouter()
 
-  // 從 Context 取得中間件（ModuleAutoWirer 已提供）
-  const pageGuardMiddleware = ctx.pageGuardMiddleware
-
   // 嘗試從容器取得 tokenValidator（用於頁面控制器檢查登入狀態）
   let tokenValidator: any = undefined
   try {
@@ -32,9 +29,9 @@ export function wireAuthRoutes(ctx: IRouteRegistrationContext): void {
     // tokenValidator 可能不可用，/login 和 /register 會跳過重定向邏輯
   }
 
-  // 建立 Page Controller 實例並註冊頁面路由
+  // 建立 Page Controller 實例並註冊頁面路由（傳遞容器以便解決 middleware）
   const pageController = new AuthPageController(tokenValidator)
-  registerPageRoutes(router, pageController, pageGuardMiddleware)
+  registerPageRoutes(router, pageController, ctx.container)
 
   // 嘗試從容器取得 JWT Guard 中間件（用於 API 路由）
   let jwtGuardMiddleware: any = undefined

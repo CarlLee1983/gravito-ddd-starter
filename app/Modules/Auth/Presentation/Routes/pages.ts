@@ -14,13 +14,23 @@ import type { AuthPageController } from '../Controllers/AuthPageController'
  *
  * @param router - 模組路由器
  * @param pageController - Auth 頁面控制器（處理頁面邏輯）
- * @param pageGuardMiddleware - 頁面路由認證中間件（可選）
+ * @param container - DI 容器（用於解決註冊的 middleware）
  */
 export function registerPageRoutes(
   router: IModuleRouter,
   pageController: AuthPageController,
-  pageGuardMiddleware?: any
+  container?: { make(name: string): unknown }
 ): void {
+  // 從容器取用頁面路由保護 middleware（可選）
+  let pageGuardMiddleware: any = undefined
+  if (container) {
+    try {
+      pageGuardMiddleware = container.make('pageGuardMiddleware')
+    } catch {
+      // middleware 不可用時，dashboard 路由將無保護
+    }
+  }
+
   // 登入頁面（公開，但已登入時重定向到 Dashboard）
   router.get('/login', [], (ctx: IHttpContext) => pageController.showLoginPage(ctx))
 
@@ -28,6 +38,9 @@ export function registerPageRoutes(
   router.get('/register', [], (ctx: IHttpContext) => pageController.showRegisterPage(ctx))
 
   // 個人儀表板（受保護，需要認證）
-  const dashboardMiddlewares = pageGuardMiddleware ? [pageGuardMiddleware] : []
-  router.get('/dashboard', dashboardMiddlewares, (ctx: IHttpContext) => pageController.showDashboard(ctx))
+  router.get(
+    '/dashboard',
+    pageGuardMiddleware ? [pageGuardMiddleware] : [],
+    (ctx: IHttpContext) => pageController.showDashboard(ctx)
+  )
 }
