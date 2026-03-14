@@ -35,7 +35,7 @@ export class OrderController {
    */
   async placeOrder(ctx: IHttpContext): Promise<Response> {
     try {
-      const dto: PlaceOrderDTO = ctx.body as any
+      const dto = await ctx.getJsonBody<PlaceOrderDTO>()
 
       // 驗證輸入
       if (!dto.userId || !dto.lines || dto.lines.length === 0) {
@@ -159,7 +159,7 @@ export class OrderController {
   async shipOrder(ctx: IHttpContext): Promise<Response> {
     try {
       const { id } = ctx.params
-      const { trackingNumber } = ctx.body as any
+      const { trackingNumber } = await ctx.getJsonBody<{ trackingNumber: string }>()
       const orderId = OrderId.fromString(id!)
       const order = await this.orderRepository.findById(orderId)
 
@@ -194,7 +194,7 @@ export class OrderController {
   async cancelOrder(ctx: IHttpContext): Promise<Response> {
     try {
       const { id } = ctx.params
-      const { reason } = ctx.body as any
+      const { reason } = await ctx.getJsonBody<{ reason: string }>()
       const orderId = OrderId.fromString(id!)
       const order = await this.orderRepository.findById(orderId)
 

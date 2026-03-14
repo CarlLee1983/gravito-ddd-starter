@@ -4,7 +4,6 @@
  */
 
 import { ValueObject } from '@/Foundation/Domain/ValueObject'
-import { v4 as uuid } from 'uuid'
 
 interface ProductIdProps extends Record<string, unknown> {
   readonly value: string
@@ -31,7 +30,7 @@ export class ProductId extends ValueObject<ProductIdProps> {
    * @throws {Error} 當格式無效時拋出錯誤
    */
   static create(value?: string): ProductId {
-    const id = value || uuid()
+    const id = value ?? crypto.randomUUID()
     ProductId.validate(id)
     return new ProductId({ value: id })
   }

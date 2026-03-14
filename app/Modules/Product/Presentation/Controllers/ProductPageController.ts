@@ -8,6 +8,7 @@
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
+import { ProductId } from '../../Domain/ValueObjects/ProductId'
 
 /**
  * Product 頁面控制器
@@ -46,7 +47,10 @@ export class ProductPageController {
   async showDetail(ctx: IHttpContext): Promise<Response> {
     try {
       const { id } = ctx.params
-      const product = await this.queryService.findById(id!)
+      if (!id) {
+        return ctx.render('404')
+      }
+      const product = await this.queryService.findById(ProductId.reconstitute(id))
       if (!product) {
         return ctx.render('404')
       }

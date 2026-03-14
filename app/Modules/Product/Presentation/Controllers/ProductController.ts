@@ -33,7 +33,7 @@ export class ProductController {
    */
   async create(ctx: IHttpContext): Promise<Response> {
     try {
-      const { name, amount, currency, sku, stockQuantity } = ctx.body as any
+      const { name, amount, currency, sku, stockQuantity } = await ctx.getJsonBody<{ name: string, amount: number, currency: string, sku: string, stockQuantity: number }>()
 
       const id = await this.createProductService.execute({
         name,

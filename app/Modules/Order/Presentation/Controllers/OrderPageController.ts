@@ -7,6 +7,7 @@
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
+import { OrderId } from '../../Domain/ValueObjects/OrderId'
 
 /**
  * Order 頁面控制器
@@ -58,7 +59,10 @@ export class OrderPageController {
     }
     try {
       const { id } = ctx.params
-      const order = await this.repository.findById(id!)
+      if (!id) {
+        return ctx.render('404')
+      }
+      const order = await this.repository.findById(OrderId.fromString(id))
       if (!order) {
         return ctx.render('404')
       }

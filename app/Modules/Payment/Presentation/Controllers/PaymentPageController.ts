@@ -21,7 +21,7 @@ export class PaymentPageController {
    * @returns 渲染支付成功頁面
    */
   async showSuccess(ctx: IHttpContext): Promise<Response> {
-    const orderId = ctx.query('orderId') as string | undefined
+    const orderId = ctx.get('orderId') as string | undefined
     return ctx.render('Payment/Success', { orderId })
   }
 
@@ -32,8 +32,8 @@ export class PaymentPageController {
    * @returns 渲染支付失敗頁面
    */
   async showFailed(ctx: IHttpContext): Promise<Response> {
-    const orderId = ctx.query('orderId') as string | undefined
-    const reason = ctx.query('reason') as string | undefined
+    const orderId = ctx.get('orderId') as string | undefined
+    const reason = ctx.get('reason') as string | undefined
     return ctx.render('Payment/Failed', { orderId, reason })
   }
 
@@ -44,7 +44,7 @@ export class PaymentPageController {
    * @returns 渲染支付待機頁面
    */
   async showPending(ctx: IHttpContext): Promise<Response> {
-    const orderId = ctx.query('orderId') as string | undefined
+    const orderId = ctx.get('orderId') as string | undefined
     return ctx.render('Payment/Pending', { orderId })
   }
 }
