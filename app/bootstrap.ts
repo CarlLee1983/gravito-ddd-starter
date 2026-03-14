@@ -13,8 +13,8 @@ import { initializeRegistry } from 'start/wiring/RepositoryRegistry'
 import { getCurrentORM } from 'start/wiring/RepositoryFactory'
 import { DatabaseAccessBuilder } from 'start/wiring/DatabaseAccessBuilder'
 import { ModuleAutoWirer } from 'start/wiring/ModuleAutoWirer'
-import { SharedServiceProvider } from '@providers/SharedServiceProvider'
-import { InfrastructureServiceProvider } from '@providers/InfrastructureServiceProvider'
+import { SharedServiceProvider } from '@/Foundation/Infrastructure/Providers/SharedServiceProvider'
+import { InfrastructureServiceProvider } from '@/Foundation/Infrastructure/Providers/InfrastructureServiceProvider'
 import { createGravitoServiceProvider } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
 
 /**

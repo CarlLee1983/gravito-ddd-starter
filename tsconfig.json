@@ -30,7 +30,6 @@
       "@wiring": ["./start/wiring"],
       "@wiring/*": ["./start/wiring/*"],
       "@config/*": ["./config/*"],
-      "@providers/*": ["./providers/*"],
       "@database/*": ["./database/*"],
       "@types/*": ["./types/*"],
       "start/*": ["./start/*"],
@@ -44,6 +43,6 @@
       "@gravito/stasis": ["./node_modules/@gravito/stasis"]
     }
   },
-  "include": ["app", "bin", "providers", "start", "tests", "config", "types", "database", "resources"],
+  "include": ["app", "bin", "start", "tests", "config", "types", "database", "resources"],
   "exclude": ["node_modules", "dist"]
 }
