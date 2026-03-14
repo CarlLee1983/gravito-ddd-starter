@@ -12,6 +12,7 @@ import type { RemoveItemFromCartService } from '../../Application/Services/Remov
 import type { CheckoutCartService } from '../../Application/Services/CheckoutCartService'
 import type { ICartRepository } from '../../Domain/Repositories/ICartRepository'
 import { CartController } from '../../Presentation/Controllers/CartController'
+import { CartPageController } from '../../Presentation/Controllers/CartPageController'
 import { registerCartRoutes } from '../../Presentation/Routes/api'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
 
@@ -48,6 +49,7 @@ export function wireCartRoutes(ctx: IRouteRegistrationContext): void {
 
 	registerCartRoutes(router, controller)
 
-	// 註冊頁面路由
-	registerPageRoutes(router, cartRepository)
+	// 建立 Page Controller 實例並註冊頁面路由
+	const pageController = new CartPageController(cartRepository)
+	registerPageRoutes(router, pageController)
 }
