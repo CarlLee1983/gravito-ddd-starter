@@ -5,6 +5,7 @@
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { OrderController } from '../../Presentation/Controllers/OrderController'
+import { OrderPageController } from '../../Presentation/Controllers/OrderPageController'
 import { registerOrderRoutes } from '../../Presentation/Routes/Order.routes'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
@@ -21,6 +22,7 @@ export function wireOrderRoutes(ctx: IRouteRegistrationContext): void {
 
   registerOrderRoutes(router, controller)
 
-  // 註冊頁面路由
-  registerPageRoutes(router, repository)
+  // 建立 Page Controller 實例並註冊頁面路由
+  const pageController = new OrderPageController(repository)
+  registerPageRoutes(router, pageController)
 }

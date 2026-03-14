@@ -17,6 +17,7 @@ import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 import { PostMessageService } from '../Services/PostMessageService'
 import { PostController } from '../../Presentation/Controllers/PostController'
+import { PostPageController } from '../../Presentation/Controllers/PostPageController'
 import { registerPostRoutes } from '../../Presentation/Routes/Post.routes'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
@@ -61,7 +62,8 @@ export function wirePostRoutes(ctx: IRouteRegistrationContext): void {
 	// 註冊頁面路由
 	try {
 		const queryService = ctx.container.make('postQueryService') as IPostQueryService
-		registerPageRoutes(router, queryService)
+		const pageController = new PostPageController(queryService)
+		registerPageRoutes(router, pageController)
 	} catch {
 		console.warn('[wirePostRoutes] Warning: postQueryService not available for page routes')
 	}

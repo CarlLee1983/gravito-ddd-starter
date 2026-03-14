@@ -7,57 +7,25 @@
 
 import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
-import type { IUserQueryService } from '../../Application/Queries/IUserQueryService'
+import type { UserPageController } from '../Controllers/UserPageController'
 
 /**
  * 註冊 User 頁面路由
  *
  * @param router - 模組路由器
- * @param queryService - 用戶查詢服務
+ * @param pageController - User 頁面控制器（處理頁面邏輯）
  */
 export function registerPageRoutes(
   router: IModuleRouter,
-  queryService: IUserQueryService
+  pageController: UserPageController
 ): void {
   // 用戶列表頁面（公開）
-  router.get('/users', async (ctx: IHttpContext) => {
-    try {
-      const users = await queryService.findAll()
-      return ctx.render('User/Index', { users })
-    } catch (error) {
-      return ctx.render('User/Index', { users: [] })
-    }
-  })
+  router.get('/users', (ctx: IHttpContext) => pageController.showIndex(ctx))
 
   // 用戶詳細頁面（檔案，公開）
-  router.get('/users/:id', async (ctx: IHttpContext) => {
-    try {
-      const { id } = ctx.params
-      const user = await queryService.findById(id!)
-      if (!user) {
-        return ctx.render('404')
-      }
-      return ctx.render('User/Profile', { user })
-    } catch (error) {
-      return ctx.render('404')
-    }
-  })
+  router.get('/users/:id', (ctx: IHttpContext) => pageController.showProfile(ctx))
 
   // 個人檔案頁面（受保護）
   // 字串 'pageGuardMiddleware' 會自動從容器中解析
-  router.get('/profile', ['pageGuardMiddleware'], async (ctx: IHttpContext) => {
-    const userId = ctx.get('authenticatedUserId') as string | undefined
-    if (!userId) {
-      return ctx.redirect('/login')
-    }
-    try {
-      const user = await queryService.findById(userId)
-      if (!user) {
-        return ctx.render('404')
-      }
-      return ctx.render('User/MyProfile', { user })
-    } catch (error) {
-      return ctx.render('404')
-    }
-  })
+  router.get('/profile', ['pageGuardMiddleware'], (ctx: IHttpContext) => pageController.showMyProfile(ctx))
 }

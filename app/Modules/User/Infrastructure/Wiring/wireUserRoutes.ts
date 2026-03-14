@@ -12,6 +12,7 @@ import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { UserMessageService } from '../Services/UserMessageService'
 import { UserController } from '../../Presentation/Controllers/UserController'
+import { UserPageController } from '../../Presentation/Controllers/UserPageController'
 import { registerUserRoutes } from '../../Presentation/Routes/api'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
@@ -56,7 +57,8 @@ export function wireUserRoutes(ctx: IRouteRegistrationContext): void {
 	// 註冊頁面路由
 	try {
 		const queryService = ctx.container.make('userQueryService') as IUserQueryService
-		registerPageRoutes(router, queryService)
+		const pageController = new UserPageController(queryService)
+		registerPageRoutes(router, pageController)
 	} catch {
 		console.warn('[wireUserRoutes] Warning: userQueryService not available for page routes')
 	}
