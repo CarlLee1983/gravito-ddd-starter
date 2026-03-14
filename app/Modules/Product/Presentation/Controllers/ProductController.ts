@@ -10,6 +10,14 @@ import type { IProductQueryService } from '../../Application/Queries/IProductQue
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 
 export class ProductController {
+  /**
+   * 建構子
+   *
+   * @param createProductService - 建立產品服務
+   * @param getProductService - 取得產品服務
+   * @param queryService - 產品查詢服務
+   * @param logger - 日誌服務
+   */
   constructor(
     private createProductService: CreateProductService,
     private getProductService: GetProductService,
@@ -17,6 +25,12 @@ export class ProductController {
     private logger: ILogger
   ) {}
 
+  /**
+   * 建立產品
+   *
+   * @param ctx - HTTP 上下文
+   * @returns Promise<Response>
+   */
   async create(ctx: IHttpContext): Promise<Response> {
     try {
       const { name, amount, currency, sku, stockQuantity } = ctx.body as any
@@ -45,6 +59,12 @@ export class ProductController {
     }
   }
 
+  /**
+   * 按 ID 取得產品
+   *
+   * @param ctx - HTTP 上下文
+   * @returns Promise<Response>
+   */
   async getById(ctx: IHttpContext): Promise<Response> {
     try {
       const { id } = ctx.params
@@ -70,6 +90,12 @@ export class ProductController {
     }
   }
 
+  /**
+   * 取得所有產品
+   *
+   * @param ctx - HTTP 上下文
+   * @returns Promise<Response>
+   */
   async getAll(ctx: IHttpContext): Promise<Response> {
     try {
       const products = await this.queryService.findAll()

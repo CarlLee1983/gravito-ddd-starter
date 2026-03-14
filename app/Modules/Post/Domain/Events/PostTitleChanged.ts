@@ -38,7 +38,7 @@ export class PostTitleChanged extends DomainEvent {
    *
    * @returns 事件的 JSON 表示
    */
-  toJSON() {
+  toJSON(): Record<string, unknown> {
     return {
       eventId: this.eventId,
       aggregateId: this.postId,

@@ -1,7 +1,6 @@
 /**
  * @file HealthController.ts
  * @description 處理系統健康檢查相關的 HTTP 請求
- * @module src/Modules/Health/Presentation/Controllers
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
@@ -12,7 +11,7 @@ import type { PerformHealthCheckService } from '../../Application/Services/Perfo
  * HealthController 類別
  * 
  * 在 DDD 架構中屬於「表現層 (Presentation Layer)」。
- * 負責接收外部檢查請求，從 HTTP 上下文中提取基礎設施組件 (如 DB)，並調用應用服務執行檢查。
+ * 負責接收外部檢查請求，並調用應用服務執行檢查。
  */
 export class HealthController {
 	/**
@@ -28,8 +27,6 @@ export class HealthController {
 
 	/**
 	 * 執行系統健康檢查
-	 * 
-	 * 此方法會從 context 中獲取 Wiring 層注入的原始資源 (db, redis, cache)。
 	 * 
 	 * @param ctx - HTTP 上下文介面
 	 * @returns Promise 包含健康檢查結果的 HTTP 響應

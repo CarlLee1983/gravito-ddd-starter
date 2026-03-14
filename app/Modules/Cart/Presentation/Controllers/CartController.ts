@@ -9,6 +9,7 @@ import type { RemoveItemFromCartService } from '../../Application/Services/Remov
 import type { CheckoutCartService } from '../../Application/Services/CheckoutCartService'
 import type { ICartRepository } from '../../Domain/Repositories/ICartRepository'
 import { toCartResponseDTO } from '../../Application/DTOs/CartResponseDTO'
+import { OptimisticLockException } from '@/Foundation/Application/OptimisticLockException'
 
 /**
  * 購物車控制器
@@ -65,6 +66,9 @@ export class CartController {
 
 			return ctx.json({ success: true, data: cartDto })
 		} catch (error) {
+			if (error instanceof OptimisticLockException) {
+				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+			}
 			const message = String(error)
 			const statusCode = message.includes('不存在') ? 404 : 400
 			return ctx.json({ success: false, error: message }, statusCode)
@@ -84,6 +88,9 @@ export class CartController {
 
 			return ctx.json({ success: true, data: cartDto })
 		} catch (error) {
+			if (error instanceof OptimisticLockException) {
+				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+			}
 			const message = String(error)
 			const statusCode = message.includes('不存在') ? 404 : 400
 			return ctx.json({ success: false, error: message }, statusCode)
@@ -115,6 +122,9 @@ export class CartController {
 
 			return ctx.json({ success: true, data: toCartResponseDTO(cart) })
 		} catch (error) {
+			if (error instanceof OptimisticLockException) {
+				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+			}
 			return ctx.json({ success: false, error: String(error) }, 500)
 		}
 	}
@@ -138,6 +148,9 @@ export class CartController {
 
 			return ctx.json({ success: true, message: '購物車已清空' })
 		} catch (error) {
+			if (error instanceof OptimisticLockException) {
+				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+			}
 			return ctx.json({ success: false, error: String(error) }, 500)
 		}
 	}
@@ -155,6 +168,9 @@ export class CartController {
 
 			return ctx.json({ success: true, data: cartDto, message: '結帳成功，訂單已建立' })
 		} catch (error) {
+			if (error instanceof OptimisticLockException) {
+				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+			}
 			const message = String(error)
 			const statusCode = message.includes('不存在') ? 404 : 400
 			return ctx.json({ success: false, error: message }, statusCode)

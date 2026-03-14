@@ -15,10 +15,18 @@ import type { IProductQueryService } from '../../Application/Queries/IProductQue
  * 負責產品列表頁和產品詳細頁的顯示邏輯。
  */
 export class ProductPageController {
+  /**
+   * 建構子
+   *
+   * @param queryService - 產品查詢服務
+   */
   constructor(private readonly queryService: IProductQueryService) {}
 
   /**
-   * 顯示產品列表頁面。
+   * 顯示產品列表頁面
+   *
+   * @param ctx - HTTP 上下文
+   * @returns Promise<Response>
    */
   async showIndex(ctx: IHttpContext): Promise<Response> {
     try {
@@ -30,7 +38,10 @@ export class ProductPageController {
   }
 
   /**
-   * 顯示產品詳細頁面。
+   * 顯示產品詳細頁面
+   *
+   * @param ctx - HTTP 上下文
+   * @returns Promise<Response>
    */
   async showDetail(ctx: IHttpContext): Promise<Response> {
     try {

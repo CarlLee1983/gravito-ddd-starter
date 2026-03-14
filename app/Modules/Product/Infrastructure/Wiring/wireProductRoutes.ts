@@ -20,6 +20,7 @@ import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger
  * 註冊 Product 模組路由（供 IModuleDefinition.registerRoutes 使用）
  *
  * @param ctx - 框架無關的註冊用 Context（容器 + 建立路由器）
+ * @returns void
  */
 export function wireProductRoutes(ctx: IRouteRegistrationContext): void {
   const router = ctx.createModuleRouter()

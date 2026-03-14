@@ -18,8 +18,10 @@ export class AuthPageController {
   constructor(private readonly tokenValidator?: ITokenValidator | null) {}
 
   /**
-   * 顯示登入頁面。
-   * 若已登入則重定向到 /dashboard，否則渲染 Auth/Login。
+   * 顯示登入頁面
+   *
+   * @param ctx - HTTP 上下文
+   * @returns 響應物件，若已登入則重定向到儀表板，否則渲染登入頁面
    */
   async showLoginPage(ctx: IHttpContext): Promise<Response> {
     if (await this.shouldRedirectToDashboard(ctx)) {
@@ -29,8 +31,10 @@ export class AuthPageController {
   }
 
   /**
-   * 顯示註冊頁面。
-   * 若已登入則重定向到 /dashboard，否則渲染 Auth/Register。
+   * 顯示註冊頁面
+   *
+   * @param ctx - HTTP 上下文
+   * @returns 響應物件，若已登入則重定向到儀表板，否則渲染註冊頁面
    */
   async showRegisterPage(ctx: IHttpContext): Promise<Response> {
     if (await this.shouldRedirectToDashboard(ctx)) {
@@ -40,8 +44,10 @@ export class AuthPageController {
   }
 
   /**
-   * 顯示儀表板頁面。
-   * 需由 Page Guard 中間件先行設定 authenticatedUserId；未登入時重定向到 /login。
+   * 顯示儀表板頁面
+   *
+   * @param ctx - HTTP 上下文
+   * @returns 響應物件，渲染儀表板頁面，未登入則重定向到登入頁面
    */
   async showDashboard(ctx: IHttpContext): Promise<Response> {
     const userId = ctx.get('authenticatedUserId') as string | undefined
@@ -52,7 +58,10 @@ export class AuthPageController {
   }
 
   /**
-   * 檢查是否已登入（Cookie 內有有效 Token），是則應重定向到 Dashboard。
+   * 檢查是否應重定向到儀表板
+   *
+   * @param ctx - HTTP 上下文
+   * @returns 是否應重定向
    */
   private async shouldRedirectToDashboard(ctx: IHttpContext): Promise<boolean> {
     if (!this.tokenValidator) return false
@@ -69,7 +78,10 @@ export class AuthPageController {
   }
 
   /**
-   * 從 Cookie 中提取 auth_token。
+   * 從 Cookie 獲取 Token
+   *
+   * @param ctx - HTTP 上下文
+   * @returns Token 字串或 null
    */
   private getTokenFromCookie(ctx: IHttpContext): string | null {
     const cookieHeader = ctx.getHeader('Cookie')

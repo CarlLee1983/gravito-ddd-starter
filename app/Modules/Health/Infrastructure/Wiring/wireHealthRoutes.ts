@@ -1,20 +1,11 @@
 /**
  * @file wireHealthRoutes.ts
- * @description Health 模組路由接線（對齊架構模式）
- *
- * 責任：從容器取得 Infrastructure 探測器 → 組裝 Service + Controller → 註冊路由。
- * 僅依賴 Shared 的 IRouteRegistrationContext，不依賴特定框架。
- *
- * 架構優勢：
- * - Health 模組自包含，不依賴 Shared 層的特定實現
- * - 移除 Shared 層對 Health 模組的反向依賴
- * - 與 User/Post 模組的 wiring 模式一致
+ * @description Health 模組路由接線，負責初始化控制器並註冊路由
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
-import type { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
+import { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
 import type { IDatabaseConnectivityCheck } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
-import type { IHealthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IHealthMessages'
 import { createGravitoDatabaseConnectivityCheck } from '@/Foundation/Infrastructure/Database/Adapters/Atlas'
 import { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
 import { HealthController } from '../../Presentation/Controllers/HealthController'
@@ -26,18 +17,31 @@ import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITr
  * 執行時探測器適配器
  *
  * 在請求時動態從容器解析服務，用於處理在啟動時尚未初始化的服務。
- * 實現 IInfrastructureProbe Port。
  */
 class RuntimeInfrastructureProbeAdapter implements IInfrastructureProbe {
+	/**
+	 * @param databaseCheck - 資料庫連接檢查介面
+	 * @param container - 依賴注入容器
+	 */
 	constructor(
 		private databaseCheck: IDatabaseConnectivityCheck,
 		private container: any
 	) {}
 
+	/**
+	 * 探測資料庫狀態
+	 *
+	 * @returns 是否連接成功
+	 */
 	async probeDatabase(): Promise<boolean> {
 		return this.databaseCheck.ping()
 	}
 
+	/**
+	 * 探測 Redis 狀態
+	 *
+	 * @returns 是否連接成功
+	 */
 	async probeRedis(): Promise<boolean> {
 		try {
 			const redisRaw = this.container.make('redis')
@@ -52,6 +56,11 @@ class RuntimeInfrastructureProbeAdapter implements IInfrastructureProbe {
 		}
 	}
 
+	/**
+	 * 探測快取服務狀態
+	 *
+	 * @returns 是否可用
+	 */
 	async probeCache(): Promise<boolean> {
 		try {
 			const cacheRaw = this.container.make('cache')
@@ -96,8 +105,6 @@ export function wireHealthRoutes(ctx: IRouteRegistrationContext): void {
 	const healthMessages = new HealthMessageService(translator)
 
 	// 註冊 /health 路由
-	// 每個請求都建立新的 PerformHealthCheckService，以便使用 RuntimeInfrastructureProbeAdapter
-	// 這樣可以在請求時動態解析已初始化的服務
 	router.get('/health', (hctx) => {
 		const probe = new RuntimeInfrastructureProbeAdapter(databaseCheck, ctx.container)
 		const performHealthCheckService = new PerformHealthCheckService(repository, probe)

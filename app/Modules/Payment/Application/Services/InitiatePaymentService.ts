@@ -1,3 +1,8 @@
+/**
+ * @file InitiatePaymentService.ts
+ * @description 發起支付應用服務
+ */
+
 import type { IPaymentRepository } from '../../Domain/Repositories/IPaymentRepository'
 import { Payment } from '../../Domain/Aggregates/Payment'
 import { Amount } from '../../Domain/ValueObjects/Amount'
@@ -11,6 +16,13 @@ import type { PaymentResponseDTO } from '../DTOs/PaymentResponseDTO'
 export class InitiatePaymentService {
 	constructor(private paymentRepository: IPaymentRepository) {}
 
+	/**
+	 * 執行發起支付邏輯
+	 *
+	 * @param dto - 發起支付 DTO
+	 * @returns 支付回應 DTO
+	 * @throws Error 當輸入參數無效時
+	 */
 	async execute(dto: InitiatePaymentDTO): Promise<PaymentResponseDTO> {
 		// 驗證輸入
 		if (!dto.orderId || !dto.userId || dto.amountCents <= 0) {
@@ -35,6 +47,12 @@ export class InitiatePaymentService {
 		return this.toDTO(payment)
 	}
 
+	/**
+	 * 將 Payment 領域對象轉換為 DTO
+	 *
+	 * @param payment - 支付領域對象
+	 * @returns 支付回應 DTO
+	 */
 	private toDTO(payment: Payment): PaymentResponseDTO {
 		return {
 			id: payment.id.value,

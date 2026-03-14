@@ -11,6 +11,7 @@ import { ProductController } from '../Controllers/ProductController'
  *
  * @param router - 模組路由器
  * @param controller - 產品控制器
+ * @returns void
  */
 export function registerProductRoutes(router: IModuleRouter, controller: ProductController): void {
   router.get('/products', (ctx) => controller.getAll(ctx))

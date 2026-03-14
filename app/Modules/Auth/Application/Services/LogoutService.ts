@@ -1,6 +1,6 @@
 /**
  * @file LogoutService.ts
- * @description 登出應用服務（從 Session/RevokeSessionService 遷移）
+ * @description 登出應用服務
  */
 
 import type { ISessionRepository } from '@/Modules/Session/Domain/Repositories/ISessionRepository'
@@ -12,6 +12,12 @@ import { ValidateSessionService } from '@/Modules/Session/Application/Services/V
  * 驗證 Token → 撤銷 Session（登出）
  */
 export class LogoutService {
+  /**
+   * 建立 LogoutService 實例
+   *
+   * @param sessionRepository - Session 倉儲
+   * @param validateSessionService - 驗證 Session 服務
+   */
   constructor(
     private sessionRepository: ISessionRepository,
     private validateSessionService: ValidateSessionService
@@ -22,7 +28,7 @@ export class LogoutService {
    *
    * @param token - JWT Token 字串（不含 'Bearer ' 前綴）
    * @returns Promise<void>
-   * @throws Error 如果 Token 無效
+   * @throws Error 如果 Token 無效或 Session 不存在
    */
   async execute(token: string): Promise<void> {
     // 驗證 Token

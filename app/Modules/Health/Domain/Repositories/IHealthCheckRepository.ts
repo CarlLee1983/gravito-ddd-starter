@@ -1,7 +1,6 @@
 /**
  * @file IHealthCheckRepository.ts
- * @description 定義健康檢查模組的倉儲介面 (Repository Interface)
- * @module src/Modules/Health/Domain/Repositories
+ * @description 健康檢查模組的倉儲介面定義
  */
 
 import type { IRepository } from '@/Foundation/Domain/IRepository'
@@ -9,9 +8,6 @@ import { HealthCheck } from '../Aggregates/HealthCheck'
 
 /**
  * IHealthCheckRepository 介面
- * 
- * 在 DDD 架構中屬於「領域層 (Domain Layer)」。
- * 定義了對 HealthCheck 聚合根進行持久化與查詢的操作契約。
  */
 export interface IHealthCheckRepository extends IRepository<HealthCheck> {
   /**
@@ -32,7 +28,7 @@ export interface IHealthCheckRepository extends IRepository<HealthCheck> {
   /**
    * 獲取健康檢查歷史記錄 (支援分頁限制)
    *
-   * @param params - 選填，分頁參數
+   * @param params - 分頁參數
    * @returns Promise 包含聚合根陣列
    */
   findAll(params?: { limit?: number; offset?: number }): Promise<HealthCheck[]>
@@ -46,7 +42,7 @@ export interface IHealthCheckRepository extends IRepository<HealthCheck> {
   save(check: HealthCheck): Promise<void>
 
   /**
-   * 刪除指定天數以前的舊記錄，用於維護系統資料量
+   * 刪除指定天數以前的舊記錄
    * 
    * @param days - 指定天數
    * @returns Promise 包含成功刪除的記錄數量

@@ -37,6 +37,8 @@ export class PostCreated extends DomainEvent {
    * 用於事件序列化、存儲或在系統間傳輸。
    * 只包含基本類型（string、number、boolean、null），不包含 Date 或 Class 物件。
    * 統一格式：eventId, aggregateId, eventType, occurredAt, version, data
+   *
+   * @returns 包含事件資料的 JSON 物件
    */
   toJSON(): Record<string, unknown> {
     return {

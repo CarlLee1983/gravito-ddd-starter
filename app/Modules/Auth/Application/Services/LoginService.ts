@@ -1,6 +1,6 @@
 /**
  * @file LoginService.ts
- * @description 登入應用服務（從 Session/CreateSessionService 遷移）
+ * @description 登入應用服務
  */
 
 import type { ICredentialVerifier } from '@/Foundation/Infrastructure/Ports/Auth/ICredentialVerifier'
@@ -17,6 +17,13 @@ import type { SessionDTO } from '../DTOs/SessionDTO'
  * 處理登入流程：驗證認證憑證 → 簽發 JWT → 建立 Session 實體 → 保存
  */
 export class LoginService {
+  /**
+   * 建立 LoginService 實例
+   *
+   * @param credentialVerifier - 憑證驗證 Port
+   * @param tokenSigner - Token 簽署 Port
+   * @param sessionRepository - Session 倉儲
+   */
   constructor(
     private credentialVerifier: ICredentialVerifier,
     private tokenSigner: ITokenSigner,
@@ -44,7 +51,7 @@ export class LoginService {
     // 步驟 2: 建立 Session ID
     const sessionId = SessionId.generate().value
 
-    // 步驟 3: 簽發 JWT Token（透過 Port 介面，不知道底層使用 jose 或其他庫）
+    // 步驟 3: 簽發 JWT Token（透過 Port 介面，不知道底層使用 jose 或其他 庫）
     const jwtToken = await this.tokenSigner.sign({
       sub: userId,
       jti: sessionId,

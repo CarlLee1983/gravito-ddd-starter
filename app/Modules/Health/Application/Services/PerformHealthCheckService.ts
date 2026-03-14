@@ -1,7 +1,6 @@
 /**
  * @file PerformHealthCheckService.ts
  * @description 執行系統健康檢查的應用服務 (Application Service)
- * @module app/Modules/Health/Application/Services
  */
 
 import { HealthCheckService } from '../../Domain/Services/HealthCheckService'

@@ -1,13 +1,6 @@
 /**
  * @file HealthCheck.ts
  * @description 定義系統健康檢查的聚合根 (Aggregate Root)
- * @module app/Modules/Health/Domain/Aggregates
- *
- * DDD 改造：
- * - 繼承 AggregateRoot 而非 BaseEntity
- * - 所有狀態變更通過領域事件驅動
- * - 移除 fromDatabase/toDatabaseRow（Repository 負責）
- * - 提供 reconstitute 用於持久化層還原
  */
 
 import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
@@ -20,7 +13,6 @@ import { HealthCheckPerformed } from '../Events/HealthCheckPerformed'
  * HealthCheck 聚合根
  *
  * 代表系統在特定時間點的健康狀況快照。
- * 所有狀態變更都通過領域事件進行，為 Event Sourcing 預留支援。
  */
 export class HealthCheck extends AggregateRoot {
   private _status!: HealthStatus
@@ -28,15 +20,15 @@ export class HealthCheck extends AggregateRoot {
   private _performedAt!: Date
   private _message?: string
 
+  /**
+   * @param id - 唯一識別符
+   */
   private constructor(id: string) {
     super(id)
   }
 
   /**
    * 靜態工廠方法：執行新的健康檢查
-   *
-   * 建立新的 HealthCheck 聚合，並產生 HealthCheckPerformed 事件。
-   * 事件會立即套用到狀態，同時追蹤為「未提交」。
    *
    * @param id - 唯一識別符
    * @param checks - 系統檢查結果
@@ -53,9 +45,6 @@ export class HealthCheck extends AggregateRoot {
 
   /**
    * 靜態工廠方法：從持久化資料重建聚合
-   *
-   * 用於 Repository 從資料庫還原已存在的 HealthCheck。
-   * 不產生任何事件，只重建狀態。
    *
    * @param id - 聚合 ID
    * @param status - 健康狀態
@@ -82,9 +71,6 @@ export class HealthCheck extends AggregateRoot {
   /**
    * 應用事件到聚合狀態
    *
-   * AggregateRoot 抽象方法實現。
-   * 定義如何將領域事件轉換為狀態變化。
-   *
    * @param event - 要套用的領域事件
    */
   applyEvent(event: DomainEvent): void {
@@ -98,27 +84,28 @@ export class HealthCheck extends AggregateRoot {
     }
   }
 
-  // === 唯讀存取器 ===
-  // 不提供 setter，所有狀態變更必須通過事件
-
+  /** 獲取健康狀態 */
   get status(): HealthStatus {
     return this._status
   }
 
+  /** 獲取系統檢查結果 */
   get checks(): SystemChecks {
     return this._checks
   }
 
+  /** 獲取執行時間 */
   get performedAt(): Date {
     return this._performedAt
   }
 
+  /** 獲取狀態訊息 */
   get message(): string | undefined {
     return this._message
   }
 
   /**
-   * 取得檢查詳情（Map 格式）
+   * 獲取檢查詳情（Map 格式）
    *
    * @returns 系統檢查結果的 Map
    */

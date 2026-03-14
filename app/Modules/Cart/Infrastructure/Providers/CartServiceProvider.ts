@@ -4,10 +4,12 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
+import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
 import { ProductCatalogAdapter } from '../Adapters/ProductCatalogAdapter'
 import { AddItemToCartService } from '../../Application/Services/AddItemToCartService'
 import { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'
 import { CheckoutCartService } from '../../Application/Services/CheckoutCartService'
+import { ClearCartOnOrderCreatedHandler } from '../../Application/Handlers/ClearCartOnOrderCreatedHandler'
 import type { IProductRepository } from '@/Modules/Product/Domain/Repositories/IProductRepository'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
@@ -55,5 +57,29 @@ export class CartServiceProvider extends ModuleServiceProvider {
 
 			return new CheckoutCartService(cartRepository)
 		})
+
+		// 3. 註冊事件處理器
+		container.singleton('clearCartOnOrderCreatedHandler', (c) => {
+			const cartRepository = c.make('cartRepository')
+			const logger = c.make('logger')
+			return new ClearCartOnOrderCreatedHandler(cartRepository, logger)
+		})
+	}
+
+	/**
+	 * 啟動與綁定事件
+	 *
+	 * @param container - DI 容器
+	 */
+	override boot(container: IContainer): void {
+		try {
+			const dispatcher = container.make('eventDispatcher') as IEventDispatcher
+			const handler = container.make('clearCartOnOrderCreatedHandler') as ClearCartOnOrderCreatedHandler
+			
+			// 訂閱跨模組整合事件
+			dispatcher.subscribe(handler.eventName, (event) => handler.handle(event))
+		} catch (error) {
+			console.warn('[CartServiceProvider] Warning: Event dispatcher or handler not ready, skipping event subscription')
+		}
 	}
 }

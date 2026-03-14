@@ -1,8 +1,6 @@
 /**
  * @file PortalQueryService.ts
- * @description Portal 查詢服務實現
- *
- * 聚合多個模組的資料提供給首頁使用（BFF 聚合層）
+ * @description Portal 查詢服務實現。負責聚合多個模組的資料提供給首頁使用（BFF 聚合層）
  */
 
 import type { IPortalQueryService, HomePageData } from '../../Presentation/Queries/IPortalQueryService'
@@ -21,11 +19,15 @@ export class PortalQueryService implements IPortalQueryService {
     { id: 2, title: 'New Arrival: Atomic Design Toolkit', date: '2026-03-08' }
   ]
 
+  /**
+   * 建立 PortalQueryService 實例
+   * @param productQuery 商品模組查詢服務，可用於取得精選商品
+   */
   constructor(private readonly productQuery: IProductQueryService | null) {}
 
   /**
-   * 取得首頁聚合資料
-   * 聚合 Product 模組的資料 + 公告 + 英雄區塊
+   * 取得首頁聚合資料，包含英雄區塊、精選商品、公告與 Meta 資訊
+   * @returns 包含首頁所有必要資料的 Promise
    */
   async getHomePageData(): Promise<HomePageData> {
     // 並行查詢各模組的資料
@@ -48,6 +50,7 @@ export class PortalQueryService implements IPortalQueryService {
 
   /**
    * 取得精選商品（前 4 項）
+   * @returns 精選商品的陣列，若查詢失敗或服務不可用則回傳空陣列
    */
   private async getFeaturedProducts(): Promise<
     Array<{

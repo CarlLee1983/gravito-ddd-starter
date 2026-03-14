@@ -115,7 +115,7 @@ export class CartRepository extends BaseEventSourcedRepository<Cart> implements 
 				{
 					cartId: event.cartId,
 					userId: event.userId,
-					items: event.items,
+					items: JSON.stringify(event.items),
 					totalAmount: event.totalAmount,
 				},
 				event.userId

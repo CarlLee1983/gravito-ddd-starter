@@ -28,6 +28,7 @@ export class SessionServiceProvider extends ModuleServiceProvider {
    * 註冊所有依賴
    *
    * @param container - DI 容器
+   * @returns void
    */
   override register(container: IContainer): void {
     // 1. 註冊 ITokenSigner Port（jose 實現）

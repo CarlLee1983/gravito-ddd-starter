@@ -1,3 +1,8 @@
+/**
+ * @file OrderController.ts
+ * @description Order 模組 API 控制器
+ */
+
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { OrderId } from '../../Domain/ValueObjects/OrderId'
@@ -5,16 +10,28 @@ import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
 import { PlaceOrderDTO, OrderResponseDTO } from '../../Application/DTOs/PlaceOrderDTO'
 
 /**
- * OrderController - HTTP 控制器
+ * Order 模組 API 控制器
+ * 
+ * 處理與訂單相關的 RESTful API 請求。
+ * 負責將 HTTP 請求轉換為應用層服務調用或倉儲操作，並格式化回應結果。
  */
 export class OrderController {
+  /**
+   * 初始化訂單控制器
+   * 
+   * @param placeOrderService - 建立訂單應用服務
+   * @param orderRepository - 訂單倉儲介面
+   */
   constructor(
     private readonly placeOrderService: PlaceOrderService,
     private readonly orderRepository: IOrderRepository,
   ) {}
 
   /**
-   * POST /orders - 建立訂單
+   * 建立新訂單 (POST /orders)
+   * 
+   * @param ctx - HTTP 上下文，包含請求體中的訂單資訊
+   * @returns Promise<Response> 建立成功後的訂單 DTO 或錯誤訊息
    */
   async placeOrder(ctx: IHttpContext): Promise<Response> {
     try {
@@ -44,7 +61,10 @@ export class OrderController {
   }
 
   /**
-   * GET /orders/:id - 獲取訂單詳情
+   * 獲取單一訂單詳情 (GET /orders/:id)
+   * 
+   * @param ctx - HTTP 上下文，包含路徑參數 id
+   * @returns Promise<Response> 訂單詳細資料或 404
    */
   async getOrder(ctx: IHttpContext): Promise<Response> {
     try {
@@ -72,7 +92,10 @@ export class OrderController {
   }
 
   /**
-   * GET /orders/user/:userId - 獲取用戶訂單列表
+   * 獲取指定使用者的所有訂單 (GET /orders/user/:userId)
+   * 
+   * @param ctx - HTTP 上下文，包含路徑參數 userId
+   * @returns Promise<Response> 該使用者的訂單列表
    */
   async getUserOrders(ctx: IHttpContext): Promise<Response> {
     try {
@@ -92,7 +115,12 @@ export class OrderController {
   }
 
   /**
-   * POST /orders/:id/confirm - 確認訂單
+   * 確認訂單 (POST /orders/:id/confirm)
+   * 
+   * 將訂單狀態更新為 Confirmed。通常由內部流程或支付回調觸發。
+   * 
+   * @param ctx - HTTP 上下文
+   * @returns Promise<Response> 更新後的訂單資料
    */
   async confirmOrder(ctx: IHttpContext): Promise<Response> {
     try {
@@ -123,7 +151,10 @@ export class OrderController {
   }
 
   /**
-   * POST /orders/:id/ship - 發貨
+   * 訂單發貨 (POST /orders/:id/ship)
+   * 
+   * @param ctx - HTTP 上下文，包含請求體中的追蹤單號 (trackingNumber)
+   * @returns Promise<Response> 更新後的訂單資料
    */
   async shipOrder(ctx: IHttpContext): Promise<Response> {
     try {
@@ -155,7 +186,10 @@ export class OrderController {
   }
 
   /**
-   * POST /orders/:id/cancel - 取消訂單
+   * 取消訂單 (POST /orders/:id/cancel)
+   * 
+   * @param ctx - HTTP 上下文，包含請求體中的取消原因 (reason)
+   * @returns Promise<Response> 更新後的訂單資料
    */
   async cancelOrder(ctx: IHttpContext): Promise<Response> {
     try {
@@ -194,7 +228,10 @@ export class OrderController {
   }
 
   /**
-   * 將訂單物件轉換為 DTO
+   * 將訂單領域物件轉換為 DTO（內部私有方法）
+   * 
+   * @param order - 訂單聚合根或原始資料
+   * @returns OrderResponseDTO 格式化後的 DTO
    */
   private orderToDTO(order: any): OrderResponseDTO {
     return {

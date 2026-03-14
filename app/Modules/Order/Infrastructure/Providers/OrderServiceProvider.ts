@@ -1,6 +1,6 @@
 /**
  * @file OrderServiceProvider.ts
- * @description Order 模組 Service Provider
+ * @description Order 模組服務提供者 (Service Provider)
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
@@ -10,9 +10,21 @@ import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messagi
 import { getRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
+/**
+ * Order 模組服務提供者
+ * 
+ * 負責在 IoC 容器中註冊 Order 模組所需的各種服務、倉儲，
+ * 並在模組啟動 (boot) 時監聽跨模組事件，如購物車結帳與支付完成。
+ */
 export class OrderServiceProvider extends ModuleServiceProvider {
   /**
-   * 註冊服務到容器
+   * 註冊服務到 IoC 容器
+   * 
+   * 註冊項目包括：
+   * - orderRepository: 訂單倉儲單例
+   * - placeOrderService: 建立訂單應用服務
+   * 
+   * @param container - IoC 容器實例
    */
   override register(container: IContainer): void {
     // 註冊 Repository 為單例
@@ -31,7 +43,13 @@ export class OrderServiceProvider extends ModuleServiceProvider {
   }
 
   /**
-   * 啟動模組並註冊事件監聽
+   * 啟動模組並註冊跨模組事件監聽
+   * 
+   * 主要監聽事件：
+   * - CartCheckoutRequested: 當購物車請求結帳時，觸發建立訂單流程
+   * - PaymentCompleted: 當支付成功後，更新對應訂單狀態為已確認 (Confirmed)
+   * 
+   * @param context - 模組執行上下文
    */
   override boot(context: any): void {
     const container = context.container

@@ -1,7 +1,6 @@
 /**
  * @file HealthCheckDTO.ts
  * @description 定義健康檢查模組的資料傳輸物件 (DTO)
- * @module src/Modules/Health/Application/DTOs
  */
 
 import { HealthCheck } from '../../Domain/Aggregates/HealthCheck'

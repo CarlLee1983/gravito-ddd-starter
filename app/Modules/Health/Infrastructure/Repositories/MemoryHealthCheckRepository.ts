@@ -1,12 +1,6 @@
 /**
  * @file MemoryHealthCheckRepository.ts
  * @description 實現內存形式的健康檢查倉儲，主要用於開發與測試環境
- * @module app/Modules/Health/Infrastructure/Repositories
- *
- * Phase 1 改造：
- * - 使用 reconstitute() 而非 fromDatabase()
- * - 使用 performedAt 而非 timestamp
- * - 使用 SystemChecks ValueObject 而非 plain object
  */
 
 import { HealthCheck } from '../../Domain/Aggregates/HealthCheck'
@@ -17,13 +11,6 @@ import type { IHealthCheckRepository } from '../../Domain/Repositories/IHealthCh
  *
  * 在 DDD 架構中屬於「基礎設施層 (Infrastructure Layer)」，實現了 IHealthCheckRepository 介面。
  * 該實現將資料儲存在內存 (Map) 中，不具備持久化到硬碟的能力。
- *
- * **特性**：
- * - 直接儲存 Domain Object（HealthCheck），無需轉換
- * - 自動清理舊記錄（保持最多 100 筆）
- * - 不涉及數據庫 I/O，適合開發與測試環境
- *
- * **注**：toDomain/toRow 轉換僅在涉及 DB 的 Repository（如 DrizzleRepository）才需要
  */
 export class MemoryHealthCheckRepository implements IHealthCheckRepository {
   /** 儲存記錄的內存 Map */
@@ -79,24 +66,12 @@ export class MemoryHealthCheckRepository implements IHealthCheckRepository {
   /**
    * 保存健康檢查記錄
    *
-   * 若超過最大筆數限制，則會刪除最舊的記錄以釋放空間。
-   *
-   * **Repository 責任**：
-   * 1. 在儲存時，標記聚合的事件為已提交（因為內存不需持久化層）
-   * 2. 若有 EventDispatcher，應分派未提交的事件
-   *
    * @param check - 健康檢查聚合根（包含未提交事件）
    * @returns Promise<void>
    */
   async save(check: HealthCheck): Promise<void> {
     // 儲存聚合
     this.checks.set(check.id, check)
-
-    // TODO: 分派未提交的事件
-    // const events = check.getUncommittedEvents()
-    // for (const event of events) {
-    //   await this.eventDispatcher.dispatch(event)
-    // }
 
     // 標記事件為已提交
     check.markEventsAsCommitted()

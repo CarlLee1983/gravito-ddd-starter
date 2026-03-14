@@ -145,8 +145,6 @@ export class Session extends AggregateRoot {
     return !this.isExpired && !this.isRevoked
   }
 
-  // ============ Getters （只讀屬性） ============
-
   /** 取得用戶 ID */
   get userId(): string {
     return this._userId
@@ -157,17 +155,29 @@ export class Session extends AggregateRoot {
     return this._jwtToken
   }
 
-  /** 取得過期時間 */
+  /**
+   * 取得過期時間
+   *
+   * @returns 過期時間 Date 物件
+   */
   get expiresAt(): Date {
     return new Date(this._expiresAt.getTime())
   }
 
-  /** 取得撤銷時間（null = 未撤銷） */
+  /**
+   * 取得撤銷時間（null = 未撤銷）
+   *
+   * @returns 撤銷時間 Date 物件或 null
+   */
   get revokedAt(): Date | null {
     return this._revokedAt ? new Date(this._revokedAt.getTime()) : null
   }
 
-  /** 取得建立時間 */
+  /**
+   * 取得建立時間
+   *
+   * @returns 建立時間 Date 物件
+   */
   get createdAt(): Date {
     return new Date(this._createdAt.getTime())
   }

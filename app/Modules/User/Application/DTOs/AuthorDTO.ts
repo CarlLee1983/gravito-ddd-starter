@@ -1,8 +1,7 @@
 /**
- * 作者資訊 DTO
+ * @file AuthorDTO.ts
+ * @description 作者資訊資料傳輸物件 (Data Transfer Object)
  *
- * @module AuthorDTO
- * @description
  * 用途：
  * - 將 User 聚合根的基本資訊（ID、名稱、郵件）作為 DTO 格式暴露給其他模組
  * - 用於跨模組通訊時的標準化作者資訊結構
@@ -19,10 +18,11 @@
  * 作者資料傳輸介面
  */
 export interface AuthorDTO {
-	/** 作者唯一識別碼 */
-	id: string
-	/** 作者名稱 */
-	name: string
-	/** 作者電子郵件 */
-	email: string
+        /** 作者唯一識別碼 */
+        id: string
+        /** 作者名稱 */
+        name: string
+        /** 作者電子郵件 */
+        email: string
 }
+

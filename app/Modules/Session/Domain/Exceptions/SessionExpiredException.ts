@@ -11,6 +11,11 @@
  * 用於 Token 驗證失敗的情況。
  */
 export class SessionExpiredException extends Error {
+  /**
+   * 建構子
+   *
+   * @param message - 錯誤訊息
+   */
   constructor(message: string = 'Session 已過期或已撤銷') {
     super(message)
     this.name = 'SessionExpiredException'

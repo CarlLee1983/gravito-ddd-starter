@@ -13,6 +13,7 @@ import { getRegistry } from '@wiring/RepositoryRegistry'
  *
  * @param db - 資料庫存取介面實例 (port)
  * @param eventDispatcher - 事件分派器
+ * @returns void
  */
 export function registerProductRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher): void {
   const registry = getRegistry()

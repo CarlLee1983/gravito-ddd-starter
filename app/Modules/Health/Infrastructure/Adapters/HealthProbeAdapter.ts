@@ -3,8 +3,6 @@
  * @description 健康探針 Adapter 實現
  *
  * 實現 IInfrastructureProbe Port 介面，提供系統各組件的健康檢查能力。
- * 此 Adapter 可依賴具體的 Port（如 IDatabaseAccess、IRedisService 等），
- * 使得 Domain 層完全與基礎設施選擇無關。
  */
 
 import type { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
@@ -55,7 +53,7 @@ export class HealthProbeAdapter implements IInfrastructureProbe {
   /**
    * 按名稱探測一個基礎設施組件的可用性
    *
-   * @param name 組件名稱（'database', 'redis', 'cache'）
+   * @param name - 組件名稱（'database', 'redis', 'cache'）
    * @returns 該組件是否可用
    */
   async probeByName(name: string): Promise<boolean> {
@@ -87,9 +85,8 @@ export class HealthProbeAdapter implements IInfrastructureProbe {
    * 探測資料庫連線可用性
    *
    * @returns 資料庫是否可用
-   * @private
    */
-  private async probeDatabase(): Promise<boolean> {
+  async probeDatabase(): Promise<boolean> {
     if (!this.databaseAccess) {
       return true // 未配置時視為可用
     }
@@ -108,9 +105,8 @@ export class HealthProbeAdapter implements IInfrastructureProbe {
    * 探測 Redis 服務可用性
    *
    * @returns Redis 是否可用
-   * @private
    */
-  private async probeRedis(): Promise<boolean> {
+  async probeRedis(): Promise<boolean> {
     if (!this.redisService) {
       return true // 未配置時視為可用
     }
@@ -129,9 +125,8 @@ export class HealthProbeAdapter implements IInfrastructureProbe {
    * 探測快取服務可用性
    *
    * @returns 快取是否可用
-   * @private
    */
-  private async probeCache(): Promise<boolean> {
+  async probeCache(): Promise<boolean> {
     if (!this.cacheService) {
       return true // 未配置時視為可用
     }

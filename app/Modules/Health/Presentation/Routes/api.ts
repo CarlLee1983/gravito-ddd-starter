@@ -1,7 +1,6 @@
 /**
- * @file health.routes.ts
+ * @file api.ts
  * @description 定義健康檢查模組的 API 路由
- * @module src/Modules/Health/Presentation/Routes
  */
 
 import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
@@ -10,11 +9,8 @@ import type { HealthController } from '../Controllers/HealthController'
 /**
  * 註冊健康檢查路由
  * 
- * 在 DDD 架構中屬於「表現層 (Presentation Layer)」。
- *
  * @param router - 框架無關的模組路由介面
  * @param controller - 已組裝的控制器實例
- * @returns void
  */
 export function registerHealthRoutes(
 	router: IModuleRouter,

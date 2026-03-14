@@ -5,7 +5,21 @@
 
 import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
+/**
+ * 產品建立事件
+ * @class ProductCreated
+ * @extends DomainEvent
+ */
 export class ProductCreated extends DomainEvent {
+  /**
+   * 建構函數
+   * @param {string} productId 產品 ID
+   * @param {string} name 產品名稱
+   * @param {number} amount 價格金額
+   * @param {string} currency 幣別
+   * @param {string} sku SKU
+   * @param {number} stockQuantity 庫存數量
+   */
   constructor(
     public readonly productId: string,
     public readonly name: string,
@@ -23,6 +37,10 @@ export class ProductCreated extends DomainEvent {
     })
   }
 
+  /**
+   * 轉換為 JSON 格式
+   * @returns {Record<string, unknown>}
+   */
   toJSON(): Record<string, unknown> {
     return {
       eventId: this.eventId,

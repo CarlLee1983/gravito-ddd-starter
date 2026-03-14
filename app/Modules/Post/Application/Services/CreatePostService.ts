@@ -43,8 +43,14 @@ export class CreatePostService {
    * 執行建立文章的用例
    *
    * @param input - 建立文章的輸入參數
+   * @param input.id - 文章唯一識別碼
+   * @param input.title - 文章標題
+   * @param input.content - 文章內容 (選填)
+   * @param input.authorId - 作者唯一識別碼
    * @returns Promise 包含建立後的文章 DTO
-   * @throws Error 如果標題或內容無效、作者不存在、標題已被使用
+   * @throws EntityNotFoundException 如果作者不存在
+   * @throws DuplicateEntityException 如果標題已被使用
+   * @throws Error 如果標題或內容無效
    */
   async execute(input: {
     id: string

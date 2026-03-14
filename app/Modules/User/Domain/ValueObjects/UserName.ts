@@ -1,8 +1,11 @@
 /**
- * UserName Value Object
+ * @file UserName.ts
+ * @description 用戶名稱 ValueObject
  *
- * 代表用戶的名稱。
- * 作為值物件，具有不可變性、驗證邏輯和結構相等性。
+ * 職責：
+ * - 代表用戶名稱的業務邏輯
+ * - 執行格式驗證與規範化
+ * - 確保名稱的結構相等性
  */
 
 import { ValueObject } from '@/Foundation/Domain/ValueObject'
@@ -11,7 +14,18 @@ interface UserNameProps extends Record<string, unknown> {
   readonly value: string
 }
 
+/**
+ * 用戶名稱 Value Object
+ *
+ * 代表用戶的名稱。
+ * 作為值物件，具有不可變性、驗證邏輯和結構相等性。
+ */
 export class UserName extends ValueObject<UserNameProps> {
+  /**
+   * 私有建構子
+   * @param props - 屬性
+   * @private
+   */
   private constructor(props: UserNameProps) {
     super(props)
   }
@@ -25,7 +39,8 @@ export class UserName extends ValueObject<UserNameProps> {
    * - 驗證長度（3-100 字元）
    * - 驗證不包含特殊字元（只允許字母、數字、空格、連字符）
    *
-   * @param name 用戶名稱字串
+   * @param name - 用戶名稱字串
+   * @returns UserName 實例
    * @throws Error 如果格式無效
    */
   static create(name: string): UserName {
@@ -49,18 +64,21 @@ export class UserName extends ValueObject<UserNameProps> {
     const nameRegex = /^[a-zA-Z0-9\s\-\.\u4e00-\u9fff\u3040-\u309f\u30a0-\u30ff]+$/
     if (!nameRegex.test(trimmed)) {
       throw new Error(
-        `用戶名稱包含不允許的字元。只允許字母、數字、空格、連字符、點和中文、日文字符`
+        `用戶名稱包含不允許的字元。只允許字母、數字、空格、連字符、點和中 文、日文字符`
       )
     }
 
     return new UserName({ value: trimmed })
   }
 
+  /** 取得名稱字串值 */
   get value(): string {
     return this.props.value
   }
 
+  /** 轉換為字串 */
   toString(): string {
     return this.props.value
   }
 }
+

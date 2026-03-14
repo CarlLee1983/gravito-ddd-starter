@@ -96,6 +96,7 @@ export class GetPostService implements IPostQueryService {
 
   /**
    * 列出所有文章（已棄用，使用 findAll() 代替）
+   *
    * @deprecated 使用 findAll() 代替
    * @returns Promise 包含所有文章的 DTO 陣列
    */

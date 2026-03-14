@@ -14,6 +14,7 @@ import type { ProductPageController } from '../Controllers/ProductPageController
  *
  * @param router - 模組路由器
  * @param pageController - Product 頁面控制器（處理頁面邏輯）
+ * @returns void
  */
 export function registerPageRoutes(
   router: IModuleRouter,

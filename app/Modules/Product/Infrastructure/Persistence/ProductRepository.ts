@@ -24,6 +24,13 @@ export class ProductRepository
   extends BaseEventSourcedRepository<Product>
   implements IProductRepository
 {
+  /**
+   * 建構子
+   *
+   * @param db - 資料庫存取介面
+   * @param eventDispatcher - 事件分發器
+   * @param eventStore - 事件存儲
+   */
   constructor(
     db: IDatabaseAccess,
     eventDispatcher?: IEventDispatcher,
@@ -38,6 +45,9 @@ export class ProductRepository
 
   /**
    * 按 SKU 查詢產品
+   *
+   * @param sku - 產品 SKU
+   * @returns 產品聚合根或 null
    */
   async findBySku(sku: SKU): Promise<Product | null> {
     const row = await this.db.table(this.getTableName()).where('sku', '=', sku.value).first()
@@ -48,14 +58,33 @@ export class ProductRepository
   // 實作抽象方法
   // ============================================
 
+  /**
+   * 取得資料表名稱
+   *
+   * @returns 資料表名稱
+   * @protected
+   */
   protected getTableName(): string {
     return 'products'
   }
 
+  /**
+   * 取得聚合類型名稱
+   *
+   * @returns 聚合類型名稱
+   * @protected
+   */
   protected getAggregateTypeName(): string {
     return 'Product'
   }
 
+  /**
+   * 將資料庫列轉換為領域模型
+   *
+   * @param row - 資料庫列資料
+   * @returns 產品聚合根
+   * @protected
+   */
   protected toDomain(row: any): Product {
     const name = ProductName.create(row.name as string)
     const price = Price.create(row.amount as number, row.currency as Currency)
@@ -66,6 +95,13 @@ export class ProductRepository
     return Product.reconstitute(row.id as string, name, price, sku, stockQuantity, createdAt)
   }
 
+  /**
+   * 將領域模型轉換為資料庫列
+   *
+   * @param product - 產品聚合根
+   * @returns 資料庫列資料
+   * @protected
+   */
   protected toRow(product: Product): Record<string, unknown> {
     return {
       id: product.id,
@@ -79,6 +115,13 @@ export class ProductRepository
     }
   }
 
+  /**
+   * 將領域事件轉換為集成事件
+   *
+   * @param event - 領域事件
+   * @returns 集成事件或 null
+   * @protected
+   */
   protected toIntegrationEvent(event: DomainEvent): IntegrationEvent | null {
     if (event instanceof ProductCreated) {
       return toIntegrationEvent(event, {

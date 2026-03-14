@@ -1,10 +1,27 @@
+/**
+ * @file PaymentController.ts
+ * @description Payment API 控制器，處理支付相關的 API 請求
+ */
+
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { IPaymentRepository } from '../../Domain/Repositories/IPaymentRepository'
 import { PaymentId } from '../../Domain/ValueObjects/PaymentId'
 
+/**
+ * Payment API 控制器
+ */
 export class PaymentController {
+	/**
+	 * @param repository - 支付 Repository
+	 */
 	constructor(private repository: IPaymentRepository) {}
 
+	/**
+	 * 根據 ID 獲取支付記錄
+	 *
+	 * @param ctx - HTTP 上下文
+	 * @returns JSON 響應
+	 */
 	async getPayment(ctx: IHttpContext): Promise<Response> {
 		try {
 			const id = ctx.params.id
@@ -39,6 +56,12 @@ export class PaymentController {
 		}
 	}
 
+	/**
+	 * 根據訂單 ID 獲取支付記錄
+	 *
+	 * @param ctx - HTTP 上下文
+	 * @returns JSON 響應
+	 */
 	async getPaymentByOrderId(ctx: IHttpContext): Promise<Response> {
 		try {
 			const orderId = ctx.params.orderId
@@ -73,6 +96,12 @@ export class PaymentController {
 		}
 	}
 
+	/**
+	 * 列出所有支付記錄
+	 *
+	 * @param ctx - HTTP 上下文
+	 * @returns JSON 響應，包含分頁數據
+	 */
 	async listPayments(ctx: IHttpContext): Promise<Response> {
 		try {
 			const limit = ctx.query?.limit ? parseInt(ctx.query.limit as string) : 10

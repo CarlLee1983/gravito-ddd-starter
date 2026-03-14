@@ -1,7 +1,6 @@
 /**
  * @file HealthServiceProvider.ts
  * @description 配置健康檢查模組的服務依賴註冊中心
- * @module src/Modules/Health/Infrastructure/Providers
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
@@ -23,7 +22,6 @@ export class HealthServiceProvider extends ModuleServiceProvider {
 	 * 註冊健康檢查模組的服務與單例到容器
 	 * 
 	 * @param container - 框架無關的容器介面 (IContainer)
-	 * @returns void
 	 */
 	override register(container: IContainer): void {
 		// 1. 註冊 Repository (單例)
@@ -47,7 +45,6 @@ export class HealthServiceProvider extends ModuleServiceProvider {
 	 * 啟動時執行初始化邏輯
 	 * 
 	 * @param _context - 啟動上下文對象
-	 * @returns void
 	 */
 	override boot(_context: any): void {
 		console.log('💚 [Health] Module loaded')

@@ -30,7 +30,7 @@ export class MemorySessionRepository implements ISessionRepository {
    * 按 ID 查詢 Session
    *
    * @param id - Session ID
-   * @returns Promise<Session | null>
+   * @returns Promise<Session | null> Session 實體或 null
    */
   async findById(id: string): Promise<Session | null> {
     const session = this.sessions.get(id)
@@ -41,7 +41,7 @@ export class MemorySessionRepository implements ISessionRepository {
    * 按用戶 ID 查詢所有 Session
    *
    * @param userId - 用戶 ID
-   * @returns Promise<Session[]>
+   * @returns Promise<Session[]> Session 陣列
    */
   async findByUserId(userId: string): Promise<Session[]> {
     const sessions: Session[] = []
@@ -94,7 +94,7 @@ export class MemorySessionRepository implements ISessionRepository {
   /**
    * 取得所有 Session（用於測試）
    *
-   * @returns Session[]
+   * @returns Session[] Session 陣列
    */
   getAllSessions(): Session[] {
     return Array.from(this.sessions.values())

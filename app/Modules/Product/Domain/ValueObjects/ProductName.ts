@@ -1,5 +1,6 @@
 /**
- * ProductName Value Object
+ * @file ProductName.ts
+ * @description 產品名稱值物件 (Value Object)
  */
 
 import { ValueObject } from '@/Foundation/Domain/ValueObject'
@@ -8,11 +9,26 @@ interface ProductNameProps extends Record<string, unknown> {
   readonly value: string
 }
 
+/**
+ * 產品名稱值物件
+ * @class ProductName
+ * @extends ValueObject
+ */
 export class ProductName extends ValueObject<ProductNameProps> {
+  /**
+   * 私有建構函數
+   * @param {ProductNameProps} props 屬性
+   */
   private constructor(props: ProductNameProps) {
     super(props)
   }
 
+  /**
+   * 建立產品名稱實例
+   * @param {string} name 名稱字串
+   * @returns {ProductName} 產品名稱實例
+   * @throws {Error} 當名稱無效或長度不符時拋出錯誤
+   */
   static create(name: string): ProductName {
     const trimmed = name.trim()
 
@@ -31,10 +47,18 @@ export class ProductName extends ValueObject<ProductNameProps> {
     return new ProductName({ value: trimmed })
   }
 
+  /**
+   * 取得名稱值
+   * @returns {string}
+   */
   get value(): string {
     return this.props.value
   }
 
+  /**
+   * 轉換為字串
+   * @returns {string}
+   */
   toString(): string {
     return this.props.value
   }

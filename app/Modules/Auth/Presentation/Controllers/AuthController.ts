@@ -19,6 +19,15 @@ import type { IUserProfileService } from '@/Foundation/Infrastructure/Ports/Auth
  * 處理所有認證相關的 HTTP 請求（登入、註冊、登出、當前用戶）
  */
 export class AuthController {
+  /**
+   * 建立 AuthController 實例
+   *
+   * @param loginService - 登入應用服務
+   * @param registerService - 註冊應用服務
+   * @param logoutService - 登出應用服務
+   * @param userProfileService - 用戶資料服務 Port
+   * @param authMessages - 認證訊息服務
+   */
   constructor(
     private loginService: LoginService,
     private registerService: RegisterService,
@@ -112,7 +121,7 @@ export class AuthController {
         data: sessionDto,
       }, 201)
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : '註冊失敗'
+      const errorMessage = error instanceof Error ? error.message : '註冊 失敗'
 
       if (errorMessage.includes('郵件')) {
         return ctx.json(
@@ -245,7 +254,7 @@ export class AuthController {
         return ctx.json(
           {
             success: false,
-            message: this.authMessages.refreshTokenMissing?.() ?? 'Token 遺失',
+            message: this.authMessages.refreshTokenMissing?.() ?? 'Token  遺失',
           },
           401
         )

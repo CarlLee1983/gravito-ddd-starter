@@ -14,6 +14,9 @@ import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 export class ProductServiceProvider extends ModuleServiceProvider {
   /**
    * 註冊服務到容器
+   *
+   * @param container - DI 容器
+   * @returns void
    */
   override register(container: IContainer): void {
     // 註冊 Repository

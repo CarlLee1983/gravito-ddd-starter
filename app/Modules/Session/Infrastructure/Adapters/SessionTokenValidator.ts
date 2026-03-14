@@ -33,7 +33,7 @@ export class SessionTokenValidator implements ITokenValidator {
    * 驗證 Bearer Token
    *
    * @param token - JWT Token 字串
-   * @returns 驗證成功返回用戶 ID 和 Session ID；失敗返回 null
+   * @returns Promise<TokenValidationResult | null> 驗證成功返回用戶 ID 和 Session ID；失敗返回 null
    */
   async validate(token: string): Promise<TokenValidationResult | null> {
     try {

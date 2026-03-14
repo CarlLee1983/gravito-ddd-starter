@@ -15,7 +15,10 @@ import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
  */
 export class PaymentPageController {
   /**
-   * 顯示支付成功頁面。
+   * 顯示支付成功頁面
+   *
+   * @param ctx - HTTP 上下文
+   * @returns 渲染支付成功頁面
    */
   async showSuccess(ctx: IHttpContext): Promise<Response> {
     const orderId = ctx.query('orderId') as string | undefined
@@ -23,7 +26,10 @@ export class PaymentPageController {
   }
 
   /**
-   * 顯示支付失敗頁面。
+   * 顯示支付失敗頁面
+   *
+   * @param ctx - HTTP 上下文
+   * @returns 渲染支付失敗頁面
    */
   async showFailed(ctx: IHttpContext): Promise<Response> {
     const orderId = ctx.query('orderId') as string | undefined
@@ -32,7 +38,10 @@ export class PaymentPageController {
   }
 
   /**
-   * 顯示支付待機頁面。
+   * 顯示支付待機頁面
+   *
+   * @param ctx - HTTP 上下文
+   * @returns 渲染支付待機頁面
    */
   async showPending(ctx: IHttpContext): Promise<Response> {
     const orderId = ctx.query('orderId') as string | undefined

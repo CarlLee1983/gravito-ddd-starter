@@ -1,9 +1,6 @@
 /**
  * @file PostPublished.ts
- * @description 文章發佈事件
- *
- * 在 DDD 中代表「文章被發佈並變為公開可見」的業務事件。
- * 由 Post.publish() 發佈，Repository 層分派。
+ * @description 文章發佈領域事件，當文章被正式發佈時觸發
  */
 
 import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
@@ -12,11 +9,10 @@ import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
  * 文章發佈領域事件
  *
  * 表示文章已發佈的不可逆事實。
- * 用於 Event Sourcing 重建文章狀態，以及跨 Bounded Context 通知（推薦系統、RSS 等）。
  */
 export class PostPublished extends DomainEvent {
   /**
-   * 建立 PostPublished 事件
+   * 建立 PostPublished 事件實例
    *
    * @param postId - 被發佈的文章 ID
    * @param authorId - 文章作者 ID
@@ -33,9 +29,9 @@ export class PostPublished extends DomainEvent {
   /**
    * 序列化事件為 JSON
    *
-   * @returns 事件的 JSON 表示
+   * @returns 包含事件資料的鍵值對物件
    */
-  toJSON() {
+  toJSON(): Record<string, unknown> {
     return {
       eventId: this.eventId,
       aggregateId: this.postId,

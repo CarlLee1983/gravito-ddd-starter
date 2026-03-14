@@ -1,3 +1,8 @@
+/**
+ * @file index.ts
+ * @description Payment 模組入口文件，負責導出領域模型、服務與 DTO
+ */
+
 import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { PaymentServiceProvider } from './Infrastructure/Providers/PaymentServiceProvider'
 import { registerPaymentRepositories } from './Infrastructure/Providers/registerPaymentRepositories'
@@ -31,6 +36,9 @@ export { HandlePaymentFailureService } from './Application/Services/HandlePaymen
 export type { InitiatePaymentDTO } from './Application/DTOs/InitiatePaymentDTO'
 export type { PaymentResponseDTO } from './Application/DTOs/PaymentResponseDTO'
 
+/**
+ * Payment 模組定義
+ */
 export const PaymentModule: IModuleDefinition = {
 	name: 'Payment',
 	provider: PaymentServiceProvider,

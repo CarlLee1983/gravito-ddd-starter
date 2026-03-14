@@ -1,8 +1,8 @@
 /**
  * @file UserCredentialVerifier.ts
- * @description User 模块对 ICredentialVerifier Port 的实现
+ * @description User 模組對 ICredentialVerifier Port 的實現
  *
- * 将 User Repository 的凭证验证能力适配到 ICredentialVerifier Port。
+ * 將 User Repository 的憑證驗證能力適配到 ICredentialVerifier Port。
  */
 
 import type { ICredentialVerifier, CredentialVerificationResult } from '@/Foundation/Infrastructure/Ports/Auth/ICredentialVerifier'
@@ -10,51 +10,51 @@ import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 import { Email } from '../../Domain/ValueObjects/Email'
 
 /**
- * User 模块的凭证验证器
+ * User 模組的憑證驗證器
  *
- * 此类是一个适配器（Adapter Pattern），将 User 模块的凭证验证能力
- * 适配到基础设施层的 ICredentialVerifier Port。
+ * 此類是一個適配器（Adapter Pattern），將 User 模組的憑證驗證能力
+ * 適配到基礎設施層的 ICredentialVerifier Port。
  *
- * 职责：
- * - 接收邮箱和密码
- * - 查询用户信息
- * - 验证密码是否正确
- * - 返回用户 ID 或 null（验证失败）
+ * 職責：
+ * - 接收郵箱和密碼
+ * - 查詢用戶資訊
+ * - 驗證密碼是否正確
+ * - 返回用戶 ID 或 null（驗證失敗）
  */
 export class UserCredentialVerifier implements ICredentialVerifier {
   /**
-   * 构造函数
+   * 建構子
    *
-   * @param userRepository - User Repository（用于查询用户）
+   * @param userRepository - User Repository（用於查詢用戶）
    */
   constructor(private userRepository: IUserRepository) {}
 
   /**
-   * 通过邮箱和密码验证用户凭证
+   * 透過郵箱和密碼驗證用戶憑證
    *
-   * @param email - 用户电子邮件
-   * @param password - 用户密码（原文）
-   * @returns 凭证有效返回用户 ID；无效返回 null
+   * @param email - 用戶電子郵件
+   * @param password - 用戶密碼（原文）
+   * @returns 憑證有效返回用戶 ID；無效返回 null
    */
   async verifyByEmail(
     email: string,
     password: string
   ): Promise<CredentialVerificationResult | null> {
-    // 创建 Email ValueObject
+    // 建立 Email ValueObject
     const emailVo = Email.create(email)
 
-    // 按邮箱查询用户
+    // 按郵箱查詢用戶
     const user = await this.userRepository.findByEmail(emailVo)
 
-    // 用户不存在
+    // 用戶不存在
     if (!user) {
       return null
     }
 
-    // 验证密码
+    // 驗證密碼
     const passwordValid = await user.verifyPassword(password)
 
-    // 返回结果
+    // 返回結果
     return passwordValid ? { userId: user.id } : null
   }
 }

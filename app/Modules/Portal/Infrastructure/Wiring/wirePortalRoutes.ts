@@ -1,6 +1,6 @@
 /**
  * @file wirePortalRoutes.ts
- * @description Portal 模組路由裝配
+ * @description Portal 模組路由裝配函數，負責初始化查詢服務、控制器並註冊模組路由
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
@@ -15,8 +15,8 @@ import type { IProductQueryService } from '@/Modules/Product/Application/Queries
 
 /**
  * 註冊 Portal 模組路由（供 IModuleDefinition.registerRoutes 使用）
- *
- * @param ctx - 框架無關的註冊用 Context（容器 + 建立路由器）
+ * @param ctx 框架無關的註冊用 Context（包含服務容器與路由器工廠）
+ * @returns void
  */
 export function wirePortalRoutes(ctx: IRouteRegistrationContext): void {
   // 嘗試取得 logger（可能不可用）

@@ -28,7 +28,7 @@ export { HealthController } from './Presentation/Controllers/HealthController'
 export { registerHealthRoutes } from './Presentation/Routes/api'
 
 /**
- * 模組定義物件
+ * Health 模組定義物件
  * 使模組可被自動掃描裝配 (Auto-Wiring)
  *
  * 注意：Health 模組無需 registerRepositories()，

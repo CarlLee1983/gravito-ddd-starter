@@ -1,3 +1,8 @@
+/**
+ * @file PlaceOrderService.ts
+ * @description 建立訂單應用層服務
+ */
+
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { Order } from '../../Domain/Aggregates/Order'
 import { OrderLine } from '../../Domain/Aggregates/OrderLine'
@@ -6,13 +11,25 @@ import { Money } from '../../Domain/ValueObjects/Money'
 import { PlaceOrderDTO, OrderResponseDTO } from '../DTOs/PlaceOrderDTO'
 
 /**
- * PlaceOrderService - 應用層服務，負責建立訂單的協調
+ * 建立訂單應用層服務
+ * 
+ * 負責協調建立訂單的業務流程，包括驗證、計算總額、創建聚合根及持久化。
+ * 遵循 DDD 應用服務模式，不包含核心業務邏輯，僅負責流程編排。
  */
 export class PlaceOrderService {
+  /**
+   * 初始化建立訂單服務
+   * 
+   * @param orderRepository - 訂單倉儲介面
+   */
   constructor(private readonly orderRepository: IOrderRepository) {}
 
   /**
-   * 建立訂單
+   * 執行建立訂單邏輯
+   * 
+   * @param dto - 建立訂單的資料傳輸物件
+   * @returns Promise<OrderResponseDTO> 建立成功後的訂單資料
+   * @throws Error 當 userId 為空、訂單項目為空或業務規則檢查失敗時拋出
    */
   async execute(dto: PlaceOrderDTO): Promise<OrderResponseDTO> {
     // 1. 驗證輸入
@@ -54,6 +71,9 @@ export class PlaceOrderService {
 
   /**
    * 將 Order 聚合根轉換為 DTO
+   * 
+   * @param order - 訂單聚合根
+   * @returns OrderResponseDTO 訂單回應 DTO
    */
   private toDTO(order: Order): OrderResponseDTO {
     return {

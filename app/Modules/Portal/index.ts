@@ -1,6 +1,6 @@
 /**
  * @file index.ts
- * @description Portal 模組公開 API 導出與裝配定義
+ * @description Portal 模組公開 API 導出與裝配定義。負責首頁、行銷頁面與跨模組資料聚合 (BFF)
  */
 
 import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
