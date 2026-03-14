@@ -32,4 +32,8 @@ export function registerAuthRoutes(
   // 取得當前用戶路由（需 JWT Guard）
   const meMiddlewares = jwtGuardMiddleware ? [jwtGuardMiddleware] : []
   router.get('/api/auth/me', meMiddlewares, (ctx: IHttpContext) => authController.me(ctx))
+
+  // 刷新 Token 路由（需 JWT Guard）
+  const refreshMiddlewares = jwtGuardMiddleware ? [jwtGuardMiddleware] : []
+  router.post('/api/auth/refresh', refreshMiddlewares, (ctx: IHttpContext) => authController.refresh(ctx))
 }

@@ -5,6 +5,7 @@ import {
   clearToken,
   getTokenFromCookie,
 } from '../utils/tokenManager'
+import { useTokenRefresh } from '../hooks/useTokenRefresh'
 
 /**
  * 用戶基本資訊型別
@@ -39,6 +40,22 @@ export const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
+
+  /**
+   * 自動刷新 Token（每分鐘檢查一次）
+   */
+  useTokenRefresh({
+    enabled: true,
+    checkInterval: 60000, // 1 分鐘檢查一次
+    expiryThreshold: 5, // Token 在 5 分鐘內過期時刷新
+    onRefreshSuccess: (newToken) => {
+      console.log('[AuthContext] Token 自動刷新成功')
+    },
+    onRefreshFailed: () => {
+      // 刷新失敗時清除用戶狀態
+      setUser(null)
+    },
+  })
 
   /**
    * 初始化：檢查 Token 並恢復登入狀態

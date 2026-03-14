@@ -56,4 +56,24 @@ export interface IAuthMessages {
 	 * 查詢用戶失敗
 	 */
 	profileQueryFailed(): string
+
+	/**
+	 * Token 刷新失敗
+	 */
+	refreshFailed?(): string
+
+	/**
+	 * Token 遺失（刷新時）
+	 */
+	refreshTokenMissing?(): string
+
+	/**
+	 * 註冊失敗：郵件已被使用
+	 */
+	registrationEmailDuplicate?(): string
+
+	/**
+	 * 註冊失敗
+	 */
+	registrationFailed?(): string
 }

@@ -51,4 +51,20 @@ export class AuthMessageService implements IAuthMessages {
 	profileQueryFailed(): string {
 		return this.translator.trans('auth.profile.query_failed')
 	}
+
+	refreshFailed(): string {
+		return this.translator.trans('auth.refresh.failed')
+	}
+
+	refreshTokenMissing(): string {
+		return this.translator.trans('auth.refresh.token_missing')
+	}
+
+	registrationEmailDuplicate(): string {
+		return this.translator.trans('auth.registration.email_duplicate')
+	}
+
+	registrationFailed(): string {
+		return this.translator.trans('auth.registration.failed')
+	}
 }
