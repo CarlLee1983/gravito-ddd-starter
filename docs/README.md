@@ -22,16 +22,19 @@
 ### 5. [資料庫與 ORM 適配](./05-Database-ORM/ORM_GUIDE.md)
 Atlas 與 Drizzle 的雙 ORM 支持架構，以及資料庫切換策略。
 
-### 6. [接線系統與適配器](./06-Adapters-Wiring/WIRING_SYSTEM.md)
+### 6. [前端集成與頁面路由](./05-Frontend-Integration/README.md) ✨ **NEW**
+前端 SSR 渲染方案、頁面路由實現、Token 管理與 UX 優化。
+
+### 7. [接線系統與適配器](./06-Adapters-Wiring/WIRING_SYSTEM.md)
 系統如何將業務模組與基礎設施（如 Redis, S3）進行「零耦合」連接。
 
-### 7. [部署與運維](./07-Production-Deployment/DEPLOYMENT.md)
+### 8. [部署與運維](./07-Production-Deployment/DEPLOYMENT.md)
 生產環境部署指南、健康檢查與故障排除手冊。
 
-### 8. [測試與 API 規範](./08-Testing-API/TESTING_API_GUIDE.md)
+### 9. [測試與 API 規範](./08-Testing-API/TESTING_API_GUIDE.md)
 單元測試、功能測試標準與 OpenAPI 文檔維護。
 
-### 9. [國際化與訊息管理](./09-Internationalization/README.md) ✨ **NEW**
+### 10. [國際化與訊息管理](./09-Internationalization/README.md) ✨
 完整的多語系 i18n 系統、訊息簡寫優化 (Message Service Pattern)、Email 訊息設計。
 
 ---

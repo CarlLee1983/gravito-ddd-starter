@@ -72,6 +72,16 @@ gravito-ddd-starter/
 │   └── wiring/               # Auto-Wiring logic & Registry
 ├── tests/                    # Integration & Functional tests
 └── docs/                     # Comprehensive documentation
+    ├── 01-Getting-Started/   # Handbook & Onboarding
+    ├── 02-Architecture/      # Core design & Event system
+    ├── 03-DDD-Design/        # DDD Patterns & Conventions
+    ├── 04-Module-Development/ # Scaffolding & Wiring
+    ├── 05-Database-ORM/      # DB conventions & ORM swapping
+    ├── 05-Frontend-Integration/ # SSR, Routing & Token management ✨
+    ├── 06-Adapters-Wiring/   # Adapters & Auto-Wiring mechanism
+    ├── 07-Production-Deployment/ # Deploy & Troubleshooting
+    ├── 08-Testing-API/       # API Standards & Testing strategy
+    └── 09-Internationalization/ # i18n & Message services ✨
 ```
 
 ## 🎯 Architecture Status
@@ -107,6 +117,11 @@ gravito-ddd-starter/
 ### 🔌 Infrastructure & Wiring
 - **[ADAPTER_GUIDE.md](./docs/06-Adapters-Wiring/ADAPTER_GUIDE.md)** - Port & Adapter implementation details.
 - **[WIRING_SYSTEM.md](./docs/06-Adapters-Wiring/WIRING_SYSTEM.md)** - Under the hood of the Auto-Wiring mechanism.
+
+### 🌐 Frontend & Internationalization
+- **[PAGES_ROUTING_IMPLEMENTATION.md](./docs/05-Frontend-Integration/PAGES_ROUTING_IMPLEMENTATION.md)** ✨ - SSR Page routes implementation.
+- **[I18N_GUIDE.md](./docs/09-Internationalization/I18N_GUIDE.md)** ✨ - Complete i18n system & Message Service Pattern.
+- **[EMAIL_MESSAGE_STRATEGY.md](./docs/09-Internationalization/DESIGN_EMAIL_MESSAGE_STRATEGY.md)** - Email messaging and i18n strategy.
 
 ## 🛠️ Development Workflow
 

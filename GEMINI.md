@@ -56,8 +56,25 @@ export const MyModule: IModuleDefinition = {
 
 ---
 
-## 🤖 AI 協作原則
-1. **路徑一致性**: 根目錄為 `app/`，禁止使用 `src/`。
-2. **零配置優先**: 新增功能應優先考慮是否能透過 Auto-Wiring 自動集成。
-3. **防腐層 (ACL)**: 當 Module A 需要調用 Module B 時，必須透過 `app/Adapters/` 建立適配器，禁止直接引用對方內部的實體或 Service 實現。
-4. **清理意識**: 臨時產生的資料庫檔案（如 `.db`）必須移入 `storage/` 並確保在 `.gitignore` 中。
+## 📚 文檔與目錄規範
+
+### 1. 文檔組織
+- **`docs/`**: 所有技術文檔、設計決策與架構規範。
+- **`docs/01-Getting-Started/`**: 入門指南、環境配置。
+- **`docs/02-Architecture/`**: 核心架構、DI、事件系統。
+- **`docs/03-DDD-Design/`**: DDD 模式、設計規約。
+- **`docs/04-Module-Development/`**: 模組開發、代碼生成。
+- **`docs/05-Database-ORM/`**: 資料庫設計、ORM 切換。
+- **`docs/05-Frontend-Integration/`**: 前端 SSR、路由與 Token 管理。
+- **`docs/06-Adapters-Wiring/`**: 適配器模式、Auto-Wiring。
+- **`docs/09-Internationalization/`**: 國際化 i18n、訊息服務。
+
+### 2. 歷史歸檔
+- **`docs/_Archive/`**: 存放過期的審計報告、修復總結與舊版規劃。
+
+---
+
+## 🤖 Gemini Added Memories
+- **2026-03-14**: 根目錄文檔全面歸類至 `docs/`。
+- **2026-03-14**: 建立 `05-Frontend-Integration` 章節，涵蓋 SSR 頁面路由與 Token 安全管理。
+- **2026-03-14**: 建立 `docs/_Archive` 以存存放歷史路由審計報告 (`ROUTING_AUDIT_REPORT.md` 等)。

@@ -40,6 +40,15 @@ docs/
 │   ├── ORM_SWAPPING_EXAMPLES.md # ORM 遷移案例
 │   └── DATABASE_CONVENTIONS.md  # 資料庫命名規約
 │
+├── 05-Frontend-Integration/     # 前端集成與頁面路由 ✨ NEW
+│   ├── README.md                # 前端集成概覽
+│   ├── PAGES_ROUTING_IMPLEMENTATION.md # 頁面路由實現
+│   ├── MIDDLEWARE_GUIDE.md      # 中間件開發指南
+│   ├── TOKEN_MANAGEMENT.md      # JWT Token 管理
+│   ├── TOKEN_AUTO_REFRESH.md    # Token 自動刷新
+│   ├── CSRF_RETRY_FORM_PROTECTION.md # CSRF 與表單保護
+│   └── UX_ENHANCEMENT_HOOKS.md  # UX 增強 Hooks
+│
 ├── 06-Adapters-Wiring/          # 適配器與接線系統
 │   ├── README.md                # 適配器系統概覽
 │   ├── WIRING_SYSTEM.md         # 接線系統詳解
@@ -58,7 +67,8 @@ docs/
 │   ├── README.md                # 測試概覽
 │   └── TESTING_API_GUIDE.md     # API 測試指南
 │
-├── 09-Internationalization/     # 國際化與訊息管理 ✨ NEW
+├── 09-Internationalization/     # 國際化與訊息管理
+ ✨ NEW
 │   ├── README.md                # i18n 概覽 & 快速導航
 │   │
 │   ├── I18N_GUIDE.md            # i18n 系統完整指南
@@ -162,11 +172,12 @@ docs/
 | 03 | 7 | DDD 實踐 |
 | 04 | 2 | 模組開發 |
 | 05 | 5 | ORM 設計 |
+| 05b | 7 | 前端集成 ✨ |
 | 06 | 7 | 適配器系統 |
 | 07 | 3 | 生產部署 |
 | 08 | 2 | 測試規範 |
 | 09 | 13 | 國際化系統 ✨ |
-| **總計** | **48** | - |
+| **總計** | **52** | - |
 
 ---
 
