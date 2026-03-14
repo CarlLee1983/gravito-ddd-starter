@@ -6,7 +6,7 @@
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { OrderController } from '../../Presentation/Controllers/OrderController'
 import { OrderPageController } from '../../Presentation/Controllers/OrderPageController'
-import { registerOrderRoutes } from '../../Presentation/Routes/Order.routes'
+import { registerOrderRoutes } from '../../Presentation/Routes/order.routes'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import type { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
