@@ -14,6 +14,7 @@ import {
 } from 'lucide-react'
 import AppLayout from '../../Layouts/AppLayout'
 import { useAuth } from '../../hooks/useAuth'
+import { cartApi } from '../../services/api'
 
 // Mock Data
 const initialCartItems = [
@@ -57,24 +58,11 @@ export default function CartIndex() {
     setCheckoutError(null)
 
     try {
-      const token = getCookie('auth_token')
-      if (!token) {
-        throw new Error('認證令牌遺失，請重新登入')
-      }
+      // 使用 cartApi 進行結帳（自動帶 Auth header）
+      const response = await cartApi.checkout()
 
-      // 直接執行結帳（購物車頁面已自動加入商品）
-      const response = await fetch(`/carts/${user.id}/checkout`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        const errorMsg = data.message || data.error || '結帳失敗，請稍後重試'
+      if (!response.success) {
+        const errorMsg = response.message || '結帳失敗，請稍後重試'
         throw new Error(errorMsg)
       }
 
@@ -232,17 +220,4 @@ export default function CartIndex() {
       </div>
     </AppLayout>
   )
-}
-
-// Cookie 工具函數
-function getCookie(name: string): string | null {
-  const nameEQ = `${name}=`
-  const cookies = document.cookie.split(';')
-  for (let cookie of cookies) {
-    cookie = cookie.trim()
-    if (cookie.indexOf(nameEQ) === 0) {
-      return cookie.substring(nameEQ.length)
-    }
-  }
-  return null
 }
