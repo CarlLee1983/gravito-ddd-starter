@@ -6,15 +6,18 @@
  */
 
 import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
-import { PortalController } from '../Controllers/PortalController'
+import { PortalPageController } from '../Controllers/PortalPageController'
 
 /**
  * 註冊 Portal 模組的前端頁面路由
  *
  * @param router - 模組路由器
- * @param controller - Portal 控制器
+ * @param pageController - Portal 頁面控制器
  */
-export function registerPageRoutes(router: IModuleRouter, controller: PortalController): void {
+export function registerPageRoutes(
+  router: IModuleRouter,
+  pageController: PortalPageController
+): void {
   // 渲染首頁組件 (如 Welcome 或 Home)
-  router.get('/', (ctx) => controller.renderHome(ctx))
+  router.get('/', (ctx) => pageController.showIndex(ctx))
 }

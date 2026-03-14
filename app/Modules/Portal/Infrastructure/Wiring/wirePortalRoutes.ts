@@ -4,9 +4,13 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 import { PortalController } from '../../Presentation/Controllers/PortalController'
+import { PortalPageController } from '../../Presentation/Controllers/PortalPageController'
 import { registerPortalRoutes } from '../../Presentation/Routes/api'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
+import type { IPortalQueryService } from '../../Presentation/Queries/IPortalQueryService'
+import { PortalQueryService } from '../Services/PortalQueryService'
 import type { IProductQueryService } from '@/Modules/Product/Application/Queries/IProductQueryService'
 
 /**
@@ -15,28 +19,40 @@ import type { IProductQueryService } from '@/Modules/Product/Application/Queries
  * @param ctx - 框架無關的註冊用 Context（容器 + 建立路由器）
  */
 export function wirePortalRoutes(ctx: IRouteRegistrationContext): void {
-  console.log('[PortalWiring] wirePortalRoutes starting')
+  // 嘗試取得 logger（可能不可用）
+  let logger: ILogger | null = null
+  try {
+    logger = ctx.container.make('logger') as ILogger
+  } catch {
+    // logger 不可用，忽略
+  }
+
+  logger?.info('[Portal] 開始註冊路由')
   const router = ctx.createModuleRouter()
 
   // 嘗試從容器取得 Product 模組的 Query Service
-  let productQuery: IProductQueryService
+  let productQuery: IProductQueryService | null = null
   try {
     productQuery = ctx.container.make('productQueryService') as IProductQueryService
+    logger?.info('[Portal] 已取得 productQueryService')
   } catch (error) {
-    console.warn('[wirePortalRoutes] Warning: productQueryService not found, using empty mock')
-    productQuery = {
-      findAll: async () => [],
-      findById: async () => null
-    }
+    logger?.warn('[Portal] productQueryService 不可用，將使用空實現')
   }
 
-  const controller = new PortalController(productQuery)
+  // 建立 Portal Query Service（聚合多個模組的資料）
+  const portalQuery: IPortalQueryService = new PortalQueryService(productQuery)
+
+  // 建立 API 和頁面控制器
+  const apiController = new PortalController(portalQuery)
+  const pageController = new PortalPageController(portalQuery)
 
   // 1. 註冊 API 路由 (/api/portal/...)
-  console.log('[PortalWiring] Calling registerPortalRoutes')
-  registerPortalRoutes(router, controller)
-  
+  logger?.info('[Portal] 註冊 API 路由')
+  registerPortalRoutes(router, apiController)
+
   // 2. 註冊前端頁面路由 (/, /home, ...)
-  console.log('[PortalWiring] Calling registerPageRoutes')
-  registerPageRoutes(router, controller)
+  logger?.info('[Portal] 註冊頁面路由')
+  registerPageRoutes(router, pageController)
+
+  logger?.info('[Portal] 路由註冊完成')
 }
