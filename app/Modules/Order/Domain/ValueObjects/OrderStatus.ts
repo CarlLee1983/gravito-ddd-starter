@@ -1,4 +1,4 @@
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 /**
  * OrderStatus 值物件 - 訂單狀態機

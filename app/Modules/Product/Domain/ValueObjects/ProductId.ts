@@ -1,4 +1,4 @@
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 import { v4 as uuid } from 'uuid'
 
 interface ProductIdProps extends Record<string, unknown> {

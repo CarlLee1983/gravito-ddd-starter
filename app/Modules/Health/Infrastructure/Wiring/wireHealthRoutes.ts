@@ -11,16 +11,16 @@
  * - 與 User/Post 模組的 wiring 模式一致
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import type { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
-import type { IDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
-import type { IHealthMessages } from '@/Shared/Infrastructure/Ports/Messages/IHealthMessages'
-import { createGravitoDatabaseConnectivityCheck } from '@/Shared/Infrastructure/Database/Adapters/Atlas'
+import type { IDatabaseConnectivityCheck } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
+import type { IHealthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IHealthMessages'
+import { createGravitoDatabaseConnectivityCheck } from '@/Foundation/Infrastructure/Database/Adapters/Atlas'
 import { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
 import { HealthController } from '../../Presentation/Controllers/HealthController'
 import { HealthMessageService } from '../Services/HealthMessageService'
 import { MemoryHealthCheckRepository } from '../Repositories/MemoryHealthCheckRepository'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * 執行時探測器適配器

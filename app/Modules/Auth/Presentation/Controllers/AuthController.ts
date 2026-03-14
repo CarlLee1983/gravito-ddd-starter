@@ -5,13 +5,13 @@
  * 處理登入、註冊、登出和當前用戶查詢。
  */
 
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
-import type { IAuthMessages } from '@/Shared/Infrastructure/Ports/Messages/IAuthMessages'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
+import type { IAuthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IAuthMessages'
 import { LoginService } from '../../Application/Services/LoginService'
 import { RegisterService } from '../../Application/Services/RegisterService'
 import { LogoutService } from '../../Application/Services/LogoutService'
 import { InvalidCredentialsException } from '@/Modules/Session/Domain/Exceptions/InvalidCredentialsException'
-import type { IUserProfileService } from '@/Shared/Infrastructure/Ports/Auth/IUserProfileService'
+import type { IUserProfileService } from '@/Foundation/Infrastructure/Ports/Auth/IUserProfileService'
 
 /**
  * Auth 控制器

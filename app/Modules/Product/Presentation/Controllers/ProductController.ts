@@ -3,11 +3,11 @@
  * @description 產品控制器
  */
 
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { CreateProductService } from '../../Application/Services/CreateProductService'
 import type { GetProductService } from '../../Application/Services/GetProductService'
 import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Core/ILogger'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 
 export class ProductController {
   constructor(

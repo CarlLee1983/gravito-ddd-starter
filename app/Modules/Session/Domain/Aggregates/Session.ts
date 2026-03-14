@@ -5,10 +5,10 @@
  * 代表用戶認證會話。Session 追蹤 JWT Token 的有效期和撤銷狀態。
  */
 
-import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
 import { SessionCreated } from '../Events/SessionCreated'
 import { SessionRevoked } from '../Events/SessionRevoked'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * Session 聚合根

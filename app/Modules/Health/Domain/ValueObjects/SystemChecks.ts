@@ -7,7 +7,7 @@
  * 改進：使用 Map 結構而非硬編碼屬性，完全與基礎設施選擇無關。
  */
 
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 import { HealthStatus } from './HealthStatus'
 
 interface SystemChecksProps extends Record<string, unknown> {

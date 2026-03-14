@@ -1,4 +1,4 @@
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { PaymentServiceProvider } from './Infrastructure/Providers/PaymentServiceProvider'
 import { registerPaymentRepositories } from './Infrastructure/Providers/registerPaymentRepositories'
 import { wirePaymentRoutes } from './Infrastructure/Wiring/wirePaymentRoutes'

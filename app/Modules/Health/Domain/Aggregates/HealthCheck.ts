@@ -10,8 +10,8 @@
  * - 提供 reconstitute 用於持久化層還原
  */
 
-import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 import { HealthStatus } from '../ValueObjects/HealthStatus'
 import type { SystemChecks } from '../ValueObjects/SystemChecks'
 import { HealthCheckPerformed } from '../Events/HealthCheckPerformed'

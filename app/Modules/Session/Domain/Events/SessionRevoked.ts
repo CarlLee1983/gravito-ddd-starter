@@ -3,7 +3,7 @@
  * @description Session 撤銷事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 當 Session 被撤銷（登出）時發佈

@@ -5,7 +5,7 @@
  * 此事件用於跨 Bounded Context 通知（供 Order Context 監聽）
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 export interface CartItem {
 	productId: string

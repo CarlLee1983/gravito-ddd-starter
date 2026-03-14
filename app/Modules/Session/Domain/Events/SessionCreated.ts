@@ -3,7 +3,7 @@
  * @description Session 建立事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 當新的 Session 被建立時發佈

@@ -3,7 +3,7 @@
  * @description Order 模組路由裝配
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { OrderController } from '../../Presentation/Controllers/OrderController'
 import { registerOrderRoutes } from '../../Presentation/Routes/Order.routes'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'

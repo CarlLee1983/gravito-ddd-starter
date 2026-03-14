@@ -11,7 +11,7 @@
  * - 完整支持 ValueObject 驅動的查詢
  */
 
-import type { IRepository } from '@/Shared/Domain/IRepository'
+import type { IRepository } from '@/Foundation/Domain/IRepository'
 import type { User } from '../Aggregates/User'
 import type { Email } from '../ValueObjects/Email'
 

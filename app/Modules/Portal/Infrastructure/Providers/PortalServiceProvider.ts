@@ -3,7 +3,7 @@
  * @description Portal 模組服務提供者
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 
 export class PortalServiceProvider extends ModuleServiceProvider {
   /**

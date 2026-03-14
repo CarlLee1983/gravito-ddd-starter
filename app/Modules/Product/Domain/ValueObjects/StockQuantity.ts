@@ -2,7 +2,7 @@
  * StockQuantity Value Object
  */
 
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 interface StockQuantityProps extends Record<string, unknown> {
   readonly value: number

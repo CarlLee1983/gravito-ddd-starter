@@ -3,7 +3,7 @@
  * @description 當新產品被建立時觸發的領域事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 export class ProductCreated extends DomainEvent {
   constructor(

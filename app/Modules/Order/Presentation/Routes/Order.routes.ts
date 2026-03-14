@@ -1,4 +1,4 @@
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import { OrderController } from '../Controllers/OrderController'
 
 /**

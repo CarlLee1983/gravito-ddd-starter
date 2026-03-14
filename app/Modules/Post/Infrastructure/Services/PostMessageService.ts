@@ -5,8 +5,8 @@
  * 包裝 ITranslator，提供類型安全的文章訊息方法。
  */
 
-import type { IPostMessages } from '@/Shared/Infrastructure/Ports/Messages/IPostMessages'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { IPostMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPostMessages'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class PostMessageService implements IPostMessages {
 	constructor(private translator: ITranslator) {}

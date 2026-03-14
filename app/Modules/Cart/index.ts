@@ -3,7 +3,7 @@
  * @description Cart 模組公開 API 導出與裝配定義
  */
 
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { CartServiceProvider } from './Infrastructure/Providers/CartServiceProvider'
 import { registerCartRepositories } from './Infrastructure/Providers/registerCartRepositories'
 import { wireCartRoutes } from './Infrastructure/Wiring/wireCartRoutes'

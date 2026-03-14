@@ -4,7 +4,7 @@
  * 當系統執行健康檢查並記錄結果時產生的事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 import { HealthStatus } from '../ValueObjects/HealthStatus'
 import type { SystemChecks } from '../ValueObjects/SystemChecks'
 

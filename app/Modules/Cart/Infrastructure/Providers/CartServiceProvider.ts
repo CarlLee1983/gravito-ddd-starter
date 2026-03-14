@@ -3,7 +3,7 @@
  * @description Cart 模組 Service Provider
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import { ProductCatalogAdapter } from '../Adapters/ProductCatalogAdapter'
 import { AddItemToCartService } from '../../Application/Services/AddItemToCartService'
 import { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'

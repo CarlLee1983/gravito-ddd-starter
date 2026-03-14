@@ -23,13 +23,13 @@ import { CreatePostService } from '@/Modules/Post/Application/Services/CreatePos
 import { WelcomePostAutomation } from '@/Modules/Post/Application/Handlers/WelcomePostAutomation'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { UserCreated } from '@/Modules/User/Domain/Events/UserCreated'
-import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
+import { toIntegrationEvent, type IntegrationEvent } from '@/Foundation/Domain/IntegrationEvent'
 import type { IPostRepository } from '@/Modules/Post/Domain/Repositories/IPostRepository'
 import type { IAuthorService } from '@/Modules/Post/Domain/Services/IAuthorService'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import { EntityNotFoundException, DuplicateEntityException } from '@/Shared/Domain/Exceptions'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import { EntityNotFoundException, DuplicateEntityException } from '@/Foundation/Domain/Exceptions'
+import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
 
 // ============ ValueObject 驗證測試 ============
 

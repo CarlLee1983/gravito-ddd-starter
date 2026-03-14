@@ -3,7 +3,7 @@ import {
   createIntegrationEvent,
   toIntegrationEvent,
   type IntegrationEvent,
-} from '@/Shared/Domain/IntegrationEvent'
+} from '@/Foundation/Domain/IntegrationEvent'
 
 /**
  * 測試 IntegrationEvent 的構建和驗證

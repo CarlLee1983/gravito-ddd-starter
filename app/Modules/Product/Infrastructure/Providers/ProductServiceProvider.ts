@@ -3,7 +3,7 @@
  * @description 產品 Service Provider (DI 容器配置)
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import { CreateProductService } from '../../Application/Services/CreateProductService'
 import { GetProductService } from '../../Application/Services/GetProductService'
 

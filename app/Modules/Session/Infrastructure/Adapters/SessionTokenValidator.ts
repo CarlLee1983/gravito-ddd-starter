@@ -5,7 +5,7 @@
  * 將 ValidateSessionService（Domain Logic）適配到 ITokenValidator Port。
  */
 
-import type { ITokenValidator, TokenValidationResult } from '@/Shared/Infrastructure/Ports/Auth/ITokenValidator'
+import type { ITokenValidator, TokenValidationResult } from '@/Foundation/Infrastructure/Ports/Auth/ITokenValidator'
 import { ValidateSessionService } from '../../Application/Services/ValidateSessionService'
 import { SessionExpiredException } from '../../Domain/Exceptions/SessionExpiredException'
 

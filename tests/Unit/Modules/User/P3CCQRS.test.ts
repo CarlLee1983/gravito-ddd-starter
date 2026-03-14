@@ -10,7 +10,7 @@ import { GetUserService } from '@/Modules/User/Application/Services/GetUserServi
 import { User } from '@/Modules/User/Domain/Aggregates/User'
 import { Email } from '@/Modules/User/Domain/ValueObjects/Email'
 import { UserName } from '@/Modules/User/Domain/ValueObjects/UserName'
-import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
+import { MemoryDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
 import type { UserReadModel } from '@/Modules/User/Application/ReadModels/UserReadModel'
 import type { IUserQueryService } from '@/Modules/User/Application/Queries/IUserQueryService'

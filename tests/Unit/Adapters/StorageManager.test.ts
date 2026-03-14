@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
 import { rmSync, existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { StorageManager } from '@/Shared/Infrastructure/Storage/StorageManager'
+import { StorageManager } from '@/Foundation/Infrastructure/Storage/StorageManager'
 import { storageConfig } from '@/../config/app/storage'
 
 describe('StorageManager (AdonisJS Drive Style)', () => {

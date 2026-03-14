@@ -3,7 +3,7 @@
  * @description Cart 模組的 HTTP 路由定義
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import { CartController } from '../Controllers/CartController'
 
 /**

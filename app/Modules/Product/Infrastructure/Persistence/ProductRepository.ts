@@ -3,12 +3,12 @@
  * @description 產品資料倉儲實現 (ORM 無關)
  */
 
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
-import type { IEventStore } from '@/Shared/Infrastructure/Ports/Database/IEventStore'
-import { BaseEventSourcedRepository } from '@/Shared/Infrastructure/Database/Repositories/BaseEventSourcedRepository'
-import { toIntegrationEvent, type IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventStore } from '@/Foundation/Infrastructure/Ports/Database/IEventStore'
+import { BaseEventSourcedRepository } from '@/Foundation/Infrastructure/Database/Repositories/BaseEventSourcedRepository'
+import { toIntegrationEvent, type IntegrationEvent } from '@/Foundation/Domain/IntegrationEvent'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 import { Product } from '../../Domain/Aggregates/Product'
 import { ProductId } from '../../Domain/ValueObjects/ProductId'
 import { ProductName } from '../../Domain/ValueObjects/ProductName'

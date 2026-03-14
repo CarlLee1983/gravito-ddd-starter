@@ -8,7 +8,7 @@
  * - 完整支持 ValueObject 驅動的查詢
  */
 
-import type { IRepository } from '@/Shared/Domain/IRepository'
+import type { IRepository } from '@/Foundation/Domain/IRepository'
 import { Post } from '../Aggregates/Post'
 import type { Title } from '../ValueObjects/Title'
 

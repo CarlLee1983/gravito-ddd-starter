@@ -3,7 +3,7 @@
  * @description 驗證 Session（JWT 驗證）應用服務
  */
 
-import type { ITokenSigner } from '@/Shared/Infrastructure/Ports/Auth/ITokenSigner'
+import type { ITokenSigner } from '@/Foundation/Infrastructure/Ports/Auth/ITokenSigner'
 import type { ISessionRepository } from '../../Domain/Repositories/ISessionRepository'
 import { SessionExpiredException } from '../../Domain/Exceptions/SessionExpiredException'
 

@@ -5,8 +5,8 @@ import { OrderStatus } from '../../Domain/ValueObjects/OrderStatus'
 import { OrderTotal } from '../../Domain/ValueObjects/OrderTotal'
 import { Money } from '../../Domain/ValueObjects/Money'
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
-import { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
+import { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
 
 /**
  * OrderRepository - Infrastructure 層實現

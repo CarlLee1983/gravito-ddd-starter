@@ -1,4 +1,4 @@
-import { BaseEntity } from '@/Shared/Domain/BaseEntity'
+import { BaseEntity } from '@/Foundation/Domain/BaseEntity'
 import { Money } from '../ValueObjects/Money'
 
 /**

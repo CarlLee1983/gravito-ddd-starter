@@ -6,7 +6,7 @@
  * 由 Post.publish() 發佈，Repository 層分派。
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 文章發佈領域事件

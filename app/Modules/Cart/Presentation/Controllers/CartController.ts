@@ -3,7 +3,7 @@
  * @description 購物車 HTTP 控制器
  */
 
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { AddItemToCartService } from '../../Application/Services/AddItemToCartService'
 import type { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'
 import type { CheckoutCartService } from '../../Application/Services/CheckoutCartService'

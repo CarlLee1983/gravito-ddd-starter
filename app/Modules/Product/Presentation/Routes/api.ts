@@ -3,7 +3,7 @@
  * @description 產品模組的 HTTP 路由定義
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import { ProductController } from '../Controllers/ProductController'
 
 /**

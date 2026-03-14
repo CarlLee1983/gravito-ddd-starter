@@ -8,15 +8,15 @@
 import path from 'node:path'
 import { glob } from 'glob'
 import type { PlanetCore } from '@gravito/core'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import { createGravitoServiceProvider, GravitoContainerAdapter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
-import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
-import { createGravitoAuthRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoAuthRouter'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import { createGravitoServiceProvider, GravitoContainerAdapter } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
+import { createGravitoModuleRouter } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
+import { createGravitoAuthRouter } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoAuthRouter'
 import type {
 	IModuleDefinition,
 	IRouteRegistrationContext,
-} from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
-import type { ITokenValidator } from '@/Shared/Infrastructure/Ports/Auth/ITokenValidator'
+} from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
+import type { ITokenValidator } from '@/Foundation/Infrastructure/Ports/Auth/ITokenValidator'
 
 /**
  * 模組自動裝配器類別

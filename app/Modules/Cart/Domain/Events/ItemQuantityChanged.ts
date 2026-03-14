@@ -3,7 +3,7 @@
  * @description 購物車項目數量變更事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 購物車項目數量已變更事件

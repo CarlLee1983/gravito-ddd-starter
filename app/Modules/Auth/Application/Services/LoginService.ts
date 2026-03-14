@@ -3,8 +3,8 @@
  * @description 登入應用服務（從 Session/CreateSessionService 遷移）
  */
 
-import type { ICredentialVerifier } from '@/Shared/Infrastructure/Ports/Auth/ICredentialVerifier'
-import type { ITokenSigner } from '@/Shared/Infrastructure/Ports/Auth/ITokenSigner'
+import type { ICredentialVerifier } from '@/Foundation/Infrastructure/Ports/Auth/ICredentialVerifier'
+import type { ITokenSigner } from '@/Foundation/Infrastructure/Ports/Auth/ITokenSigner'
 import type { ISessionRepository } from '@/Modules/Session/Domain/Repositories/ISessionRepository'
 import { Session } from '@/Modules/Session/Domain/Aggregates/Session'
 import { SessionId } from '@/Modules/Session/Domain/ValueObjects/SessionId'

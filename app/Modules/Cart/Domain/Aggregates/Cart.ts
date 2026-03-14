@@ -7,7 +7,7 @@
  * - 職責：封裝購物車的狀態與業務規則，確保資料的一致性與完整性。
  */
 
-import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
 import { CartId } from '../ValueObjects/CartId'
 import { Quantity } from '../ValueObjects/Quantity'
 import { CartItem } from './CartItem'
@@ -17,7 +17,7 @@ import { ItemRemoved } from '../Events/ItemRemoved'
 import { ItemQuantityChanged } from '../Events/ItemQuantityChanged'
 import { CartCleared } from '../Events/CartCleared'
 import { CartCheckoutRequested } from '../Events/CartCheckoutRequested'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 購物車聚合根

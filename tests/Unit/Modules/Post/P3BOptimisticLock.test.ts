@@ -10,8 +10,8 @@ import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostR
 import { Post } from '@/Modules/Post/Domain/Aggregates/Post'
 import { Title } from '@/Modules/Post/Domain/ValueObjects/Title'
 import { Content } from '@/Modules/Post/Domain/ValueObjects/Content'
-import { OptimisticLockException } from '@/Shared/Application/OptimisticLockException'
-import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
+import { OptimisticLockException } from '@/Foundation/Application/OptimisticLockException'
+import { MemoryDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 
 describe('Post Repository - Optimistic Lock (P3B)', () => {
   let repository: PostRepository

@@ -13,8 +13,8 @@
  * - 不訪問任何容器或框架對象
  */
 
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
-import type { IUserMessages } from '@/Shared/Infrastructure/Ports/Messages/IUserMessages'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
+import type { IUserMessages } from '@/Foundation/Infrastructure/Ports/Messages/IUserMessages'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 

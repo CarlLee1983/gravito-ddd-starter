@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import type { IRedisService } from '@/Shared/Infrastructure/Ports/Messaging/IRedisService'
-import type { StoredEvent } from '@/Shared/Infrastructure/Ports/Database/IEventStore'
-import { RedisEventStore } from '@/Shared/Infrastructure/Database/EventStore/RedisEventStore'
+import type { IRedisService } from '@/Foundation/Infrastructure/Ports/Messaging/IRedisService'
+import type { StoredEvent } from '@/Foundation/Infrastructure/Ports/Database/IEventStore'
+import { RedisEventStore } from '@/Foundation/Infrastructure/Database/EventStore/RedisEventStore'
 
 /**
  * RedisEventStore 單元測試

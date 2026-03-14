@@ -3,7 +3,7 @@
  * @description Auth 模組公開 API 導出與裝配定義
  */
 
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { AuthServiceProvider } from './Infrastructure/Providers/AuthServiceProvider'
 import { wireAuthRoutes } from './Infrastructure/Wiring/wireAuthRoutes'
 

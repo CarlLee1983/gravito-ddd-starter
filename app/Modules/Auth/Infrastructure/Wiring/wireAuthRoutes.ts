@@ -7,7 +7,7 @@
  * - 職責：註冊 API 路由和 SSR 頁面路由
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { AuthController } from '../../Presentation/Controllers/AuthController'
 import { registerAuthRoutes } from '../../Presentation/Routes/api'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'

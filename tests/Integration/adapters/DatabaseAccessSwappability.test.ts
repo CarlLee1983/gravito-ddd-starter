@@ -8,9 +8,9 @@
  */
 
 import { describe, it, expect, beforeAll } from 'bun:test'
-import type { IDatabaseAccess, IQueryBuilder } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import { createAtlasDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Atlas'
-import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
+import type { IDatabaseAccess, IQueryBuilder } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import { createAtlasDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Atlas'
+import { createDrizzleDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Drizzle'
 
 describe('資料庫存取適配器 - 可替換性測試', () => {
   const adapters: Array<{ name: string; create: () => IDatabaseAccess }> = [

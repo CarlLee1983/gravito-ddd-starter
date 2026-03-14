@@ -16,7 +16,7 @@
  * ✅ 易於擴展（新增 ORM 時只改映射）
  */
 
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 
 /**
  * Repository 工廠映射類型定義

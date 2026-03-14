@@ -5,8 +5,8 @@
  * 處理前端 SSR 頁面請求（Welcome、Login、Register、Dashboard）
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 
 /**
  * 從 Cookie 中提取 Token

@@ -2,7 +2,7 @@
  * Price Value Object
  */
 
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 export enum Currency {
   TWD = 'TWD',

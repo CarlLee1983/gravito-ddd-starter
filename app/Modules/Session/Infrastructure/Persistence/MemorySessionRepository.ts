@@ -8,7 +8,7 @@
 
 import type { ISessionRepository } from '../../Domain/Repositories/ISessionRepository'
 import type { Session } from '../../Domain/Aggregates/Session'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
 
 /**
  * Session 記憶體倉儲

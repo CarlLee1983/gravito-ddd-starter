@@ -5,7 +5,7 @@
  * 作為值物件，具有不可變性、驗證邏輯和結構相等性。
  */
 
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 interface EmailProps extends Record<string, unknown> {
   readonly value: string

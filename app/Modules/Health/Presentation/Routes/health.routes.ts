@@ -4,7 +4,7 @@
  * @module src/Modules/Health/Presentation/Routes
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import type { HealthController } from '../Controllers/HealthController'
 
 /**

@@ -1,5 +1,5 @@
-import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 import { OrderId } from '../ValueObjects/OrderId'
 import { OrderStatus, OrderStatusEnum } from '../ValueObjects/OrderStatus'
 import { OrderTotal } from '../ValueObjects/OrderTotal'

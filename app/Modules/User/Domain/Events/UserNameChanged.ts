@@ -6,7 +6,7 @@
  * 由 User.changeName() 發佈，Repository 層分派。
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 用戶名稱變更領域事件

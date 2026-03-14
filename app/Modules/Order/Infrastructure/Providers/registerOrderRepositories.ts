@@ -4,8 +4,8 @@
  */
 
 import { OrderRepository } from '../Repositories/OrderRepository'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 
 /**

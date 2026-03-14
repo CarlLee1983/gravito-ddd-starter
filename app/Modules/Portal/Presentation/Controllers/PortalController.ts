@@ -5,7 +5,7 @@
  * 職責：作為 BFF (Backend For Frontend) 層，聚合各個模組的資料提供給首頁使用。
  */
 
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { IProductQueryService } from '@/Modules/Product/Application/Queries/IProductQueryService'
 
 export class PortalController {

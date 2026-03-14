@@ -3,7 +3,7 @@
  * @description User 模組公開 API 導出與裝配定義
  */
 
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { UserServiceProvider } from './Infrastructure/Providers/UserServiceProvider'
 import { registerUserRepositories } from './Infrastructure/Providers/registerUserRepositories'
 import { wireUserRoutes } from './Infrastructure/Wiring/wireUserRoutes'

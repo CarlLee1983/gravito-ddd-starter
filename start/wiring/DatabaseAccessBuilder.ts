@@ -17,8 +17,8 @@
  * - 靈活性：環境變數即可切換全域持久化方案。
  */
 
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import { MemoryDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 import type { ORMType } from './RepositoryFactory'
 import { getDatabaseAccess } from './RepositoryFactory'
 

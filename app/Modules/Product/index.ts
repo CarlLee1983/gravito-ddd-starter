@@ -3,7 +3,7 @@
  * @description Product 模組公開 API 導出與裝配定義
  */
 
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { ProductServiceProvider } from './Infrastructure/Providers/ProductServiceProvider'
 import { registerProductRepositories } from './Infrastructure/Providers/registerProductRepositories'
 import { wireProductRoutes } from './Infrastructure/Wiring/wireProductRoutes'

@@ -12,14 +12,14 @@
  * - 實作 applyEvent() 處理領域事件
  */
 
-import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
 import { Title } from '../ValueObjects/Title'
 import { Content } from '../ValueObjects/Content'
 import { PostCreated } from '../Events/PostCreated'
 import { PostPublished } from '../Events/PostPublished'
 import { PostArchived } from '../Events/PostArchived'
 import { PostTitleChanged } from '../Events/PostTitleChanged'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 文章聚合根

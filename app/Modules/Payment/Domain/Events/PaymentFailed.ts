@@ -1,4 +1,4 @@
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 import type { PaymentId } from '../ValueObjects/PaymentId'
 
 /**

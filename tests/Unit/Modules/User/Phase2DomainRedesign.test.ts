@@ -20,7 +20,7 @@ import { UserCreated } from '@/Modules/User/Domain/Events/UserCreated'
 import { UserDTO } from '@/Modules/User/Application/DTOs/UserDTO'
 import { CreateUserService } from '@/Modules/User/Application/Services/CreateUserService'
 import type { IUserRepository } from '@/Modules/User/Domain/Repositories/IUserRepository'
-import { DuplicateEntityException } from '@/Shared/Domain/Exceptions'
+import { DuplicateEntityException } from '@/Foundation/Domain/Exceptions'
 
 // ============ ValueObject 驗證測試 ============
 

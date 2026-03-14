@@ -10,7 +10,7 @@ import { Content } from '../../Domain/ValueObjects/Content'
 import { PostDTO } from '../DTOs/PostDTO'
 import type { IPostRepository } from '../../Domain/Repositories/IPostRepository'
 import type { IAuthorService } from '../../Domain/Services/IAuthorService'
-import { EntityNotFoundException, DuplicateEntityException } from '@/Shared/Domain/Exceptions'
+import { EntityNotFoundException, DuplicateEntityException } from '@/Foundation/Domain/Exceptions'
 
 /**
  * CreatePostService 類別

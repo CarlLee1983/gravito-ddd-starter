@@ -10,8 +10,8 @@ import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRe
 import { User } from '@/Modules/User/Domain/Aggregates/User'
 import { Email } from '@/Modules/User/Domain/ValueObjects/Email'
 import { UserName } from '@/Modules/User/Domain/ValueObjects/UserName'
-import { OptimisticLockException } from '@/Shared/Application/OptimisticLockException'
-import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
+import { OptimisticLockException } from '@/Foundation/Application/OptimisticLockException'
+import { MemoryDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 
 describe('User Repository - Optimistic Lock (P3B)', () => {
   let repository: UserRepository

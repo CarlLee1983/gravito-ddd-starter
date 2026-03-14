@@ -15,10 +15,10 @@
  * Role: Application Layer - Job Abstraction
  */
 
-import { BaseJob } from '@/Shared/Application/Jobs/BaseJob'
-import type { IMailer } from '@/Shared/Infrastructure/Ports/Services/IMailer'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import { BaseJob } from '@/Foundation/Application/Jobs/BaseJob'
+import type { IMailer } from '@/Foundation/Infrastructure/Ports/Services/IMailer'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * 發送歡迎信 Job 的業務資料

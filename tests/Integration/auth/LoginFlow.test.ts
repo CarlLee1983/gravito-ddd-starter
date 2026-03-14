@@ -16,7 +16,7 @@ import { User } from '@/Modules/User/Domain/Aggregates/User'
 import { Email } from '@/Modules/User/Domain/ValueObjects/Email'
 import { UserName } from '@/Modules/User/Domain/ValueObjects/UserName'
 import { MemorySessionRepository } from '@/Modules/Session/Infrastructure/Persistence/MemorySessionRepository'
-import { JoseTokenSigner } from '@/Shared/Infrastructure/Adapters/Gravito/JoseTokenSigner'
+import { JoseTokenSigner } from '@/Foundation/Infrastructure/Adapters/Gravito/JoseTokenSigner'
 
 // 簡單的內存 User Repository（用於測試）
 class MemoryUserRepository implements IUserRepository {

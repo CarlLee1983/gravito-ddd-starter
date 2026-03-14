@@ -6,14 +6,14 @@
  * 僅依賴 Shared 的 IRouteRegistrationContext，不依賴特定框架。
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { ProductController } from '../../Presentation/Controllers/ProductController'
 import { CreateProductService } from '../../Application/Services/CreateProductService'
 import { GetProductService } from '../../Application/Services/GetProductService'
 import { registerProductRoutes } from '../../Presentation/Routes/api'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
 import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Core/ILogger'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 
 /**
  * 註冊 Product 模組路由（供 IModuleDefinition.registerRoutes 使用）

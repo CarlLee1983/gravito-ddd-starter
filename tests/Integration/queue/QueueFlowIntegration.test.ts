@@ -17,14 +17,14 @@
  */
 
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { MemoryEventDispatcher } from '@/Shared/Infrastructure/Events/Dispatchers/MemoryEventDispatcher'
-import { MemoryJobQueueAdapter } from '@/Shared/Infrastructure/Adapters/Memory/MemoryJobQueueAdapter'
+import { MemoryEventDispatcher } from '@/Foundation/Infrastructure/Events/Dispatchers/MemoryEventDispatcher'
+import { MemoryJobQueueAdapter } from '@/Foundation/Infrastructure/Adapters/Memory/MemoryJobQueueAdapter'
 import { SendWelcomeEmail } from '@/Modules/User/Application/Handlers/SendWelcomeEmail'
 import { SendWelcomeEmailJob } from '@/Modules/User/Application/Jobs/SendWelcomeEmailJob'
 import { UserCreated } from '@/Modules/User/Domain/Events/UserCreated'
-import type { IMailer } from '@/Shared/Infrastructure/Ports/Services/IMailer'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { IMailer } from '@/Foundation/Infrastructure/Ports/Services/IMailer'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 describe('隊列完整流程整合測試', () => {
 	let eventDispatcher: MemoryEventDispatcher

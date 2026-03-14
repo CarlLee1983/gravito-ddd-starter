@@ -10,8 +10,8 @@
  * - 易於測試和重構
  */
 
-import type { IAuthMessages } from '@/Shared/Infrastructure/Ports/Messages/IAuthMessages'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { IAuthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IAuthMessages'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class AuthMessageService implements IAuthMessages {
 	constructor(private translator: ITranslator) {}

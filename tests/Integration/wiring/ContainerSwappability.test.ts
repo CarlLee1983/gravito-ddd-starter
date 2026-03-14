@@ -11,9 +11,9 @@
  */
 
 import { describe, it, expect, beforeEach } from 'bun:test'
-import type { IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
-import { ModuleServiceProvider } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import { resetRegistry } from '@wiring'
 
 /**

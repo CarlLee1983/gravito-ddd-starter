@@ -6,7 +6,7 @@
  * 內容是選填的，允許創建僅有標題的文章。
  */
 
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 interface ContentProps extends Record<string, unknown> {
   readonly value: string

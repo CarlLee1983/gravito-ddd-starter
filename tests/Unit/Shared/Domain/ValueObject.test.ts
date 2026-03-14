@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'bun:test'
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 /**
  * 测试 ValueObject 的泛型、结构相等性、不可变性

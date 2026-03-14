@@ -4,7 +4,7 @@
  * @module src/Modules/Post/Infrastructure/Providers
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import { resolveRepository } from '@wiring/RepositoryResolver'
 import { getCurrentORM } from '@wiring/RepositoryFactory'
 import { WelcomePostAutomation } from '../../Application/Handlers/WelcomePostAutomation'
@@ -12,9 +12,9 @@ import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 import { UserToPostAdapter } from '../Adapters/UserToPostAdapter'
 import { PostMessageService } from '../Services/PostMessageService'
-import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import { EventListenerRegistry } from '@/Foundation/Infrastructure/Registries/EventListenerRegistry'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * PostServiceProvider 類別

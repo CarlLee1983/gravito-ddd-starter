@@ -12,13 +12,13 @@
  * - 實作 applyEvent() 處理領域事件
  */
 
-import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
 import { UserCreated } from '../Events/UserCreated'
 import { UserNameChanged } from '../Events/UserNameChanged'
 import { UserEmailChanged } from '../Events/UserEmailChanged'
 import { Email } from '../ValueObjects/Email'
 import { UserName } from '../ValueObjects/UserName'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 用戶聚合根

@@ -3,7 +3,7 @@
  * @description Portal 模組 API 路由定義
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import { PortalController } from '../Controllers/PortalController'
 
 /**

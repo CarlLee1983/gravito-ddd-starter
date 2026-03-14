@@ -24,7 +24,7 @@
  * ```
  */
 
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 
 /**
  * Repository 工廠函數類型

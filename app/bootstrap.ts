@@ -7,7 +7,7 @@ import { PlanetCore, defineConfig } from '@gravito/core'
 import { OrbitNebula } from '@gravito/nebula'
 import { buildConfig } from '../config/app/index'
 import { storageConfig, s3RawConfig } from '../config/app/storage'
-import { S3Store } from '@/Shared/Infrastructure/Storage/Drivers/S3Store'
+import { S3Store } from '@/Foundation/Infrastructure/Storage/Drivers/S3Store'
 import { registerRoutes } from 'start/routes'
 import { initializeRegistry } from 'start/wiring/RepositoryRegistry'
 import { getCurrentORM } from 'start/wiring/RepositoryFactory'
@@ -15,7 +15,7 @@ import { DatabaseAccessBuilder } from 'start/wiring/DatabaseAccessBuilder'
 import { ModuleAutoWirer } from 'start/wiring/ModuleAutoWirer'
 import { SharedServiceProvider } from '@providers/SharedServiceProvider'
 import { InfrastructureServiceProvider } from '@providers/InfrastructureServiceProvider'
-import { createGravitoServiceProvider } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
+import { createGravitoServiceProvider } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
 
 /**
  * 啟動應用程式核心流程

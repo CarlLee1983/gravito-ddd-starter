@@ -1,4 +1,4 @@
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { IPaymentRepository } from '../../Domain/Repositories/IPaymentRepository'
 import { PaymentId } from '../../Domain/ValueObjects/PaymentId'
 

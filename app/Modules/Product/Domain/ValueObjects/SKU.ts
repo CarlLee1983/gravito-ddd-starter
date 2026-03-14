@@ -2,7 +2,7 @@
  * SKU Value Object
  */
 
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 interface SKUProps extends Record<string, unknown> {
   readonly value: string

@@ -3,7 +3,7 @@
  * @description 購物車清空事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 購物車已清空事件

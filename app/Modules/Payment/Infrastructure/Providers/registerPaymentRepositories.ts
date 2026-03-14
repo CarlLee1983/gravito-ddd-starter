@@ -1,4 +1,4 @@
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import { PaymentRepository } from '../Repositories/PaymentRepository'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 

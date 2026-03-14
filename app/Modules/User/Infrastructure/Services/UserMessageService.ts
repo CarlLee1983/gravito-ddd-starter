@@ -10,8 +10,8 @@
  * - 易於測試和重構
  */
 
-import type { IUserMessages } from '@/Shared/Infrastructure/Ports/Messages/IUserMessages'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { IUserMessages } from '@/Foundation/Infrastructure/Ports/Messages/IUserMessages'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class UserMessageService implements IUserMessages {
 	constructor(private translator: ITranslator) {}

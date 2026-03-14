@@ -8,10 +8,10 @@
  */
 
 import type { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import type { IRedisService } from '@/Shared/Infrastructure/Ports/Services/IRedisService'
-import type { ICacheService } from '@/Shared/Infrastructure/Ports/Services/ICacheService'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Core/ILogger'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IRedisService } from '@/Foundation/Infrastructure/Ports/Messaging/IRedisService'
+import type { ICacheService } from '@/Foundation/Infrastructure/Ports/Services/ICacheService'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 
 /**
  * 健康探針 Adapter 實現

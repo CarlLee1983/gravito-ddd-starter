@@ -4,13 +4,13 @@
  * @module src/Modules/Health/Infrastructure/Providers
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import type { IHealthCheckRepository } from '../../Domain/Repositories/IHealthCheckRepository'
 import { MemoryHealthCheckRepository } from '../Repositories/MemoryHealthCheckRepository'
 import { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
 import { HealthMessageService } from '../Services/HealthMessageService'
 import { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * HealthServiceProvider 類別

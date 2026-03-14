@@ -5,7 +5,7 @@
 
 import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
 import type { ProductResponseDTO } from '../../Application/DTOs/ProductResponseDTO'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import { ProductId } from '../../Domain/ValueObjects/ProductId'
 
 export class ProductQueryService implements IProductQueryService {

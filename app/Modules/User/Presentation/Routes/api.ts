@@ -17,9 +17,9 @@
  * - 可輕鬆抽換框架（只需修改 wiring 層）
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import type { UserController } from '../Controllers/UserController'
-import { exceptionHandlingMiddleware } from '@/Shared/Presentation/Middlewares/ExceptionHandlingMiddleware'
+import { exceptionHandlingMiddleware } from '@/Foundation/Presentation/Middlewares/ExceptionHandlingMiddleware'
 
 /**
  * 註冊用戶模組的所有路由

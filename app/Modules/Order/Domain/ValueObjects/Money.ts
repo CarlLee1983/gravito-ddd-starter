@@ -1,4 +1,4 @@
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 /**
  * Money 值物件 - 金額表示

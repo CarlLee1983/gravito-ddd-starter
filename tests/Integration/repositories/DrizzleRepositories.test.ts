@@ -7,8 +7,8 @@
  */
 
 import { describe, it, expect, beforeAll } from 'bun:test'
-import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import { createDrizzleDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Drizzle'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
 import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostRepository'
 import { User } from '@/Modules/User/Domain/Aggregates/User'
@@ -32,7 +32,7 @@ describe('Drizzle 倉儲整合測試', () => {
     postRepo = new PostRepository(db)
 
     // 獲取底層 client 並建立必要的表
-    const drizzle = (db as any).db || require('@/Shared/Infrastructure/Database/Adapters/Drizzle/config').getDrizzleInstance()
+    const drizzle = (db as any).db || require('@/Foundation/Infrastructure/Database/Adapters/Drizzle/config').getDrizzleInstance()
     try {
       // 先刪除舊的表
       await drizzle.run('DROP TABLE IF EXISTS posts')

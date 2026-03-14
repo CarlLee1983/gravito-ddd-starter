@@ -3,7 +3,7 @@
  * @description 購物車項目數量值物件
  */
 
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 interface QuantityProps extends Record<string, unknown> {
 	readonly value: number

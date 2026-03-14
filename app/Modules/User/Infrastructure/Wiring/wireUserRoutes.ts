@@ -6,15 +6,15 @@
  * 僅依賴 Shared 的 IRouteRegistrationContext，不依賴 @gravito/core。
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
-import type { IUserMessages } from '@/Shared/Infrastructure/Ports/Messages/IUserMessages'
+import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
+import type { IUserMessages } from '@/Foundation/Infrastructure/Ports/Messages/IUserMessages'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { UserMessageService } from '../Services/UserMessageService'
 import { UserController } from '../../Presentation/Controllers/UserController'
 import { registerUserRoutes } from '../../Presentation/Routes/api'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 import type { IUserQueryService } from '../../Application/Queries/IUserQueryService'
 
 /**

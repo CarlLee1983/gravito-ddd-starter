@@ -4,8 +4,8 @@
  * @module src/Modules/Post/Presentation/Controllers
  */
 
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
-import type { IPostMessages } from '@/Shared/Infrastructure/Ports/Messages/IPostMessages'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
+import type { IPostMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPostMessages'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 

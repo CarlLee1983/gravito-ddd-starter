@@ -1,5 +1,5 @@
-import { BaseEntity } from '@/Shared/Domain/BaseEntity'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { BaseEntity } from '@/Foundation/Domain/BaseEntity'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 import { PaymentId } from '../ValueObjects/PaymentId'
 import { TransactionId } from '../ValueObjects/TransactionId'
 import { Amount } from '../ValueObjects/Amount'

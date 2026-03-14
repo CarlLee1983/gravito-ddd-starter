@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'bun:test'
-import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 測試 AggregateRoot 的事件管理能力

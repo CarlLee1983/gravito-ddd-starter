@@ -9,8 +9,8 @@
  * - 完全解耦的非同步通訊
  */
 
-import type { IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
+import type { IntegrationEvent } from '@/Foundation/Domain/IntegrationEvent'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 import { CreatePostService } from '../Services/CreatePostService'
 
 /**

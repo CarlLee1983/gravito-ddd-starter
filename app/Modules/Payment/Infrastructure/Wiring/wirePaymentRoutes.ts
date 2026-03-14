@@ -3,7 +3,7 @@
  * @description Payment 模組路由裝配
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { PaymentController } from '../../Presentation/Controllers/PaymentController'
 import { registerPaymentRoutes } from '../../Presentation/Routes/payment.routes'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'

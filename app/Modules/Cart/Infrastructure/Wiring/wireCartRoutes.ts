@@ -6,7 +6,7 @@
  * 僅依賴 Shared 的 IRouteRegistrationContext，不依賴特定框架。
  */
 
-import type { IRouteRegistrationContext } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import type { AddItemToCartService } from '../../Application/Services/AddItemToCartService'
 import type { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'
 import type { CheckoutCartService } from '../../Application/Services/CheckoutCartService'

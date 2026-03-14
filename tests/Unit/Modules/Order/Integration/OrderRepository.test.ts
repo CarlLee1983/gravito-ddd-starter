@@ -5,8 +5,8 @@ import { OrderLine } from '@/Modules/Order/Domain/Aggregates/OrderLine'
 import { OrderId } from '@/Modules/Order/Domain/ValueObjects/OrderId'
 import { Money } from '@/Modules/Order/Domain/ValueObjects/Money'
 import { OrderTotal } from '@/Modules/Order/Domain/ValueObjects/OrderTotal'
-import { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
+import { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
 
 describe('OrderRepository Integration', () => {
   let repository: OrderRepository

@@ -4,7 +4,7 @@
  * @module src/Modules/Health/Domain/Repositories
  */
 
-import type { IRepository } from '@/Shared/Domain/IRepository'
+import type { IRepository } from '@/Foundation/Domain/IRepository'
 import { HealthCheck } from '../Aggregates/HealthCheck'
 
 /**

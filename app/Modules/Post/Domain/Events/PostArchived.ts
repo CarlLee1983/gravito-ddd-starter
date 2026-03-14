@@ -6,7 +6,7 @@
  * 由 Post.archive() 發佈，Repository 層分派。
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 文章存檔領域事件

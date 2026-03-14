@@ -6,7 +6,7 @@
  * 由 User.changeEmail() 發佈，Repository 層分派。
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 用戶電子郵件變更領域事件

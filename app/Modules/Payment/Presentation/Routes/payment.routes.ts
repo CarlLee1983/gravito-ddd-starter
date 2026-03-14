@@ -1,4 +1,4 @@
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import type { PaymentController } from '../Controllers/PaymentController'
 
 export function registerPaymentRoutes(router: IModuleRouter, controller: PaymentController): void {

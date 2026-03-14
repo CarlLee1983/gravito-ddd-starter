@@ -19,7 +19,7 @@
  * - 單一責任：只負責依賴注入
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import { resolveRepository } from '@wiring/RepositoryResolver'
 import { getCurrentORM } from '@wiring/RepositoryFactory'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
@@ -31,13 +31,13 @@ import { UserCredentialVerifier } from '../Adapters/UserCredentialVerifier'
 import { UserProfileAdapter } from '../Adapters/UserProfileAdapter'
 import { UserCreatorAdapter } from '../Adapters/UserCreatorAdapter'
 import { UserMessageService } from '../Services/UserMessageService'
-import { EventListenerRegistry } from '@/Shared/Infrastructure/Registries/EventListenerRegistry'
-import { JobRegistry } from '@/Shared/Infrastructure/Registries/JobRegistry'
+import { EventListenerRegistry } from '@/Foundation/Infrastructure/Registries/EventListenerRegistry'
+import { JobRegistry } from '@/Foundation/Infrastructure/Registries/JobRegistry'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
-import type { IMailer } from '@/Shared/Infrastructure/Ports/Services/IMailer'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
-import type { IJobQueue } from '@/Shared/Infrastructure/Ports/Messaging/IJobQueue'
+import type { IMailer } from '@/Foundation/Infrastructure/Ports/Services/IMailer'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
+import type { IJobQueue } from '@/Foundation/Infrastructure/Ports/Messaging/IJobQueue'
 
 /**
  * User 模組服務提供者實作類別

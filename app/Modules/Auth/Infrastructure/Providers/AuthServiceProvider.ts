@@ -7,24 +7,24 @@
  * - 職責：配置與註冊該模組所需的應用服務、Port 實現、控制器等依賴。
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import { LoginService } from '../../Application/Services/LoginService'
 import { RegisterService } from '../../Application/Services/RegisterService'
 import { LogoutService } from '../../Application/Services/LogoutService'
 import { AuthController } from '../../Presentation/Controllers/AuthController'
-import type { ICredentialVerifier } from '@/Shared/Infrastructure/Ports/Auth/ICredentialVerifier'
-import type { ITokenSigner } from '@/Shared/Infrastructure/Ports/Auth/ITokenSigner'
-import type { IUserCreator } from '@/Shared/Infrastructure/Ports/Auth/IUserCreator'
-import type { IUserProfileService } from '@/Shared/Infrastructure/Ports/Auth/IUserProfileService'
-import type { IAuthMessages } from '@/Shared/Infrastructure/Ports/Messages/IAuthMessages'
+import type { ICredentialVerifier } from '@/Foundation/Infrastructure/Ports/Auth/ICredentialVerifier'
+import type { ITokenSigner } from '@/Foundation/Infrastructure/Ports/Auth/ITokenSigner'
+import type { IUserCreator } from '@/Foundation/Infrastructure/Ports/Auth/IUserCreator'
+import type { IUserProfileService } from '@/Foundation/Infrastructure/Ports/Auth/IUserProfileService'
+import type { IAuthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IAuthMessages'
 import type { ISessionRepository } from '@/Modules/Session/Domain/Repositories/ISessionRepository'
 import { ValidateSessionService } from '@/Modules/Session/Application/Services/ValidateSessionService'
-import type { ITokenValidator } from '@/Shared/Infrastructure/Ports/Auth/ITokenValidator'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
+import type { ITokenValidator } from '@/Foundation/Infrastructure/Ports/Auth/ITokenValidator'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 import { AuthMessageService } from '../Services/AuthMessageService'
-import { createJwtGuardMiddleware } from '@/Shared/Presentation/Middlewares/JwtGuardMiddleware'
-import { createPageGuardMiddleware } from '@/Shared/Presentation/Middlewares/PageGuardMiddleware'
+import { createJwtGuardMiddleware } from '@/Foundation/Presentation/Middlewares/JwtGuardMiddleware'
+import { createPageGuardMiddleware } from '@/Foundation/Presentation/Middlewares/PageGuardMiddleware'
 
 /**
  * Auth 模組服務提供者實作類別

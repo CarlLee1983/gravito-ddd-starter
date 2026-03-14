@@ -5,8 +5,8 @@
  * 包裝 ITranslator，提供類型安全的健康檢查訊息方法。
  */
 
-import type { IHealthMessages } from '@/Shared/Infrastructure/Ports/Messages/IHealthMessages'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { IHealthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IHealthMessages'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class HealthMessageService implements IHealthMessages {
 	constructor(private translator: ITranslator) {}

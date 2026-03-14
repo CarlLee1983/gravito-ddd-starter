@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { BaseEntity } from '@/Shared/Domain/BaseEntity'
+import { BaseEntity } from '@/Foundation/Domain/BaseEntity'
 
 /**
  * 測試 BaseEntity 的 ID、時間戳、相等性

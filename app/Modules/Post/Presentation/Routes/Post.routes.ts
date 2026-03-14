@@ -4,9 +4,9 @@
  * @module src/Modules/Post/Presentation/Routes
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import type { PostController } from '../Controllers/PostController'
-import { exceptionHandlingMiddleware } from '@/Shared/Presentation/Middlewares/ExceptionHandlingMiddleware'
+import { exceptionHandlingMiddleware } from '@/Foundation/Presentation/Middlewares/ExceptionHandlingMiddleware'
 
 /**
  * 註冊 Post 路由

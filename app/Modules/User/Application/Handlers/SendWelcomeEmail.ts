@@ -32,9 +32,9 @@
 
 import { SendWelcomeEmailJob, type SendWelcomeEmailData } from '../Jobs/SendWelcomeEmailJob'
 import type { UserCreated } from '../../Domain/Events/UserCreated'
-import type { IJobQueue } from '@/Shared/Infrastructure/Ports/Messaging/IJobQueue'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Services/ILogger'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { IJobQueue } from '@/Foundation/Infrastructure/Ports/Messaging/IJobQueue'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 /**
  * 歡迎信 Job Dispatcher (事件訂閱者)

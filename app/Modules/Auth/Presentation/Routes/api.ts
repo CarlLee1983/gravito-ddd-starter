@@ -3,8 +3,8 @@
  * @description Auth 模組 API 路由
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { AuthController } from '../Controllers/AuthController'
 
 /**

@@ -3,7 +3,7 @@
  * @description 購物車項目實體（非聚合根，內部實體）
  */
 
-import { BaseEntity } from '@/Shared/Domain/BaseEntity'
+import { BaseEntity } from '@/Foundation/Domain/BaseEntity'
 import { CartItemId } from '../ValueObjects/CartItemId'
 import { Quantity } from '../ValueObjects/Quantity'
 

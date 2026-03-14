@@ -9,7 +9,7 @@ import { Email } from '../../Domain/ValueObjects/Email'
 import { UserName } from '../../Domain/ValueObjects/UserName'
 import { UserDTO } from '../DTOs/UserDTO'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
-import { DuplicateEntityException } from '@/Shared/Domain/Exceptions'
+import { DuplicateEntityException } from '@/Foundation/Domain/Exceptions'
 
 /**
  * CreateUserService 類別

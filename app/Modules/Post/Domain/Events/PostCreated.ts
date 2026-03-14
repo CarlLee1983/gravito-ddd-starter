@@ -3,7 +3,7 @@
  * @description 當新文章被建立時觸發的領域事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 文章已建立事件

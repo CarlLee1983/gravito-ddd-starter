@@ -4,8 +4,8 @@
  * @module src/Modules/Health/Presentation/Controllers
  */
 
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
-import type { IHealthMessages } from '@/Shared/Infrastructure/Ports/Messages/IHealthMessages'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
+import type { IHealthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IHealthMessages'
 import type { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
 
 /**

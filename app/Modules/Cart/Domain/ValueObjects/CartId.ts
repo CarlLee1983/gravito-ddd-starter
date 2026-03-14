@@ -3,7 +3,7 @@
  * @description 購物車識別符值物件
  */
 
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 interface CartIdProps extends Record<string, unknown> {
 	readonly value: string

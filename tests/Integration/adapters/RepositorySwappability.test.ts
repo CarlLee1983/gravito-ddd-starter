@@ -8,10 +8,10 @@
  */
 
 import { describe, it, expect } from 'bun:test'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
-import { createDrizzleDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Drizzle'
-import { createAtlasDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Atlas'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import { MemoryDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
+import { createDrizzleDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Drizzle'
+import { createAtlasDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Atlas'
 import { UserRepository } from '@/Modules/User/Infrastructure/Persistence/UserRepository'
 import { User } from '@/Modules/User/Domain/Aggregates/User'
 import { UserName } from '@/Modules/User/Domain/ValueObjects/UserName'

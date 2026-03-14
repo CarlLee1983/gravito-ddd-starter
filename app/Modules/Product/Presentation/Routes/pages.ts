@@ -5,8 +5,8 @@
  * 處理前端 SSR 頁面請求（產品列表頁面）
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
 
 /**

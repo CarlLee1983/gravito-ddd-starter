@@ -6,7 +6,7 @@
  */
 
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { MemoryEventStore, type StoredEvent } from '@/Shared/Infrastructure/Database/EventStore'
+import { MemoryEventStore, type StoredEvent } from '@/Foundation/Infrastructure/Database/EventStore'
 
 describe('MemoryEventStore', () => {
   let eventStore: MemoryEventStore

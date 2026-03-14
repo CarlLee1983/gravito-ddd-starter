@@ -3,7 +3,7 @@
  * @description 當產品庫存調整時觸發的領域事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 export class StockAdjusted extends DomainEvent {
   constructor(

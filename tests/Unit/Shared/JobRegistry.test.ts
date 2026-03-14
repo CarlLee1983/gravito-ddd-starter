@@ -4,10 +4,10 @@
  */
 
 import { describe, it, expect, beforeEach } from 'bun:test'
-import { JobRegistry } from '@/Shared/Infrastructure/Registries/JobRegistry'
-import type { IJobQueue } from '@/Shared/Infrastructure/Ports/Messaging/IJobQueue'
-import type { IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
-import { BaseJob } from '@/Shared/Application/Jobs/BaseJob'
+import { JobRegistry } from '@/Foundation/Infrastructure/Registries/JobRegistry'
+import type { IJobQueue } from '@/Foundation/Infrastructure/Ports/Messaging/IJobQueue'
+import type { IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
+import { BaseJob } from '@/Foundation/Application/Jobs/BaseJob'
 
 // 簡單的 Mock Job
 class MockJob extends BaseJob {

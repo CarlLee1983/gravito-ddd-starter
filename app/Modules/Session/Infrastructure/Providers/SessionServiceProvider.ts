@@ -5,14 +5,14 @@
  * 管理 Session 模組的依賴注入與生命週期。
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import { MemorySessionRepository } from '../Persistence/MemorySessionRepository'
 import { SessionTokenValidator } from '../Adapters/SessionTokenValidator'
 import { ValidateSessionService } from '../../Application/Services/ValidateSessionService'
-import { JoseTokenSigner } from '@/Shared/Infrastructure/Adapters/Gravito/JoseTokenSigner'
+import { JoseTokenSigner } from '@/Foundation/Infrastructure/Adapters/Gravito/JoseTokenSigner'
 import type { ISessionRepository } from '../../Domain/Repositories/ISessionRepository'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
-import type { ITokenSigner } from '@/Shared/Infrastructure/Ports/Auth/ITokenSigner'
+import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { ITokenSigner } from '@/Foundation/Infrastructure/Ports/Auth/ITokenSigner'
 
 /**
  * Session 模組服務提供者

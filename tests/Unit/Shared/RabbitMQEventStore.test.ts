@@ -3,9 +3,9 @@
  */
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
-import { RabbitMQEventStore } from '@/Shared/Infrastructure/Database/EventStore/RabbitMQEventStore'
-import type { IEventStore, StoredEvent } from '@/Shared/Infrastructure/Ports/Database/IEventStore'
-import type { IRabbitMQService } from '@/Shared/Infrastructure/Ports/Messaging/IRabbitMQService'
+import { RabbitMQEventStore } from '@/Foundation/Infrastructure/Database/EventStore/RabbitMQEventStore'
+import type { IEventStore, StoredEvent } from '@/Foundation/Infrastructure/Ports/Database/IEventStore'
+import type { IRabbitMQService } from '@/Foundation/Infrastructure/Ports/Messaging/IRabbitMQService'
 
 // Mock StoredEvent
 const createMockStoredEvent = (eventType: string = 'UserCreated'): StoredEvent => ({

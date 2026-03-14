@@ -7,7 +7,7 @@
  * 不允許已存檔的文章變更標題。
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * 文章標題變更領域事件

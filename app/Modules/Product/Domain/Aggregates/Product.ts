@@ -3,7 +3,7 @@
  * @description 產品聚合根 (Aggregate Root)
  */
 
-import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
 import { ProductCreated } from '../Events/ProductCreated'
 import { ProductPriceChanged } from '../Events/ProductPriceChanged'
 import { StockAdjusted } from '../Events/StockAdjusted'
@@ -11,7 +11,7 @@ import { ProductName } from '../ValueObjects/ProductName'
 import { Price, Currency } from '../ValueObjects/Price'
 import { SKU } from '../ValueObjects/SKU'
 import { StockQuantity } from '../ValueObjects/StockQuantity'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 export class Product extends AggregateRoot {
   private _name!: ProductName

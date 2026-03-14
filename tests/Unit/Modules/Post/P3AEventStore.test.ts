@@ -10,8 +10,8 @@ import { PostRepository } from '@/Modules/Post/Infrastructure/Repositories/PostR
 import { Post } from '@/Modules/Post/Domain/Aggregates/Post'
 import { Title } from '@/Modules/Post/Domain/ValueObjects/Title'
 import { Content } from '@/Modules/Post/Domain/ValueObjects/Content'
-import { MemoryEventStore } from '@/Shared/Infrastructure/Database/EventStore'
-import { MemoryDatabaseAccess } from '@/Shared/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
+import { MemoryEventStore } from '@/Foundation/Infrastructure/Database/EventStore'
+import { MemoryDatabaseAccess } from '@/Foundation/Infrastructure/Database/Adapters/Memory/MemoryDatabaseAccess'
 
 describe('Post Repository - EventStore Integration (P3A)', () => {
   let repository: PostRepository

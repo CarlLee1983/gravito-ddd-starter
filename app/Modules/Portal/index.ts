@@ -3,7 +3,7 @@
  * @description Portal 模組公開 API 導出與裝配定義
  */
 
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { PortalServiceProvider } from './Infrastructure/Providers/PortalServiceProvider'
 import { wirePortalRoutes } from './Infrastructure/Wiring/wirePortalRoutes'
 

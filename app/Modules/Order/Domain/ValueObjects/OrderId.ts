@@ -1,4 +1,4 @@
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 /**
  * OrderId 值物件 - 訂單 ID

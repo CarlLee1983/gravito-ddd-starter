@@ -5,7 +5,7 @@
  * 處理首頁、行銷頁面等前端應用 (SPA/SSR) 的入口路由。
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import { PortalController } from '../Controllers/PortalController'
 
 /**

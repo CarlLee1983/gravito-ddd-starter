@@ -8,9 +8,9 @@
  */
 
 import { CartRepository } from '../Persistence/CartRepository'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
-import type { IEventStore } from '@/Shared/Infrastructure/Ports/Database/IEventStore'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventStore } from '@/Foundation/Infrastructure/Ports/Database/IEventStore'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 
 /**

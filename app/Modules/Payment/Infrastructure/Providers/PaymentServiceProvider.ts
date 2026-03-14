@@ -1,10 +1,10 @@
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 import { InitiatePaymentService } from '../../Application/Services/InitiatePaymentService'
 import { HandlePaymentSuccessService } from '../../Application/Services/HandlePaymentSuccessService'
 import { HandlePaymentFailureService } from '../../Application/Services/HandlePaymentFailureService'
-import type { ILogger } from '@/Shared/Infrastructure/Ports/Core/ILogger'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 
 export class PaymentServiceProvider extends ModuleServiceProvider {
 	override register(container: IContainer): void {

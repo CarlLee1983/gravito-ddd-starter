@@ -5,7 +5,7 @@
  * Domain 層定義的倉儲介面，不知道任何 ORM 或基礎設施細節
  */
 
-import type { IRepository } from '@/Shared/Domain/IRepository'
+import type { IRepository } from '@/Foundation/Domain/IRepository'
 import type { Cart } from '../Aggregates/Cart'
 
 /**

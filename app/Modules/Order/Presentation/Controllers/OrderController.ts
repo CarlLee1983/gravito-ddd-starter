@@ -1,4 +1,4 @@
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { OrderId } from '../../Domain/ValueObjects/OrderId'
 import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
