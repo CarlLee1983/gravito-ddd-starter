@@ -10,6 +10,8 @@
  */
 
 import { getToken, clearToken } from './tokenManager'
+import { getCsrfToken, setCsrfToken, shouldProtectRequest, getCsrfTokenFromHeader } from './csrf'
+import { retry, type RetryConfig } from './retry'
 
 /**
  * HTTP 請求選項擴展
@@ -17,7 +19,10 @@ import { getToken, clearToken } from './tokenManager'
 export interface HttpRequestOptions extends RequestInit {
   skipAuth?: boolean // 跳過自動添加 Authorization
   skipErrorHandling?: boolean // 跳過統一錯誤處理
+  skipCsrf?: boolean // 跳過自動添加 CSRF Token
+  skipRetry?: boolean // 跳過自動重試機制
   onUnauthorized?: () => void // 401 回調
+  retryConfig?: RetryConfig // 重試配置
 }
 
 /**
@@ -48,32 +53,59 @@ async function request<T = any>(
   const {
     skipAuth = false,
     skipErrorHandling = false,
+    skipCsrf = false,
+    skipRetry = false,
     onUnauthorized,
+    retryConfig,
     headers: customHeaders = {},
+    method = 'GET',
     ...restOptions
   } = options
 
-  // 構建 Headers
-  const headers = new Headers(customHeaders as any)
+  // 內部遞迴函數：執行單次請求
+  const executeRequest = async (): Promise<Response> => {
+    // 構建 Headers
+    const headers = new Headers(customHeaders as any)
 
-  // 自動添加 Authorization
-  if (!skipAuth) {
-    const token = getToken()
-    if (token) {
-      headers.set('Authorization', `Bearer ${token}`)
+    // 自動添加 Authorization
+    if (!skipAuth) {
+      const token = getToken()
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`)
+      }
     }
-  }
 
-  // 設置 Content-Type（如果沒有指定）
-  if (!headers.has('Content-Type') && restOptions.body) {
-    headers.set('Content-Type', 'application/json')
+    // 自動添加 CSRF Token（用於狀態變化請求）
+    if (!skipCsrf && shouldProtectRequest(method)) {
+      const csrfToken = getCsrfToken()
+      if (csrfToken) {
+        headers.set('X-CSRF-Token', csrfToken)
+      }
+    }
+
+    // 設置 Content-Type（如果沒有指定）
+    if (!headers.has('Content-Type') && restOptions.body) {
+      headers.set('Content-Type', 'application/json')
+    }
+
+    return fetch(url, {
+      ...restOptions,
+      method,
+      headers,
+    })
   }
 
   try {
-    const response = await fetch(url, {
-      ...restOptions,
-      headers,
-    })
+    // 執行請求（可選重試）
+    const response = skipRetry
+      ? await executeRequest()
+      : await retry(executeRequest, retryConfig)
+
+    // 檢查新的 CSRF Token（某些端點如登入可能返回新 Token）
+    const newCsrfToken = getCsrfTokenFromHeader(response.headers)
+    if (newCsrfToken) {
+      setCsrfToken(newCsrfToken)
+    }
 
     // 處理 401 Unauthorized
     if (response.status === 401) {
