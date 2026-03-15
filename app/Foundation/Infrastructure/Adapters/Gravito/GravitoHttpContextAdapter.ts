@@ -41,7 +41,11 @@ export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
 		}
 	})()
 
-	return {
+	// 響應狀態管理
+	let responseStatus = 200
+	const responseHeaders: Record<string, string> = {}
+
+	const httpContext: IHttpContext = {
 		getBodyText: () => ctx.req.text(),
 
 		getJsonBody: async <T>() => {
@@ -82,6 +86,28 @@ export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
 		},
 		get: <T>(key: string) => ctx.get(key as any) as T | undefined,
 		set: (key, value) => ctx.set(key as any, value),
+
+		html: (content, statusCode = 200) => {
+			return new Response(content, {
+				status: statusCode,
+				headers: { 'Content-Type': 'text/html; charset=utf-8', ...responseHeaders }
+			}) as any
+		},
+
+		status: (code: number) => {
+			responseStatus = code
+			return httpContext
+		},
+
+		setHeader: (name: string, value: string) => {
+			responseHeaders[name] = value
+			return httpContext
+		},
+
+		type: (mimeType: string) => {
+			responseHeaders['Content-Type'] = mimeType
+			return httpContext
+		},
 
 		/**
 		 * 實作 Inertia.js 協議
@@ -150,4 +176,6 @@ export function fromGravitoContext(ctx: GravitoContext): IHttpContext {
 			}) as any
 		},
 	}
+
+	return httpContext
 }

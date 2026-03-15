@@ -49,6 +49,39 @@ export interface IHttpContext {
 	set(key: string, value: unknown): void
 
 	/**
+	 * 回傳 HTML 內容
+	 *
+	 * @param content - HTML 字串內容
+	 * @param statusCode - HTTP 狀態碼（預設 200）
+	 */
+	html(content: string, statusCode?: number): Response
+
+	/**
+	 * 設定 HTTP 回應狀態碼
+	 *
+	 * @param code - 狀態碼（如 200、404、500）
+	 * @returns 返回自身用於鏈式調用
+	 */
+	status(code: number): IHttpContext
+
+	/**
+	 * 設定 HTTP 回應標頭
+	 *
+	 * @param name - 標頭名稱
+	 * @param value - 標頭值
+	 * @returns 返回自身用於鏈式調用
+	 */
+	setHeader(name: string, value: string): IHttpContext
+
+	/**
+	 * 設定回應內容類型
+	 *
+	 * @param mimeType - MIME 類型（如 application/json、text/html）
+	 * @returns 返回自身用於鏈式調用
+	 */
+	type(mimeType: string): IHttpContext
+
+	/**
 	 * 渲染前端頁面 (Inertia.js 橋接)
 	 *
 	 * @param component - 前端組件路徑 (相對於 resources/js/Pages)
