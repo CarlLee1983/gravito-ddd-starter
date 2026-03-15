@@ -54,3 +54,8 @@ storage/**/*.sqlite
 # 臨時和快取目錄
 storage/tmp/**
 storage/framework/cache/**
+
+# 測試報告和結果（Playwright + Bun）
+playwright-report/
+test-results/
+.playwright-artifacts-*/
