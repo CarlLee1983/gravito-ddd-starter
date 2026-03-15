@@ -87,7 +87,9 @@ export class ModuleAutoWirer {
 
 		// 第二階段：註冊所有 Repository 工廠 (Infrastructure Layer)
 		// 在此時點，SharedServiceProvider.register() 已執行，eventDispatcher 已在容器中
+		// RepositoryRegistry 也已在容器中（P2 修復：從容器管理）
 		let eventDispatcher: any = null
+		let repositoryRegistry: any = null
 		try {
 			eventDispatcher = core.container.make('eventDispatcher')
 		} catch (error) {
@@ -98,9 +100,18 @@ export class ModuleAutoWirer {
 			// （某些模組可能不依賴事件系統）
 		}
 
+		try {
+			repositoryRegistry = core.container.make('repositoryRegistry')
+		} catch (error) {
+			logger.error(
+				`[AutoWirer] repositoryRegistry 未在容器中: ${error instanceof Error ? error.message : String(error)}`
+			)
+			throw error
+		}
+
 		for (const { def } of modulesFound) {
 			if (def.registerRepositories) {
-				def.registerRepositories(db, eventDispatcher)
+				def.registerRepositories(db, eventDispatcher, repositoryRegistry)
 			}
 		}
 

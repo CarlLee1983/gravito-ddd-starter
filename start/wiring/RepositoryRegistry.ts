@@ -57,6 +57,7 @@ export class RepositoryRegistry {
 	 *
 	 * @param type - Repository 類型（例如 'user'、'post'、'order' 等）
 	 * @param factory - 工廠函數，定義如何根據 ORM 建立該類型的實例
+	 * @param logger - 可選的 ILogger 實例，用於警告訊息
 	 *
 	 * @example
 	 * registry.register('user', (orm, db) => {
@@ -64,9 +65,14 @@ export class RepositoryRegistry {
 	 *   if (orm === 'drizzle') return new DrizzleUserRepository(db!)
 	 * })
 	 */
-	register(type: string, factory: RepositoryFactory): void {
+	register(type: string, factory: RepositoryFactory, logger?: any): void {
 		if (this.factories.has(type)) {
-			console.warn(`⚠️ Repository type "${type}" 已被註冊，將覆寫`)
+			const message = `⚠️ Repository type "${type}" 已被註冊，將覆寫`
+			if (logger) {
+				logger.warn(message)
+			} else {
+				console.warn(message)
+			}
 		}
 		this.factories.set(type, factory)
 	}
@@ -115,47 +121,37 @@ export class RepositoryRegistry {
 }
 
 /**
- * 全局 Registry 單例引用
- * 應用啟動時被初始化
- */
-let globalRegistry: RepositoryRegistry | null = null
-
-/**
- * 初始化全局註冊表 (Registry)
- * 應在 bootstrap() 時調用，確保在註冊所有 ServiceProvider 之前完成
+ * 已棄用：使用容器管理的 RepositoryRegistry
  *
- * @returns 初始化後的 RepositoryRegistry 實例
- *
- * @example
- * const registry = initializeRegistry()
- * registry.register('user', userRepositoryFactory)
+ * 將 RepositoryRegistry 從全局單例遷移到 DI 容器管理
+ * 詳見：app/bootstrap.ts 中的容器註冊
  */
 export function initializeRegistry(): RepositoryRegistry {
-	if (!globalRegistry) {
-		globalRegistry = new RepositoryRegistry()
-	}
-	return globalRegistry
+	console.warn(
+		'⚠️ initializeRegistry() 已棄用。\n' +
+			'RepositoryRegistry 現已由 DI 容器管理。\n' +
+			'請從容器中解析: container.make("repositoryRegistry")'
+	)
+	return new RepositoryRegistry()
 }
 
 /**
- * 取得當前全局註冊表實例
+ * 已棄用：使用容器管理的 RepositoryRegistry
  *
- * @returns 全局註冊表實例
- * @throws 如果尚未呼叫 initializeRegistry() 進行初始化
+ * 獲取 RepositoryRegistry 應從 DI 容器取得
  */
 export function getRegistry(): RepositoryRegistry {
-	if (!globalRegistry) {
-		throw new Error(
-			'❌ RepositoryRegistry 尚未初始化。\n' +
-				'請在 bootstrap() 中呼叫 initializeRegistry()。'
-		)
-	}
-	return globalRegistry
+	throw new Error(
+		'❌ getRegistry() 已棄用。\n' +
+			'RepositoryRegistry 現已由 DI 容器管理。\n' +
+			'請注入 RepositoryRegistry 或從容器中解析: container.make("repositoryRegistry")'
+	)
 }
 
 /**
- * 重設註冊表單例（主要用於單元測試隔離）
+ * 已棄用：不再需要
+ *
+ * Registry 現在由 DI 容器管理，容器重建時自動建立新實例
  */
 export function resetRegistry(): void {
-	globalRegistry = null
-}
+	console.warn('⚠️ resetRegistry() 已棄用，RepositoryRegistry 由 DI 容器管理')

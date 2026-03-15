@@ -9,7 +9,7 @@ import { buildConfig } from '../config/app/index'
 import { storageConfig, s3RawConfig } from '../config/app/storage'
 
 import { registerRoutes } from 'start/routes'
-import { initializeRegistry } from 'start/wiring/RepositoryRegistry'
+import { RepositoryRegistry } from 'start/wiring/RepositoryRegistry'
 import { getCurrentORM } from 'start/wiring/RepositoryFactory'
 import { DatabaseAccessBuilder } from 'start/wiring/DatabaseAccessBuilder'
 import { ModuleAutoWirer } from 'start/wiring/ModuleAutoWirer'
@@ -28,7 +28,6 @@ import { createGravitoServiceProvider } from '@/Foundation/Infrastructure/Adapte
 export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	// ─── 配置與倉庫 ─────────────────────────────────────────────────────────
 	const appConfig = buildConfig(port)
-	initializeRegistry()
 
 	const orm = getCurrentORM()
 	const db = new DatabaseAccessBuilder(orm).getDatabaseAccess()
@@ -38,6 +37,9 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 
 	// 將 db 註冊到容器中，消除雙軌依賴注入（P0-1 修復）
 	core.container.singleton('databaseAccess', () => db)
+
+	// Repository Registry 改為容器管理（P2 修復：消除全域單例）
+	core.container.singleton('repositoryRegistry', () => new RepositoryRegistry())
 
 	// 初始化儲存系統（S3 配置細節由 StorageBootstrapper 管理）
 	await StorageBootstrapper.configure(core, storageConfig, s3RawConfig)

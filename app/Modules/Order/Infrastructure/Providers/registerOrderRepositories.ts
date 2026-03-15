@@ -6,7 +6,7 @@
 import { OrderRepository } from '../Repositories/OrderRepository'
 import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
-import { getRegistry } from '@wiring/RepositoryRegistry'
+import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 
 /**
  * 註冊 Order Repository 工廠到全局註冊表 (Registry)
@@ -18,8 +18,8 @@ import { getRegistry } from '@wiring/RepositoryRegistry'
  * @param eventDispatcher - 領域事件分派器，用於在保存聚合根時發佈未分派的事件
  * @returns void
  */
-export function registerOrderRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher): void {
-  const registry = getRegistry()
+export function registerOrderRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher, registry?: RepositoryRegistry): void {
+  (if (!registry) throw new Error("RepositoryRegistry not provided"))
   
   const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
     return new OrderRepository(db, eventDispatcher!)

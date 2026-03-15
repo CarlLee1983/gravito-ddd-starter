@@ -13,17 +13,27 @@
 
 import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 import { UserRepository } from '../Persistence/UserRepository'
-import { getRegistry } from '@wiring/RepositoryRegistry'
 
 /**
- * 註冊 User Repository 工廠到全局註冊表 (Registry)
+ * 註冊 User Repository 工廠到註冊表
  *
  * @param db - 資料庫存取介面
  * @param eventDispatcher - 領域事件分發器
+ * @param registry - Repository 註冊表（從容器解析，P2 修復）
  */
-export function registerUserRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher): void {
-	const registry = getRegistry()
+export function registerUserRepositories(
+	db: IDatabaseAccess,
+	eventDispatcher?: IEventDispatcher,
+	registry?: RepositoryRegistry
+): void {
+	if (!registry) {
+		throw new Error(
+			'❌ RepositoryRegistry 未提供。\n' +
+				'registerUserRepositories() 應由 ModuleAutoWirer 呼叫，它負責傳遞 Registry。'
+		)
+	}
 	console.log(`[registerUserRepositories] eventDispatcher provided: ${eventDispatcher ? '✅ YES' : '❌ NO'}`)
 	const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
 		console.log(`[UserRepository Factory] Called with eventDispatcher: ${eventDispatcher ? '✅ YES' : '❌ NO'} (from closure)`)

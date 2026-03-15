@@ -11,7 +11,7 @@ import { CartRepository } from '../Persistence/CartRepository'
 import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
 import type { IEventStore } from '@/Foundation/Infrastructure/Ports/Database/IEventStore'
-import { getRegistry } from '@wiring/RepositoryRegistry'
+import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 
 /**
  * 註冊 Cart Repository 工廠到全局 Registry
@@ -19,8 +19,8 @@ import { getRegistry } from '@wiring/RepositoryRegistry'
  * @param db - 資料庫存取介面實例 (port)，由 DatabaseAccessBuilder 提供
  * @param eventDispatcher - 事件分派器（可選），用於發佈領域事件
  */
-export function registerCartRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher): void {
-	const registry = getRegistry()
+export function registerCartRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher, registry?: RepositoryRegistry): void {
+	(if (!registry) throw new Error("RepositoryRegistry not provided"))
 	
 	const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
 		// 注意：eventStore 通常需要從容器中解析，這裡假設它與 db 同級或是通過 db 內部獲取

@@ -6,7 +6,7 @@
 import { ProductRepository } from '../Persistence/ProductRepository'
 import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
-import { getRegistry } from '@wiring/RepositoryRegistry'
+import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 
 /**
  * 註冊 Product Repository 工廠到全局 Registry
@@ -15,8 +15,8 @@ import { getRegistry } from '@wiring/RepositoryRegistry'
  * @param eventDispatcher - 事件分派器
  * @returns void
  */
-export function registerProductRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher): void {
-  const registry = getRegistry()
+export function registerProductRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher, registry?: RepositoryRegistry): void {
+  (if (!registry) throw new Error("RepositoryRegistry not provided"))
   
   const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
     return new ProductRepository(db, eventDispatcher)
