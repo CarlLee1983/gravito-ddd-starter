@@ -3,7 +3,7 @@
  * @description Payment 聚合根，管理支付的生命週期與狀態轉換
  */
 
-import { BaseEntity } from '@/Foundation/Domain/BaseEntity'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
 import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 import { PaymentId } from '../ValueObjects/PaymentId'
 import { TransactionId } from '../ValueObjects/TransactionId'
@@ -33,10 +33,13 @@ export interface PaymentProps {
 /**
  * Payment 聚合根 - 支付狀態機管理
  * 狀態流: Initiated → (Succeeded | Failed)
+ *
+ * 使用 AggregateRoot 基底類別，支援 Event Sourcing：
+ * - raiseEvent() 產生並套用事件
+ * - applyEvent() 處理事件狀態變更
+ * - getUncommittedEvents() 取得未提交事件
  */
-export class Payment extends BaseEntity {
-	private domainEvents: DomainEvent[] = []
-
+export class Payment extends AggregateRoot {
 	private constructor(private props: PaymentProps) {
 		super(props.id.value)
 	}
@@ -108,8 +111,8 @@ export class Payment extends BaseEntity {
 			updatedAt: new Date(),
 		})
 
-		// 發佈事件
-		payment.addDomainEvent(
+		// 使用 raiseEvent() 產生事件（內部呼叫 applyEvent()）
+		payment.raiseEvent(
 			new PaymentInitiated(paymentId, orderId, userId, amount, paymentMethod)
 		)
 
@@ -153,15 +156,8 @@ export class Payment extends BaseEntity {
 			throw new Error(`無法從 ${this.status.toString()} 轉換到 已支付`)
 		}
 
-		this.props = {
-			...this.props,
-			status: newStatus,
-			transactionId,
-			updatedAt: new Date(),
-		}
-
-		// 發佈事件
-		this.addDomainEvent(
+		// 使用 raiseEvent() 產生事件，內部呼叫 applyEvent()
+		this.raiseEvent(
 			new PaymentSucceeded(this.id, this.orderId, transactionId)
 		)
 	}
@@ -182,15 +178,8 @@ export class Payment extends BaseEntity {
 			throw new Error(`無法從 ${this.status.toString()} 轉換到 支付失敗`)
 		}
 
-		this.props = {
-			...this.props,
-			status: newStatus,
-			failureReason: reason,
-			updatedAt: new Date(),
-		}
-
-		// 發佈事件
-		this.addDomainEvent(
+		// 使用 raiseEvent() 產生事件，內部呼叫 applyEvent()
+		this.raiseEvent(
 			new PaymentFailed(this.id, this.orderId, reason)
 		)
 	}
@@ -223,27 +212,28 @@ export class Payment extends BaseEntity {
 	}
 
 	/**
-	 * 向聚合根添加領域事件
+	 * 實作 AggregateRoot 抽象方法：處理單一事件如何影響聚合狀態
 	 *
-	 * @param event - 領域事件對象
+	 * @param event - 領域事件
 	 */
-	addDomainEvent(event: DomainEvent): void {
-		this.domainEvents.push(event)
-	}
-
-	/**
-	 * 獲取所有掛起的領域事件
-	 *
-	 * @returns 領域事件數組
-	 */
-	getDomainEvents(): DomainEvent[] {
-		return [...this.domainEvents]
-	}
-
-	/**
-	 * 清除所有掛起的領域事件
-	 */
-	clearDomainEvents(): void {
-		this.domainEvents = []
+	applyEvent(event: DomainEvent): void {
+		if (event instanceof PaymentInitiated) {
+			// 初始狀態已在建構子設定，此處無需變更
+			// applyEvent 主要用於事件流回放
+		} else if (event instanceof PaymentSucceeded) {
+			this.props = {
+				...this.props,
+				status: PaymentStatus.succeeded(),
+				transactionId: event.transactionId,
+				updatedAt: new Date(),
+			}
+		} else if (event instanceof PaymentFailed) {
+			this.props = {
+				...this.props,
+				status: PaymentStatus.failed(),
+				failureReason: event.reason,
+				updatedAt: new Date(),
+			}
+		}
 	}
 }

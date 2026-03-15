@@ -21,6 +21,7 @@
  */
 
 import { GravitoLoggerAdapter } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoLoggerAdapter'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 
 /**
  * 系統支援的 ORM 類型定義
@@ -75,7 +76,7 @@ export function getCurrentORM(): ORMType {
 }
 
 /** 資料庫存取工廠：回傳 IDatabaseAccess 實例或 undefined (memory) */
-type DatabaseAccessFactory = () => unknown
+type DatabaseAccessFactory = () => IDatabaseAccess | undefined
 
 /** ORM → 資料庫存取工廠對照表 */
 const databaseAccessFactories: Record<ORMType, DatabaseAccessFactory> = {
@@ -109,7 +110,7 @@ const databaseAccessFactories: Record<ORMType, DatabaseAccessFactory> = {
  * @example
  * const db = getDatabaseAccess()
  */
-export function getDatabaseAccess() {
+export function getDatabaseAccess(): IDatabaseAccess | undefined {
 	const orm = getCurrentORM()
 	const factory = databaseAccessFactories[orm]
 	return factory()

@@ -70,15 +70,40 @@ export class PaymentServiceProvider extends ModuleServiceProvider {
 	/**
 	 * 模組啟動後的初始化工作
 	 *
+	 * 主要監聽事件：
+	 * - OrderPlaced: 當訂單建立時，觸發發起支付流程
+	 *
 	 * @param context - 模組上下文
 	 */
 	override boot(context: any): void {
+		const container = context.container ?? context
+		const logger = container.make('logger') as ILogger | undefined
+		let eventDispatcher: any
 		try {
-			const logger = context.container?.make?.('logger') as ILogger | undefined
-			const message = '✨ [Payment] Module loaded'
-			logger?.info?.(message) || console.log(message)
+			eventDispatcher = container.make('eventDispatcher')
 		} catch {
-			console.log('✨ [Payment] Module loaded')
+			// 事件分發器可能不存在
 		}
+
+		// 監聽訂單建立事件並發起支付
+		if (eventDispatcher) {
+			eventDispatcher.subscribe('OrderPlaced', async (event: any) => {
+				const initiatePaymentService = container.make('initiatePaymentService') as InitiatePaymentService
+				try {
+					await initiatePaymentService.execute({
+						orderId: event.data?.orderId || event.orderId,
+						userId: event.data?.userId || event.userId,
+						amount: event.data?.total || event.total,
+						currency: event.data?.currency || event.currency || 'TWD',
+						paymentMethod: 'credit_card',
+					})
+				} catch (error) {
+					logger?.error?.('[PaymentServiceProvider] 發起支付失敗', error as Error)
+				}
+			})
+		}
+
+		const message = '✨ [Payment] Module loaded'
+		logger?.info?.(message) || console.log(message)
 	}
 }

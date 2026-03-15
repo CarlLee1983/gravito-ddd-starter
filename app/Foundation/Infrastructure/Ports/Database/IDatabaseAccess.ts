@@ -126,6 +126,25 @@ export interface IDatabaseAccess {
 	 * @returns {IQueryBuilder} 查詢建構器實例
 	 */
 	table(name: string): IQueryBuilder
+
+	/**
+	 * 在資料庫事務中執行 callback
+	 * 成功自動提交；拋出異常自動回滾。
+	 *
+	 * @template T
+	 * @param {(trx: IDatabaseAccess) => Promise<T>} callback - 事務內執行的回調函數
+	 * @returns {Promise<T>} 回調函數的返回值
+	 *
+	 * @example
+	 * ```typescript
+	 * const result = await db.transaction(async (trx) => {
+	 *   await trx.table('users').insert({ name: 'John' })
+	 *   await trx.table('logs').insert({ action: 'user_created' })
+	 *   return { success: true }
+	 * })
+	 * ```
+	 */
+	transaction<T>(callback: (trx: IDatabaseAccess) => Promise<T>): Promise<T>
 }
 
 /**

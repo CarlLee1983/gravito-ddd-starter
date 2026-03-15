@@ -40,6 +40,38 @@ class DrizzleDatabaseAccess implements IDatabaseAccess {
 
     return new DrizzleQueryBuilder(db, name, tableSchema)
   }
+
+  /**
+   * 在資料庫事務中執行 callback
+   * 成功自動提交；拋出異常自動回滾。
+   *
+   * @template T
+   * @param callback - 事務內執行的回調函數
+   * @returns 回調函數的返回值
+   */
+  async transaction<T>(callback: (trx: IDatabaseAccess) => Promise<T>): Promise<T> {
+    const db = getDrizzleInstance()
+
+    // Drizzle 的 transaction 方法
+    return db.transaction(async (tx: any) => {
+      // 建立事務隔離的 IDatabaseAccess 實例
+      const trxAccess: IDatabaseAccess = {
+        table: (name: string) => {
+          const tableSchema = (schema as any)[name]
+          if (!tableSchema) {
+            throw new Error(`Table "${name}" not found in schema`)
+          }
+          return new DrizzleQueryBuilder(tx, name, tableSchema)
+        },
+        transaction: async (callback) => {
+          // 巢狀事務：直接使用外層事務
+          return callback(trxAccess)
+        },
+      }
+
+      return callback(trxAccess)
+    })
+  }
 }
 
 /**

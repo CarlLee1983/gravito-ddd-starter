@@ -47,11 +47,15 @@ export interface IDeadLetterQueue {
  */
 export class MemoryDeadLetterQueue implements IDeadLetterQueue {
 	private entries: Map<string, DeadLetterEntry> = new Map()
-	private logger: ILogger = {
-		info: (msg: string) => console.info(`[MemoryDeadLetterQueue] ${msg}`),
-		warn: (msg: string) => console.warn(`[MemoryDeadLetterQueue] ${msg}`),
-		error: (msg: string, err?: any) => console.error(`[MemoryDeadLetterQueue] ${msg}`, err),
-		debug: (msg: string) => console.debug(`[MemoryDeadLetterQueue] ${msg}`),
+	private logger: ILogger
+
+	constructor(logger?: ILogger) {
+		this.logger = logger ?? {
+			info: (msg: string) => console.info(`[MemoryDeadLetterQueue] ${msg}`),
+			warn: (msg: string) => console.warn(`[MemoryDeadLetterQueue] ${msg}`),
+			error: (msg: string, err?: any) => console.error(`[MemoryDeadLetterQueue] ${msg}`, err),
+			debug: (msg: string) => console.debug(`[MemoryDeadLetterQueue] ${msg}`),
+		}
 	}
 
 	async add(entry: Omit<DeadLetterEntry, 'id'>): Promise<void> {
@@ -100,14 +104,16 @@ export class MemoryDeadLetterQueue implements IDeadLetterQueue {
 export class RedisDeadLetterQueue implements IDeadLetterQueue {
 	private readonly queueKey = 'dead_letter_queue'
 	private readonly indexKey = 'dead_letter_index' // 用於統計
-	private logger: ILogger = {
-		info: (msg: string) => console.info(`[RedisDeadLetterQueue] ${msg}`),
-		warn: (msg: string) => console.warn(`[RedisDeadLetterQueue] ${msg}`),
-		error: (msg: string, err?: any) => console.error(`[RedisDeadLetterQueue] ${msg}`, err),
-		debug: (msg: string) => console.debug(`[RedisDeadLetterQueue] ${msg}`),
-	}
+	private logger: ILogger
 
-	constructor(private readonly redis: any) {}
+	constructor(private readonly redis: any, logger?: ILogger) {
+		this.logger = logger ?? {
+			info: (msg: string) => console.info(`[RedisDeadLetterQueue] ${msg}`),
+			warn: (msg: string) => console.warn(`[RedisDeadLetterQueue] ${msg}`),
+			error: (msg: string, err?: any) => console.error(`[RedisDeadLetterQueue] ${msg}`, err),
+			debug: (msg: string) => console.debug(`[RedisDeadLetterQueue] ${msg}`),
+		}
+	}
 
 	async add(entry: Omit<DeadLetterEntry, 'id'>): Promise<void> {
 		const id = `dlq-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`

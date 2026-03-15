@@ -81,11 +81,12 @@ export class PaymentRepository implements IPaymentRepository {
 			await this.db.table('payments').insert(row)
 		}
 
-		// 分派領域事件
-		const events = payment.getDomainEvents()
+		// 分派領域事件（使用 AggregateRoot API）
+		const events = payment.getUncommittedEvents()
 		for (const event of events) {
 			await this.eventDispatcher.dispatch(event)
 		}
+		payment.markEventsAsCommitted()
 	}
 
 	/**

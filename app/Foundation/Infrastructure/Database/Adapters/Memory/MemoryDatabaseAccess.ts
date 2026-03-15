@@ -240,4 +240,32 @@ export class MemoryDatabaseAccess implements IDatabaseAccess {
 	table(name: string): IQueryBuilder {
 		return new MemoryQueryBuilder(name, this.store)
 	}
+
+	/**
+	 * 在資料庫事務中執行 callback
+	 * 支援回滾：失敗時還原所有修改
+	 * @param callback - 事務回調函數
+	 * @returns 回調的返回值
+	 */
+	async transaction<T>(callback: (trx: IDatabaseAccess) => Promise<T>): Promise<T> {
+		// 保存快照：複製所有表格的當前狀態
+		const snapshot = new Map(
+			Array.from(this.store.entries()).map(([tableName, rows]) => [
+				tableName,
+				[...rows], // 淺層複製陣列
+			])
+		)
+
+		try {
+			// 在事務內執行回調，傳入自身作為事務存取介面
+			return await callback(this)
+		} catch (error) {
+			// 失敗：還原所有修改
+			this.store.clear()
+			for (const [tableName, rows] of snapshot) {
+				this.store.set(tableName, [...rows])
+			}
+			throw error
+		}
+	}
 }

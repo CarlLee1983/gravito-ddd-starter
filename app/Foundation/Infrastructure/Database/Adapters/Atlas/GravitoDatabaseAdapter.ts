@@ -43,6 +43,37 @@ class AtlasDatabaseAccess implements IDatabaseAccess {
 	table(name: string): IQueryBuilder {
 		return new AtlasQueryBuilder(name)
 	}
+
+	/**
+	 * 在資料庫事務中執行 callback
+	 * 成功自動提交；拋出異常自動回滾。
+	 *
+	 * @template T
+	 * @param callback - 事務內執行的回調函數
+	 * @returns 回調函數的返回值
+	 */
+	async transaction<T>(callback: (trx: IDatabaseAccess) => Promise<T>): Promise<T> {
+		const DB = getDB()
+		if (!DB) {
+			throw new Error('Atlas DB 實例未初始化')
+		}
+
+		// Atlas.DB.transaction() 提供原生事務支持
+		return DB.transaction(async (trxClient: any) => {
+			// 建立事務隔離的 IDatabaseAccess 實例
+			const trxAccess: IDatabaseAccess = new AtlasDatabaseAccess()
+
+			// 覆蓋 table() 方法使用事務客戶端
+			;(trxAccess as any).tableImpl = (name: string) => {
+				return new AtlasQueryBuilder(name, trxClient)
+			}
+			trxAccess.table = (name: string) => {
+				return (trxAccess as any).tableImpl(name)
+			}
+
+			return callback(trxAccess)
+		})
+	}
 }
 
 /**

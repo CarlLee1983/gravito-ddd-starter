@@ -22,7 +22,7 @@ export class ClearCartOnOrderCreatedHandler {
 	 * 監聽的事件名稱（來自 Order 模組）
 	 */
 	get eventName(): string {
-		return 'OrderCreated'
+		return 'OrderPlaced'
 	}
 
 	/**

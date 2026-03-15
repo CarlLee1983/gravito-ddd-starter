@@ -40,12 +40,22 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	/**
 	 * 建構子
 	 * @param tableName - 目標資料表名稱
+	 * @param trxClient - 事務客戶端（可選，用於事務上下文）
 	 * @param logger - 日誌服務（可選）
 	 */
 	constructor(
 		private tableName: string,
+		private trxClient?: any,
 		private logger?: ILogger
 	) {}
+
+	/**
+	 * 取得適當的資料庫實例（事務或全局）
+	 * @private
+	 */
+	private getQueryDB(): any {
+		return this.trxClient || getDB()
+	}
 
 	/**
 	 * 添加 WHERE 查詢條件
@@ -68,7 +78,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 */
 	async first(): Promise<Record<string, unknown> | null> {
 		try {
-			let query = (getDB() as any).table(this.tableName)
+			let query = (this.getQueryDB() as any).table(this.tableName)
 			this.logger?.debug(`FIRST from table: ${this.tableName}`, { tableName: this.tableName })
 
 			// 應用累積的 WHERE 條件
@@ -111,7 +121,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 */
 	async select(): Promise<Record<string, unknown>[]> {
 		try {
-			let query = (getDB() as any).table(this.tableName)
+			let query = (this.getQueryDB() as any).table(this.tableName)
 			this.logger?.debug(`SELECT from table: ${this.tableName}`, { tableName: this.tableName })
 
 			// 應用所有 WHERE 條件
@@ -160,7 +170,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 */
 	async insert(data: Record<string, unknown>): Promise<void> {
 		try {
-			await (getDB() as any).table(this.tableName).insert(data)
+			await (this.getQueryDB() as any).table(this.tableName).insert(data)
 		} catch (error) {
 			this.logger?.error(`Error in insert()`, error instanceof Error ? error : new Error(String(error)))
 			throw error
@@ -175,7 +185,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 */
 	async update(data: Record<string, unknown>): Promise<void> {
 		try {
-			let query = (getDB() as any).table(this.tableName)
+			let query = (this.getQueryDB() as any).table(this.tableName)
 
 			// 應用 WHERE 條件
 			for (const cond of this.whereConditions) {
@@ -196,7 +206,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 */
 	async delete(): Promise<void> {
 		try {
-			let query = (getDB() as any).table(this.tableName)
+			let query = (this.getQueryDB() as any).table(this.tableName)
 
 			// 應用 WHERE 條件
 			for (const cond of this.whereConditions) {
@@ -253,7 +263,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 */
 	async count(): Promise<number> {
 		try {
-			let query = (getDB() as any).table(this.tableName)
+			let query = (this.getQueryDB() as any).table(this.tableName)
 
 			// 應用 WHERE 條件
 			for (const cond of this.whereConditions) {
