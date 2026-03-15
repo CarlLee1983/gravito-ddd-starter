@@ -5,7 +5,7 @@
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
-import { getRegistry } from '@wiring/RepositoryRegistry'
+import type { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 import { InitiatePaymentService } from '../../Application/Services/InitiatePaymentService'
 import { HandlePaymentSuccessService } from '../../Application/Services/HandlePaymentSuccessService'
@@ -26,8 +26,8 @@ export class PaymentServiceProvider extends ModuleServiceProvider {
 		// 向全局註冊表註冊，確保 RepositoryFactory 能建立它
 		// 雖然 ModuleAutoWirer 會呼叫 registerRepositories，
 		// 但在這裡也確保單例綁定在容器中，供之後解析使用。
-		container.singleton('paymentRepository', () => {
-			const registry = getRegistry()
+		container.singleton('paymentRepository', (c: IContainer) => {
+			const registry = c.make('repositoryRegistry') as RepositoryRegistry
 			const orm = getCurrentORM()
 			const db = orm !== 'memory' ? getDatabaseAccess() : undefined
 			return registry.create('payment', orm, db)

@@ -121,38 +121,45 @@ export class RepositoryRegistry {
 }
 
 /**
- * 已棄用：使用容器管理的 RepositoryRegistry
+ * 全局 Registry 單例參考（向後相容）
  *
- * 將 RepositoryRegistry 從全局單例遷移到 DI 容器管理
- * 詳見：app/bootstrap.ts 中的容器註冊
+ * 遷移中：優先使用容器管理的 Registry
+ * 但保留全局單例以支持舊的 getRegistry() 呼叫
+ */
+let globalRegistry: RepositoryRegistry | null = null
+
+/**
+ * 初始化全局註冊表（向後相容）
+ *
+ * ⚠️ 棄用：應改用容器管理的 Registry
+ * 新代碼應使用: container.make("repositoryRegistry")
  */
 export function initializeRegistry(): RepositoryRegistry {
-	console.warn(
-		'⚠️ initializeRegistry() 已棄用。\n' +
-			'RepositoryRegistry 現已由 DI 容器管理。\n' +
-			'請從容器中解析: container.make("repositoryRegistry")'
-	)
-	return new RepositoryRegistry()
+	if (!globalRegistry) {
+		globalRegistry = new RepositoryRegistry()
+	}
+	return globalRegistry
 }
 
 /**
- * 已棄用：使用容器管理的 RepositoryRegistry
+ * 獲取全局 Registry 實例（向後相容）
  *
- * 獲取 RepositoryRegistry 應從 DI 容器取得
+ * ⚠️ 棄用：應改用容器管理的 Registry
+ * 新代碼應使用: container.make("repositoryRegistry")
+ *
+ * 此函數保留以支持現有的 Service Provider 實現
+ * Phase 3 遷移時改為注入容器實例
  */
 export function getRegistry(): RepositoryRegistry {
-	throw new Error(
-		'❌ getRegistry() 已棄用。\n' +
-			'RepositoryRegistry 現已由 DI 容器管理。\n' +
-			'請注入 RepositoryRegistry 或從容器中解析: container.make("repositoryRegistry")'
-	)
+	if (!globalRegistry) {
+		globalRegistry = new RepositoryRegistry()
+	}
+	return globalRegistry
 }
 
 /**
- * 已棄用：不再需要
- *
- * Registry 現在由 DI 容器管理，容器重建時自動建立新實例
+ * 重設註冊表（向後相容，用於測試隔離）
  */
 export function resetRegistry(): void {
-	console.warn('⚠️ resetRegistry() 已棄用，RepositoryRegistry 由 DI 容器管理')
+	globalRegistry = null
 }

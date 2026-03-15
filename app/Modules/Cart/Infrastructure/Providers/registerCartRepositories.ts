@@ -20,7 +20,7 @@ import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
  * @param eventDispatcher - 事件分派器（可選），用於發佈領域事件
  */
 export function registerCartRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher, registry?: RepositoryRegistry): void {
-	(if (!registry) throw new Error("RepositoryRegistry not provided"))
+	if (!registry) throw new Error("RepositoryRegistry not provided")
 	
 	const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
 		// 注意：eventStore 通常需要從容器中解析，這裡假設它與 db 同級或是通過 db 內部獲取

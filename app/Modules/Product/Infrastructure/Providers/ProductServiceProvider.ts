@@ -10,7 +10,7 @@ import { GetProductService } from '../../Application/Services/GetProductService'
 import { ProductMessageService } from '../Services/ProductMessageService'
 
 import { ProductQueryService } from '../Persistence/ProductQueryService'
-import { getRegistry } from '@wiring/RepositoryRegistry'
+import type { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
 export class ProductServiceProvider extends ModuleServiceProvider {
@@ -22,8 +22,8 @@ export class ProductServiceProvider extends ModuleServiceProvider {
    */
   override register(container: IContainer): void {
     // 註冊 Repository
-    container.singleton('productRepository', () => {
-      const registry = getRegistry()
+    container.singleton('productRepository', (c: IContainer) => {
+      const registry = c.make('repositoryRegistry') as RepositoryRegistry
       const orm = getCurrentORM()
       const db = orm !== 'memory' ? getDatabaseAccess() : undefined
       return registry.create('product', orm, db)

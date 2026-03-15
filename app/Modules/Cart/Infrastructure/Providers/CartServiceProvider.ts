@@ -13,7 +13,7 @@ import { CheckoutCartService } from '../../Application/Services/CheckoutCartServ
 import { ClearCartOnOrderCreatedHandler } from '../../Application/Handlers/ClearCartOnOrderCreatedHandler'
 import { CartMessageService } from '../Services/CartMessageService'
 import type { IProductRepository } from '@/Modules/Product/Domain/Repositories/IProductRepository'
-import { getRegistry } from '@wiring/RepositoryRegistry'
+import type { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
 /**
@@ -27,8 +27,8 @@ export class CartServiceProvider extends ModuleServiceProvider {
 	 */
 	override register(container: IContainer): void {
 		// 註冊 Repository
-		container.singleton('cartRepository', () => {
-			const registry = getRegistry()
+		container.singleton('cartRepository', (c: IContainer) => {
+			const registry = c.make('repositoryRegistry') as RepositoryRegistry
 			const orm = getCurrentORM()
 			const db = orm !== 'memory' ? getDatabaseAccess() : undefined
 			return registry.create('cart', orm, db)

@@ -19,7 +19,7 @@ import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
  * @returns void
  */
 export function registerOrderRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher, registry?: RepositoryRegistry): void {
-  (if (!registry) throw new Error("RepositoryRegistry not provided"))
+  if (!registry) throw new Error("RepositoryRegistry not provided")
   
   const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
     return new OrderRepository(db, eventDispatcher!)

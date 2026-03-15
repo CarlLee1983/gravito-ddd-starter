@@ -9,7 +9,7 @@ import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
 import { OrderMessageService } from '../Services/OrderMessageService'
 import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
-import { getRegistry } from '@wiring/RepositoryRegistry'
+import type { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
 /**
@@ -30,8 +30,8 @@ export class OrderServiceProvider extends ModuleServiceProvider {
    */
   override register(container: IContainer): void {
     // 註冊 Repository 為單例
-    container.singleton('orderRepository', () => {
-      const registry = getRegistry()
+    container.singleton('orderRepository', (c: IContainer) => {
+      const registry = c.make('repositoryRegistry') as RepositoryRegistry
       const orm = getCurrentORM()
       const db = orm !== 'memory' ? getDatabaseAccess() : undefined
       return registry.create('order', orm, db)
