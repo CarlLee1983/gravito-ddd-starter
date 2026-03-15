@@ -35,8 +35,9 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	// ─── 核心與存儲 ─────────────────────────────────────────────────────────
 	const core = new PlanetCore(defineConfig({ config: appConfig }))
 
-	// 將 db 註冊到容器中，消除雙軌依賴注入（P0-1 修復）
+	// 將基礎設施決策註冊到容器中（P0-1 修復 + P5 優化）
 	core.container.singleton('databaseAccess', () => db)
+	core.container.singleton('currentORM', () => orm)  // P5：ORM 決策納入容器管理
 
 	// Repository Registry 改為容器管理（P2 修復：消除全域單例）
 	core.container.singleton('repositoryRegistry', () => new RepositoryRegistry())

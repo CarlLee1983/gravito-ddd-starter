@@ -11,14 +11,16 @@
 export { DatabaseAccessBuilder, createDatabaseAccess } from './DatabaseAccessBuilder'
 export { getCurrentORM, getDatabaseAccess } from './RepositoryFactory'
 export { RepositoryRegistry } from './RepositoryRegistry'
-export { createRepositoryFactory } from './RepositoryFactoryGenerator'
 export { ModuleAutoWirer } from './ModuleAutoWirer'
 
-// P4 遷移完成：全局單例已廢棄
-// - RepositoryResolver 已移除
-// - getRegistry() / initializeRegistry() / resetRegistry() 已廢棄
-// - 所有 Repository 實例由 registerRepositories 向容器直接註冊
-// - 容器完全管理所有依賴，無全局狀態
+/**
+ * P5 遷移完成（最終化）：
+ * ✅ RepositoryResolver 已移除
+ * ✅ RepositoryFactoryGenerator 已移除
+ * ✅ 全局單例（getRegistry 等）已廢棄
+ * ✅ 所有 Repository 由 registerRepositories 向容器直接註冊
+ * ✅ 容器完全管理所有依賴
+ */
 
 /**
  * 模組路由接線已改為「模組內自管」：

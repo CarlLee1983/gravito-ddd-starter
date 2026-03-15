@@ -25,54 +25,31 @@ import { getDatabaseAccess } from './RepositoryFactory'
 /**
  * Database Access Builder 類別
  *
- * 封裝了 IDatabaseAccess 的建立邏輯。
+ * P5 簡化：純粹的工廠類，用於建立 IDatabaseAccess 實例。
+ * - 由 bootstrap 調用，在容器初始化時建立 DB 實例
+ * - 結果向容器註冊為 'databaseAccess' 單例
+ * - 不再需要其他方法（getORM 等已廢棄）
  */
 export class DatabaseAccessBuilder {
-	/** 當前配置的 ORM 類型 */
-	private orm: ORMType
-	/** 已建立的資料庫存取實例 */
 	private dbInstance: IDatabaseAccess
 
 	/**
 	 * 初始化 DatabaseAccessBuilder
 	 *
-	 * @param orm - 選擇的 ORM 類型 (如 'memory', 'drizzle' 等)
-	 *
-	 * 行為：
-	 * - 若 orm='memory'：建立 MemoryDatabaseAccess 實例。
-	 * - 若為其他類型：透過工廠獲取對應的資料庫適配器。
+	 * @param orm - 由 getCurrentORM() 確定的 ORM 類型
 	 */
 	constructor(orm: ORMType) {
-		this.orm = orm
 		this.dbInstance =
 			orm === 'memory' ? new MemoryDatabaseAccess() : (getDatabaseAccess() as IDatabaseAccess)
 	}
 
 	/**
-	 * 取得應該注入給各個模組 Repository 的 IDatabaseAccess 實例
+	 * 取得已建立的 IDatabaseAccess 實例
 	 *
-	 * @returns 已初始化的 IDatabaseAccess 實作 (必不為空)
+	 * @returns 用於所有 Repository 的資料庫存取適配器
 	 */
 	getDatabaseAccess(): IDatabaseAccess {
 		return this.dbInstance
-	}
-
-	/**
-	 * 取得當前使用的 ORM 類型名稱
-	 *
-	 * @returns ORM 類型字串
-	 */
-	getORM(): ORMType {
-		return this.orm
-	}
-
-	/**
-	 * 取得系統目前支援的所有 ORM 類型列表
-	 *
-	 * @returns 支援的 ORM 類型陣列
-	 */
-	static listSupportedORMs(): ORMType[] {
-		return ['memory', 'drizzle', 'atlas', 'prisma']
 	}
 }
 

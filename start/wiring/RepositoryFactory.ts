@@ -30,8 +30,15 @@ export type ORMType = 'memory' | 'drizzle' | 'atlas' | 'prisma'
 /**
  * ORM 值快取（避免重複呼叫）
  *
- * 應用啟動時只需要一次環境變數讀取，之後所有呼叫都使用快取值。
- * 這避免了 getCurrentORM() 被呼叫多次時的重複驗證和日誌輸出。
+ * 必須快取原因：
+ * 1. getCurrentORM() 在容器初始化前被調用（bootstrap 階段）
+ * 2. 應用啟動時只需要一次環境變數讀取
+ * 3. 避免重複驗證和日誌輸出
+ *
+ * 建議：在 bootstrap 後立即向容器註冊 ORM 值
+ * ```typescript
+ * core.container.singleton('currentORM', () => getCurrentORM())
+ * ```
  */
 let cachedORM: ORMType | null = null
 
