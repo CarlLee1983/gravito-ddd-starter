@@ -148,7 +148,7 @@ function printResults(result: { success: boolean; errors: string[] }) {
 		console.log(
 			'\n💡 提示：檢查 DATABASE_TESTING_STRATEGY.md 了解隔離機制'
 		)
-		console.log('💡 可能原因：'
+		console.log('💡 可能原因：')
 		console.log('  - 測試中有 beforeEach/afterEach 不完整')
 		console.log('  - 沒有使用 cleanupTestDatabase() 清理 DB')
 		console.log('  - 使用磁碟 DB 而不是內存 DB\n')
