@@ -28,27 +28,43 @@ import { GravitoLoggerAdapter } from '@/Foundation/Infrastructure/Adapters/Gravi
 export type ORMType = 'memory' | 'drizzle' | 'atlas' | 'prisma'
 
 /**
+ * ORM 值快取（避免重複呼叫）
+ *
+ * 應用啟動時只需要一次環境變數讀取，之後所有呼叫都使用快取值。
+ * 這避免了 getCurrentORM() 被呼叫多次時的重複驗證和日誌輸出。
+ */
+let cachedORM: ORMType | null = null
+
+/**
  * 從環境變數讀取並驗證當前 ORM 設定
  *
  * 這是應用的核心 ORM 選擇點，所有模組都根據此值選擇對應的 Repository 實現。
+ * 第一次呼叫時讀取和驗證，後續呼叫使用快取值。
  *
  * @returns 當前選擇的 ORM 類型 ('memory', 'drizzle', 'atlas', 'prisma')
  *
  * @example
- * const orm = getCurrentORM()  // 'memory' | 'drizzle' | ...
+ * const orm = getCurrentORM()  // 'memory' | 'drizzle' | ... (使用快取)
  */
 export function getCurrentORM(): ORMType {
+	// P4 改進：快取已計算的值，避免重複的環境變數讀取和驗證
+	if (cachedORM !== null) {
+		return cachedORM
+	}
+
 	const logger = new GravitoLoggerAdapter()
 	const orm = process.env.ORM || 'memory'
 	const validORMs: ORMType[] = ['memory', 'drizzle', 'atlas', 'prisma']
 
 	if (!validORMs.includes(orm as ORMType)) {
 		logger.warn(`不支援的 ORM: "${orm}"，使用預設 "memory"`)
-		return 'memory'
+		cachedORM = 'memory'
+		return cachedORM
 	}
 
 	logger.info(`已選擇 ORM: ${orm}`)
-	return orm as ORMType
+	cachedORM = orm as ORMType
+	return cachedORM
 }
 
 /**

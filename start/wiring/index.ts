@@ -7,30 +7,12 @@
  * 2. 模組路由與 Controller 接線由各模組自行在 registerRoutes 內完成
  */
 
-import { getCurrentORM } from './RepositoryFactory'
-
 // 核心導出（應用啟動與 Auto-Wiring 使用）
 export { DatabaseAccessBuilder, createDatabaseAccess } from './DatabaseAccessBuilder'
 export { getCurrentORM, getDatabaseAccess } from './RepositoryFactory'
 export { initializeRegistry, getRegistry, resetRegistry } from './RepositoryRegistry'
 export { createRepositoryFactory } from './RepositoryFactoryGenerator'
 export { ModuleAutoWirer } from './ModuleAutoWirer'
-
-/**
- * 應用啟動時的 ORM 配置摘要
- */
-export function printORMConfiguration(): void {
-	const orm = getCurrentORM()
-	console.log(`
-╔════════════════════════════════════╗
-║       ORM Configuration Report      ║
-╠════════════════════════════════════╣
-║ Current ORM: ${orm.padEnd(22)} ║
-║ Repository Type: ${(orm === 'memory' ? 'In-Memory' : 'Database-Backed').padEnd(17)} ║
-║ Environment Variable: ORM=${orm.padEnd(19)} ║
-╚════════════════════════════════════╝
-	`)
-}
 
 /**
  * 模組路由接線已改為「模組內自管」：
