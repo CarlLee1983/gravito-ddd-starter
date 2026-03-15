@@ -33,10 +33,22 @@ export class PaymentServiceProvider extends ModuleServiceProvider {
 			return registry.create('payment', orm, db)
 		})
 
-		// 註冊訊息服務
+		// 註冊訊息服務（使用工廠方法延遲解析 translator）
 		container.singleton('paymentMessages', (c) => {
-			const translator = c.make('translator') as ITranslator
-			return new PaymentMessageService(translator)
+			try {
+				const translator = c.make('translator') as ITranslator
+				return new PaymentMessageService(translator)
+			} catch {
+				// 如果 translator 還未註冊（啟動期間），使用虛擬實現
+				// 在 boot 階段會被正確的實例替換
+				const fallback: any = {
+					trans: (key: string) => key,
+					choice: (key: string) => key,
+					setLocale: () => {},
+					getLocale: () => 'en',
+				}
+				return new PaymentMessageService(fallback)
+			}
 		})
 
 		container.singleton('initiatePaymentService', (c: IContainer) => {

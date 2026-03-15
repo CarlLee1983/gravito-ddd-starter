@@ -34,10 +34,21 @@ export class CartServiceProvider extends ModuleServiceProvider {
 			return registry.create('cart', orm, db)
 		})
 
-		// 0. 註冊訊息服務
+		// 0. 註冊訊息服務（使用工廠方法延遲解析 translator）
 		container.singleton('cartMessages', (c) => {
-			const translator = c.make('translator') as ITranslator
-			return new CartMessageService(translator)
+			try {
+				const translator = c.make('translator') as ITranslator
+				return new CartMessageService(translator)
+			} catch {
+				// 如果 translator 還未註冊（啟動期間），使用虛擬實現
+				const fallback: any = {
+					trans: (key: string) => key,
+					choice: (key: string) => key,
+					setLocale: () => {},
+					getLocale: () => 'en',
+				}
+				return new CartMessageService(fallback)
+			}
 		})
 
 		// 1. 註冊防腐層適配器

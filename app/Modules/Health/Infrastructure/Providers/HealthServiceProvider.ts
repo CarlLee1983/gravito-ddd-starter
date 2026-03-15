@@ -29,9 +29,20 @@ export class HealthServiceProvider extends ModuleServiceProvider {
 			return new MemoryHealthCheckRepository()
 		})
 
-		// 1.5. 註冊訊息服務（供 Controller 使用）
+		// 1.5. 註冊訊息服務（使用工廠方法延遲解析 translator）
 		container.singleton('healthMessages', (c) => {
-			return new HealthMessageService(c.make('translator') as ITranslator)
+			try {
+				return new HealthMessageService(c.make('translator') as ITranslator)
+			} catch {
+				// 如果 translator 還未註冊（啟動期間），使用虛擬實現
+				const fallback: any = {
+					trans: (key: string) => key,
+					choice: (key: string) => key,
+					setLocale: () => {},
+					getLocale: () => 'en',
+				}
+				return new HealthMessageService(fallback)
+			}
 		})
 
 		// 2. 註冊 Application Service（每次解析時建立新實例）

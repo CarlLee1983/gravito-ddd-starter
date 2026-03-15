@@ -11,6 +11,7 @@ import { GetPostService } from '../../Application/Services/GetPostService'
 import { UserToPostAdapter } from '../Adapters/UserToPostAdapter'
 import { PostMessageService } from '../Services/PostMessageService'
 import { EventListenerRegistry } from '@/Foundation/Infrastructure/Registries/EventListenerRegistry'
+import { getCurrentORM } from '@wiring/RepositoryFactory'
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
@@ -33,9 +34,20 @@ export class PostServiceProvider extends ModuleServiceProvider {
 		// 注意：postRepository 已由 registerPostRepositories() 向容器註冊（P3 遷移）
 		// 此處不需要重複註冊，直接使用 container.make('postRepository')
 
-		// 註冊訊息服務（供 Controller 使用）
+		// 註冊訊息服務（使用工廠方法延遲解析 translator）
 		container.singleton('postMessages', (c) => {
-			return new PostMessageService(c.make('translator') as ITranslator)
+			try {
+				return new PostMessageService(c.make('translator') as ITranslator)
+			} catch {
+				// 如果 translator 還未註冊（啟動期間），使用虛擬實現
+				const fallback: any = {
+					trans: (key: string) => key,
+					choice: (key: string) => key,
+					setLocale: () => {},
+					getLocale: () => 'en',
+				}
+				return new PostMessageService(fallback)
+			}
 		})
 
 		// 註冊防腐層適配器：User → Post（IAuthorService 實現）

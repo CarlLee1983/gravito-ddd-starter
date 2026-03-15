@@ -37,10 +37,21 @@ export class OrderServiceProvider extends ModuleServiceProvider {
       return registry.create('order', orm, db)
     })
 
-    // 註冊訊息服務
+    // 註冊訊息服務（使用工廠方法延遲解析 translator）
     container.singleton('orderMessages', (c) => {
-      const translator = c.make('translator') as ITranslator
-      return new OrderMessageService(translator)
+      try {
+        const translator = c.make('translator') as ITranslator
+        return new OrderMessageService(translator)
+      } catch {
+        // 如果 translator 還未註冊（啟動期間），使用虛擬實現
+        const fallback: any = {
+          trans: (key: string) => key,
+          choice: (key: string) => key,
+          setLocale: () => {},
+          getLocale: () => 'en',
+        }
+        return new OrderMessageService(fallback)
+      }
     })
 
     // 註冊應用層服務

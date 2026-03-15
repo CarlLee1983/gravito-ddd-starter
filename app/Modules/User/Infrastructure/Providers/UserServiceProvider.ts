@@ -31,6 +31,7 @@ import { UserCreatorAdapter } from '../Adapters/UserCreatorAdapter'
 import { UserMessageService } from '../Services/UserMessageService'
 import { EventListenerRegistry } from '@/Foundation/Infrastructure/Registries/EventListenerRegistry'
 import { JobRegistry } from '@/Foundation/Infrastructure/Registries/JobRegistry'
+import { getCurrentORM } from '@wiring/RepositoryFactory'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 import type { IMailer } from '@/Foundation/Infrastructure/Ports/Services/IMailer'
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
@@ -54,9 +55,20 @@ export class UserServiceProvider extends ModuleServiceProvider {
 		// 注意：userRepository 已由 registerUserRepositories() 向容器註冊（P3 遷移）
 		// 此處不需要重複註冊，直接使用 container.make('userRepository')
 
-		// 1.5. 註冊訊息服務（供 Controller 使用）
+		// 1.5. 註冊訊息服務（使用工廠方法延遲解析 translator）
 		container.singleton('userMessages', (c) => {
-			return new UserMessageService(c.make('translator') as ITranslator)
+			try {
+				return new UserMessageService(c.make('translator') as ITranslator)
+			} catch {
+				// 如果 translator 還未註冊（啟動期間），使用虛擬實現
+				const fallback: any = {
+					trans: (key: string) => key,
+					choice: (key: string) => key,
+					setLocale: () => {},
+					getLocale: () => 'en',
+				}
+				return new UserMessageService(fallback)
+			}
 		})
 
 		// 2. 實現 ICredentialVerifier Port（供 Session 模組使用）
