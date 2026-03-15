@@ -19,7 +19,7 @@ import { bootstrap as bootstrapApp } from './bootstrap'
  * @returns 回傳初始化完成的 Gravito 核心實例 (PlanetCore)
  */
 export async function createApp(port?: number): ReturnType<typeof bootstrapApp> {
-  const resolvedPort = port ?? Number(process.env.PORT) || 3000
+  const resolvedPort = (port ?? Number(process.env.PORT)) || 3000
   return await bootstrapApp(resolvedPort)
 }
 
