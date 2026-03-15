@@ -1,0 +1,5 @@
+{
+  "missing_payment_id": "Payment ID is missing",
+  "payment_not_found": "Payment record not found",
+  "unknown_error": "Unknown error"
+}

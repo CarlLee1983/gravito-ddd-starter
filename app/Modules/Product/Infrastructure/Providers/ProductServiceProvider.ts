@@ -4,8 +4,10 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 import { CreateProductService } from '../../Application/Services/CreateProductService'
 import { GetProductService } from '../../Application/Services/GetProductService'
+import { ProductMessageService } from '../Services/ProductMessageService'
 
 import { ProductQueryService } from '../Persistence/ProductQueryService'
 import { getRegistry } from '@wiring/RepositoryRegistry'
@@ -25,6 +27,12 @@ export class ProductServiceProvider extends ModuleServiceProvider {
       const orm = getCurrentORM()
       const db = orm !== 'memory' ? getDatabaseAccess() : undefined
       return registry.create('product', orm, db)
+    })
+
+    // 註冊訊息服務
+    container.singleton('productMessages', (c) => {
+      const translator = c.make('translator') as ITranslator
+      return new ProductMessageService(translator)
     })
 
     // 註冊查詢服務 (CQRS Read Side)

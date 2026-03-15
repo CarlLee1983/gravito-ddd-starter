@@ -7,6 +7,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
+import type { IProductMessages } from '@/Foundation/Infrastructure/Ports/Messages/IProductMessages'
 import { ProductController } from '../../Presentation/Controllers/ProductController'
 import { ProductPageController } from '../../Presentation/Controllers/ProductPageController'
 import { CreateProductService } from '../../Application/Services/CreateProductService'
@@ -55,13 +56,18 @@ export function wireProductRoutes(ctx: IRouteRegistrationContext): void {
   const getProductService = ctx.container.make('getProductService') as GetProductService
   console.log('[wireProductRoutes] ✓ getProductService resolved')
 
+  console.log('[wireProductRoutes] Resolving productMessages...')
+  const productMessages = ctx.container.make('productMessages') as IProductMessages
+  console.log('[wireProductRoutes] ✓ productMessages resolved')
+
   // 建立控制器
   console.log('[wireProductRoutes] Creating ProductController...')
   const controller = new ProductController(
     createProductService,
     getProductService,
     queryService,
-    logger
+    logger,
+    productMessages
   )
   console.log('[wireProductRoutes] ✓ ProductController created')
 

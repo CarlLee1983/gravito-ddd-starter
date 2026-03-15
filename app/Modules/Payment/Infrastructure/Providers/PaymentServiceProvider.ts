@@ -4,11 +4,13 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 import { InitiatePaymentService } from '../../Application/Services/InitiatePaymentService'
 import { HandlePaymentSuccessService } from '../../Application/Services/HandlePaymentSuccessService'
 import { HandlePaymentFailureService } from '../../Application/Services/HandlePaymentFailureService'
+import { PaymentMessageService } from '../Services/PaymentMessageService'
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 
 /**
@@ -29,6 +31,12 @@ export class PaymentServiceProvider extends ModuleServiceProvider {
 			const orm = getCurrentORM()
 			const db = orm !== 'memory' ? getDatabaseAccess() : undefined
 			return registry.create('payment', orm, db)
+		})
+
+		// 註冊訊息服務
+		container.singleton('paymentMessages', (c) => {
+			const translator = c.make('translator') as ITranslator
+			return new PaymentMessageService(translator)
 		})
 
 		container.singleton('initiatePaymentService', (c: IContainer) => {

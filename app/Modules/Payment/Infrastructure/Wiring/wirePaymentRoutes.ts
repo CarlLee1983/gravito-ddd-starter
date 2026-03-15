@@ -4,6 +4,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
+import type { IPaymentMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPaymentMessages'
 import { PaymentController } from '../../Presentation/Controllers/PaymentController'
 import { PaymentPageController } from '../../Presentation/Controllers/PaymentPageController'
 import { registerPaymentRoutes } from '../../Presentation/Routes/api'
@@ -21,8 +22,9 @@ export function wirePaymentRoutes(ctx: IRouteRegistrationContext): void {
   // 從容器獲取 Repository 實例
   // 注意：此時 RepositoryRegistry 已經由 RepositoryResolver 實例化並註冊到容器
   const repository = ctx.container.make('paymentRepository') as IPaymentRepository
+  const paymentMessages = ctx.container.make('paymentMessages') as IPaymentMessages
 
-  const controller = new PaymentController(repository)
+  const controller = new PaymentController(repository, paymentMessages)
 
   registerPaymentRoutes(router, controller)
 

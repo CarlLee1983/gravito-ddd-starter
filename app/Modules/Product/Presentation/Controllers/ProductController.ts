@@ -8,6 +8,7 @@ import type { CreateProductService } from '../../Application/Services/CreateProd
 import type { GetProductService } from '../../Application/Services/GetProductService'
 import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
+import type { IProductMessages } from '@/Foundation/Infrastructure/Ports/Messages/IProductMessages'
 
 export class ProductController {
   /**
@@ -17,12 +18,14 @@ export class ProductController {
    * @param getProductService - 取得產品服務
    * @param queryService - 產品查詢服務
    * @param logger - 日誌服務
+   * @param productMessages - 產品訊息服務
    */
   constructor(
     private createProductService: CreateProductService,
     private getProductService: GetProductService,
     private queryService: IProductQueryService,
-    private logger: ILogger
+    private logger: ILogger,
+    private productMessages: IProductMessages,
   ) {}
 
   /**
@@ -48,7 +51,7 @@ export class ProductController {
       return ctx.json({
         success: true,
         data: product,
-        message: '產品建立成功'
+        message: this.productMessages.createSuccess()
       }, 201)
     } catch (error) {
       this.logger.error('Failed to create product', { error })

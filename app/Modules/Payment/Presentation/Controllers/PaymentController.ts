@@ -4,6 +4,7 @@
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
+import type { IPaymentMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPaymentMessages'
 import type { IPaymentRepository } from '../../Domain/Repositories/IPaymentRepository'
 import { PaymentId } from '../../Domain/ValueObjects/PaymentId'
 
@@ -13,8 +14,12 @@ import { PaymentId } from '../../Domain/ValueObjects/PaymentId'
 export class PaymentController {
 	/**
 	 * @param repository - 支付 Repository
+	 * @param paymentMessages - 支付訊息服務
 	 */
-	constructor(private repository: IPaymentRepository) {}
+	constructor(
+		private repository: IPaymentRepository,
+		private paymentMessages: IPaymentMessages,
+	) {}
 
 	/**
 	 * 根據 ID 獲取支付記錄
@@ -26,12 +31,12 @@ export class PaymentController {
 		try {
 			const id = ctx.params.id
 			if (!id) {
-				return ctx.json({ success: false, message: '缺少支付ID' }, 400)
+				return ctx.json({ success: false, message: this.paymentMessages.missingPaymentId() }, 400)
 			}
 
 			const payment = await this.repository.findById(PaymentId.from(id))
 			if (!payment) {
-				return ctx.json({ success: false, message: '支付記錄不存在' }, 404)
+				return ctx.json({ success: false, message: this.paymentMessages.paymentNotFound() }, 404)
 			}
 
 			return ctx.json({
@@ -51,7 +56,7 @@ export class PaymentController {
 				}
 			})
 		} catch (error) {
-			const message = error instanceof Error ? error.message : '未知錯誤'
+			const message = error instanceof Error ? error.message : this.paymentMessages.unknown_error()
 			return ctx.json({ success: false, message }, 500)
 		}
 	}

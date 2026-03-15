@@ -1,0 +1,5 @@
+{
+  "missing_payment_id": "缺少支付ID",
+  "payment_not_found": "支付記錄不存在",
+  "unknown_error": "未知錯誤"
+}
