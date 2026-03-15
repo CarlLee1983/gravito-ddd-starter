@@ -7,7 +7,6 @@ dist
 .DS_Store
 .turbo
 gravito.lock.json
-*.db
 .idea
 .vscode
 .history
@@ -43,5 +42,15 @@ types/**/*.js.map
 coverage
 .nyc_output
 
-# SQLite 臨時資料庫檔案
-gravito_shop*
+# 數據庫檔案（所有副本和測試資料）
+*.db
+*.sqlite
+*.sqlite3
+database/*.db
+database/*.sqlite
+storage/**/*.db
+storage/**/*.sqlite
+
+# 臨時和快取目錄
+storage/tmp/**
+storage/framework/cache/**
