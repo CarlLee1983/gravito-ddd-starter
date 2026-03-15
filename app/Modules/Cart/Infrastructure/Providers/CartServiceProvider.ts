@@ -5,11 +5,13 @@
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 import { ProductCatalogAdapter } from '../Adapters/ProductCatalogAdapter'
 import { AddItemToCartService } from '../../Application/Services/AddItemToCartService'
 import { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'
 import { CheckoutCartService } from '../../Application/Services/CheckoutCartService'
 import { ClearCartOnOrderCreatedHandler } from '../../Application/Handlers/ClearCartOnOrderCreatedHandler'
+import { CartMessageService } from '../Services/CartMessageService'
 import type { IProductRepository } from '@/Modules/Product/Domain/Repositories/IProductRepository'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
@@ -30,6 +32,12 @@ export class CartServiceProvider extends ModuleServiceProvider {
 			const orm = getCurrentORM()
 			const db = orm !== 'memory' ? getDatabaseAccess() : undefined
 			return registry.create('cart', orm, db)
+		})
+
+		// 0. 註冊訊息服務
+		container.singleton('cartMessages', (c) => {
+			const translator = c.make('translator') as ITranslator
+			return new CartMessageService(translator)
 		})
 
 		// 1. 註冊防腐層適配器

@@ -1,0 +1,8 @@
+{
+  "not_found": "購物車不存在",
+  "missing_required_fields": "缺少必要欄位",
+  "state_changed_conflict": "購物車狀態已變更，請重新整理頁面後再試",
+  "missing_quantity_field": "缺少數量欄位",
+  "clear_success": "購物車已清空",
+  "checkout_success": "結帳成功，訂單已建立"
+}

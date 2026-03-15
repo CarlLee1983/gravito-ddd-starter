@@ -1,0 +1,8 @@
+{
+  "not_found": "Cart not found",
+  "missing_required_fields": "Missing required fields",
+  "state_changed_conflict": "Cart state has changed. Please refresh the page and try again",
+  "missing_quantity_field": "Missing quantity field",
+  "clear_success": "Cart cleared successfully",
+  "checkout_success": "Checkout successful. Order created"
+}

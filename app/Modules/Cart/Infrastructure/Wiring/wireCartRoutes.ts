@@ -11,6 +11,7 @@ import type { AddItemToCartService } from '../../Application/Services/AddItemToC
 import type { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'
 import type { CheckoutCartService } from '../../Application/Services/CheckoutCartService'
 import type { ICartRepository } from '../../Domain/Repositories/ICartRepository'
+import type { ICartMessages } from '@/Foundation/Infrastructure/Ports/Messages/ICartMessages'
 import { CartController } from '../../Presentation/Controllers/CartController'
 import { CartPageController } from '../../Presentation/Controllers/CartPageController'
 import { registerCartRoutes } from '../../Presentation/Routes/api'
@@ -29,12 +30,14 @@ export function wireCartRoutes(ctx: IRouteRegistrationContext): void {
 	let removeItemService: RemoveItemFromCartService
 	let checkoutService: CheckoutCartService
 	let cartRepository: ICartRepository
+	let cartMessages: ICartMessages
 
 	try {
 		addItemService = ctx.container.make('addItemToCartService') as AddItemToCartService
 		removeItemService = ctx.container.make('removeItemFromCartService') as RemoveItemFromCartService
 		checkoutService = ctx.container.make('checkoutCartService') as CheckoutCartService
 		cartRepository = ctx.container.make('cartRepository') as ICartRepository
+		cartMessages = ctx.container.make('cartMessages') as ICartMessages
 	} catch (error) {
 		console.warn('[wireCartRoutes] Warning: Application services not ready, skipping route registration')
 		return
@@ -44,7 +47,8 @@ export function wireCartRoutes(ctx: IRouteRegistrationContext): void {
 		addItemService,
 		removeItemService,
 		checkoutService,
-		cartRepository
+		cartRepository,
+		cartMessages
 	)
 
 	registerCartRoutes(router, controller)

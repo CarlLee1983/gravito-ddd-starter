@@ -8,6 +8,7 @@ import type { AddItemToCartService } from '../../Application/Services/AddItemToC
 import type { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'
 import type { CheckoutCartService } from '../../Application/Services/CheckoutCartService'
 import type { ICartRepository } from '../../Domain/Repositories/ICartRepository'
+import type { ICartMessages } from '@/Foundation/Infrastructure/Ports/Messages/ICartMessages'
 import { toCartResponseDTO } from '../../Application/DTOs/CartResponseDTO'
 import { OptimisticLockException } from '@/Foundation/Application/OptimisticLockException'
 
@@ -21,7 +22,8 @@ export class CartController {
 		private addItemService: AddItemToCartService,
 		private removeItemService: RemoveItemFromCartService,
 		private checkoutService: CheckoutCartService,
-		private cartRepository: ICartRepository
+		private cartRepository: ICartRepository,
+		private cartMessages: ICartMessages
 	) {}
 
 	/**
@@ -35,7 +37,7 @@ export class CartController {
 
 			const cart = await this.cartRepository.findByUserId(userId!)
 			if (!cart) {
-				return ctx.json({ success: false, error: '購物車不存在' }, 404)
+				return ctx.json({ success: false, error: this.cartMessages.notFound() }, 404)
 			}
 
 			return ctx.json({ success: true, data: toCartResponseDTO(cart) })
@@ -55,7 +57,7 @@ export class CartController {
 			const { productId, quantity } = await ctx.getJsonBody<{ productId: string; quantity: number }>()
 
 			if (!productId || !quantity) {
-				return ctx.json({ success: false, error: '缺少必要欄位' }, 400)
+				return ctx.json({ success: false, error: this.cartMessages.missingRequiredFields() }, 400)
 			}
 
 			const cartDto = await this.addItemService.execute({
@@ -67,7 +69,7 @@ export class CartController {
 			return ctx.json({ success: true, data: cartDto })
 		} catch (error) {
 			if (error instanceof OptimisticLockException) {
-				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+				return ctx.json({ success: false, error: this.cartMessages.stateChangedConflict() }, 409)
 			}
 			const message = String(error)
 			const statusCode = message.includes('不存在') ? 404 : 400
@@ -89,7 +91,7 @@ export class CartController {
 			return ctx.json({ success: true, data: cartDto })
 		} catch (error) {
 			if (error instanceof OptimisticLockException) {
-				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+				return ctx.json({ success: false, error: this.cartMessages.stateChangedConflict() }, 409)
 			}
 			const message = String(error)
 			const statusCode = message.includes('不存在') ? 404 : 400
@@ -108,12 +110,12 @@ export class CartController {
 			const { quantity } = await ctx.getJsonBody<{ quantity: number }>()
 
 			if (!quantity) {
-				return ctx.json({ success: false, error: '缺少數量欄位' }, 400)
+				return ctx.json({ success: false, error: this.cartMessages.missingQuantityField() }, 400)
 			}
 
 			const cart = await this.cartRepository.findByUserId(userId!)
 			if (!cart) {
-				return ctx.json({ success: false, error: '購物車不存在' }, 404)
+				return ctx.json({ success: false, error: this.cartMessages.notFound() }, 404)
 			}
 
 			// 這個功能可以延伸，現在先省略實作
@@ -123,7 +125,7 @@ export class CartController {
 			return ctx.json({ success: true, data: toCartResponseDTO(cart) })
 		} catch (error) {
 			if (error instanceof OptimisticLockException) {
-				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+				return ctx.json({ success: false, error: this.cartMessages.stateChangedConflict() }, 409)
 			}
 			return ctx.json({ success: false, error: String(error) }, 500)
 		}
@@ -140,16 +142,16 @@ export class CartController {
 
 			const cart = await this.cartRepository.findByUserId(userId!)
 			if (!cart) {
-				return ctx.json({ success: false, error: '購物車不存在' }, 404)
+				return ctx.json({ success: false, error: this.cartMessages.notFound() }, 404)
 			}
 
 			cart.clear()
 			await this.cartRepository.save(cart)
 
-			return ctx.json({ success: true, message: '購物車已清空' })
+			return ctx.json({ success: true, message: this.cartMessages.clearSuccess() })
 		} catch (error) {
 			if (error instanceof OptimisticLockException) {
-				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+				return ctx.json({ success: false, error: this.cartMessages.stateChangedConflict() }, 409)
 			}
 			return ctx.json({ success: false, error: String(error) }, 500)
 		}
@@ -166,10 +168,10 @@ export class CartController {
 
 			const cartDto = await this.checkoutService.execute(userId!)
 
-			return ctx.json({ success: true, data: cartDto, message: '結帳成功，訂單已建立' })
+			return ctx.json({ success: true, data: cartDto, message: this.cartMessages.checkoutSuccess() })
 		} catch (error) {
 			if (error instanceof OptimisticLockException) {
-				return ctx.json({ success: false, error: '購物車狀態已變更，請重新整理頁面後再試' }, 409)
+				return ctx.json({ success: false, error: this.cartMessages.stateChangedConflict() }, 409)
 			}
 			const message = String(error)
 			const statusCode = message.includes('不存在') ? 404 : 400
