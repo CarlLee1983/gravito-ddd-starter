@@ -4,6 +4,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
+import type { IOrderMessages } from '@/Foundation/Infrastructure/Ports/Messages/IOrderMessages'
 import { OrderController } from '../../Presentation/Controllers/OrderController'
 import { OrderPageController } from '../../Presentation/Controllers/OrderPageController'
 import { registerOrderRoutes } from '../../Presentation/Routes/api'
@@ -27,9 +28,10 @@ export function wireOrderRoutes(ctx: IRouteRegistrationContext): void {
   // 從容器獲取依賴
   const repository = ctx.container.make('orderRepository') as IOrderRepository
   const placeOrderService = ctx.container.make('placeOrderService') as PlaceOrderService
+  const orderMessages = ctx.container.make('orderMessages') as IOrderMessages
 
   // 實例化 API 控制器並註冊 API 路由
-  const controller = new OrderController(placeOrderService, repository)
+  const controller = new OrderController(placeOrderService, repository, orderMessages)
   registerOrderRoutes(router, controller)
 
   // 實例化頁面控制器並註冊頁面路由

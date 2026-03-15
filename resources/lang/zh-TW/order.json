@@ -1,0 +1,11 @@
+{
+  "not_found": "訂單不存在",
+  "missing_required_fields": "缺少必要字段: userId 和 lines",
+  "create_failed": "建立訂單失敗",
+  "get_failed": "獲取訂單失敗",
+  "get_list_failed": "獲取訂單列表失敗",
+  "confirm_failed": "確認訂單失敗",
+  "ship_failed": "發貨失敗",
+  "cancel_reason_required": "取消原因不能為空",
+  "cancel_failed": "取消訂單失敗"
+}

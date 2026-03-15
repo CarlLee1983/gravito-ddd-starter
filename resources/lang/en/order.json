@@ -1,0 +1,11 @@
+{
+  "not_found": "Order not found",
+  "missing_required_fields": "Missing required fields: userId and lines",
+  "create_failed": "Failed to create order",
+  "get_failed": "Failed to retrieve order",
+  "get_list_failed": "Failed to retrieve order list",
+  "confirm_failed": "Failed to confirm order",
+  "ship_failed": "Failed to ship order",
+  "cancel_reason_required": "Cancellation reason is required",
+  "cancel_failed": "Failed to cancel order"
+}

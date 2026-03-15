@@ -4,6 +4,7 @@
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
+import type { IOrderMessages } from '@/Foundation/Infrastructure/Ports/Messages/IOrderMessages'
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { OrderId } from '../../Domain/ValueObjects/OrderId'
 import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
@@ -25,6 +26,7 @@ export class OrderController {
   constructor(
     private readonly placeOrderService: PlaceOrderService,
     private readonly orderRepository: IOrderRepository,
+    private readonly orderMessages: IOrderMessages,
   ) {}
 
   /**
@@ -41,7 +43,7 @@ export class OrderController {
       if (!dto.userId || !dto.lines || dto.lines.length === 0) {
         return ctx.json({
           success: false,
-          error: '缺少必要字段: userId 和 lines',
+          error: this.orderMessages.missingRequiredFields(),
         }, 400)
       }
 
@@ -55,7 +57,7 @@ export class OrderController {
     } catch (error) {
       return ctx.json({
         success: false,
-        error: error instanceof Error ? error.message : '建立訂單失敗',
+        error: error instanceof Error ? error.message : this.orderMessages.createFailed(),
       }, 400)
     }
   }
@@ -75,7 +77,7 @@ export class OrderController {
       if (!order) {
         return ctx.json({
           success: false,
-          error: '訂單不存在',
+          error: this.orderMessages.notFound(),
         }, 404)
       }
 
@@ -86,7 +88,7 @@ export class OrderController {
     } catch (error) {
       return ctx.json({
         success: false,
-        error: error instanceof Error ? error.message : '獲取訂單失敗',
+        error: error instanceof Error ? error.message : this.orderMessages.getFailed(),
       }, 400)
     }
   }
@@ -109,7 +111,7 @@ export class OrderController {
     } catch (error) {
       return ctx.json({
         success: false,
-        error: error instanceof Error ? error.message : '獲取訂單列表失敗',
+        error: error instanceof Error ? error.message : this.orderMessages.getListFailed(),
       }, 400)
     }
   }
@@ -131,7 +133,7 @@ export class OrderController {
       if (!order) {
         return ctx.json({
           success: false,
-          error: '訂單不存在',
+          error: this.orderMessages.notFound(),
         }, 404)
       }
 
@@ -145,7 +147,7 @@ export class OrderController {
     } catch (error) {
       return ctx.json({
         success: false,
-        error: error instanceof Error ? error.message : '確認訂單失敗',
+        error: error instanceof Error ? error.message : this.orderMessages.confirmFailed(),
       }, 400)
     }
   }
@@ -166,7 +168,7 @@ export class OrderController {
       if (!order) {
         return ctx.json({
           success: false,
-          error: '訂單不存在',
+          error: this.orderMessages.notFound(),
         }, 404)
       }
 
@@ -180,7 +182,7 @@ export class OrderController {
     } catch (error) {
       return ctx.json({
         success: false,
-        error: error instanceof Error ? error.message : '發貨失敗',
+        error: error instanceof Error ? error.message : this.orderMessages.shipFailed(),
       }, 400)
     }
   }
@@ -201,14 +203,14 @@ export class OrderController {
       if (!order) {
         return ctx.json({
           success: false,
-          error: '訂單不存在',
+          error: this.orderMessages.notFound(),
         }, 404)
       }
 
       if (!reason) {
         return ctx.json({
           success: false,
-          error: '取消原因不能為空',
+          error: this.orderMessages.cancelReasonRequired(),
         }, 400)
       }
 
@@ -222,7 +224,7 @@ export class OrderController {
     } catch (error) {
       return ctx.json({
         success: false,
-        error: error instanceof Error ? error.message : '取消訂單失敗',
+        error: error instanceof Error ? error.message : this.orderMessages.cancelFailed(),
       }, 400)
     }
   }

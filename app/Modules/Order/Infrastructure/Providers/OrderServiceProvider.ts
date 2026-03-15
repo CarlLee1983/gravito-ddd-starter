@@ -4,8 +4,10 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
+import { OrderMessageService } from '../Services/OrderMessageService'
 import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
 import { getRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
@@ -33,6 +35,12 @@ export class OrderServiceProvider extends ModuleServiceProvider {
       const orm = getCurrentORM()
       const db = orm !== 'memory' ? getDatabaseAccess() : undefined
       return registry.create('order', orm, db)
+    })
+
+    // 註冊訊息服務
+    container.singleton('orderMessages', (c) => {
+      const translator = c.make('translator') as ITranslator
+      return new OrderMessageService(translator)
     })
 
     // 註冊應用層服務

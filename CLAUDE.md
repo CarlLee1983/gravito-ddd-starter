@@ -234,85 +234,183 @@ Port 介面位置：`src/Shared/Infrastructure/Ports/`
 - SystemChecks 改為 Map 結構，支持動態組件列表
 - 優勢：Health Domain 完全與基礎設施選擇無關
 
-## 國際化 (i18n) 與訊息管理 (2026-03-13)
+## 國際化 (i18n) 與訊息管理 (2026-03-15)
+
+### 核心原則
+
+所有 API 回應、錯誤訊息、成功訊息都應該使用 i18n 系統，避免在代碼中寫死訊息。這確保：
+- ✅ **易於本地化** - 支持多語言
+- ✅ **編譯時檢查** - 無拼寫錯誤風險
+- ✅ **集中管理** - 單一事實來源
+- ✅ **易於測試** - 可 Mock Message Service
 
 ### 架構設計
 
 ```
 Domain 層：無 i18n（零依賴）✅
 Application 層：無 ITranslator（只用 Port）✅
-Presentation 層：使用 IAuthMessages 等 Port ✅
-Infrastructure 層：AuthMessageService 等實現 ✅
+Presentation 層：使用 IXxxMessages 等 Port ✅
+Infrastructure 層：XxxMessageService 等實現 ✅
 ```
 
-### 推薦方案：Message Service Object (方案 4)
+### 推薦方案：Message Service Pattern
 
-**API 回應訊息（Controller）**：使用 Message Service Pattern
+**所有 Controller 訊息都應使用 Message Service**
+
 ```typescript
-// ✅ 簡潔 + 編譯檢查
-message: this.authMessages.loginInvalidCredentials()
+// ✅ 推薦：編譯時檢查 + 簡潔
+error: this.cartMessages.notFound()
+message: this.cartMessages.clearSuccess()
 
-// ❌ 不用冗長的 translator.trans()
-message: this.translator.trans('auth.login.invalid_credentials')
+// ❌ 禁止：寫死訊息字串
+error: '購物車不存在'
+message: '購物車已清空'
+
+// ⚠️ 不推薦：冗長的 translator.trans()
+message: this.translator.trans('cart.not_found')
 ```
 
-**Email 訊息**：
-- 短期（現在）：直接注入 `ITranslator`
-- 長期（複雜時）：創建 `IEmailMessages` Service
+### 實施步驟
 
-### 實施步驟（快速）
+#### 步驟 1️⃣：建立 Port 介面
 
-1. **創建 Port 介面**
-   ```typescript
-   // app/Shared/Infrastructure/Ports/Messages/IAuthMessages.ts
-   export interface IAuthMessages {
-     loginInvalidCredentials(): string
-     loginFailed(): string
-     // ...
-   }
-   ```
+```typescript
+// app/Foundation/Infrastructure/Ports/Messages/ICartMessages.ts
+export interface ICartMessages {
+	notFound(): string
+	missingRequiredFields(): string
+	stateChangedConflict(): string
+	clearSuccess(): string
+	checkoutSuccess(): string
+}
+```
 
-2. **實現 Service**
-   ```typescript
-   // app/Modules/Session/Infrastructure/Services/AuthMessageService.ts
-   export class AuthMessageService implements IAuthMessages {
-     constructor(private translator: ITranslator) {}
-     loginInvalidCredentials(): string {
-       return this.translator.trans('auth.login.invalid_credentials')
-     }
-   }
-   ```
+#### 步驟 2️⃣：建立翻譯檔案
 
-3. **在 ServiceProvider 註冊**
-   ```typescript
-   container.singleton('authMessages', (c) => {
-     const translator = c.make('translator')
-     return new AuthMessageService(translator)
-   })
-   ```
+```json
+// resources/lang/zh-TW/cart.json
+{
+  "not_found": "購物車不存在",
+  "missing_required_fields": "缺少必要欄位",
+  "state_changed_conflict": "購物車狀態已變更，請重新整理頁面後再試",
+  "clear_success": "購物車已清空",
+  "checkout_success": "結帳成功，訂單已建立"
+}
+```
 
-4. **在 Controller 中注入並使用**
-   ```typescript
-   constructor(
-     private authMessages: IAuthMessages  // ← 注入
-   ) {}
+```json
+// resources/lang/en/cart.json
+{
+  "not_found": "Cart not found",
+  "missing_required_fields": "Missing required fields",
+  "state_changed_conflict": "Cart state has changed. Please refresh and try again",
+  "clear_success": "Cart cleared successfully",
+  "checkout_success": "Checkout successful. Order created"
+}
+```
 
-   message: this.authMessages.loginInvalidCredentials()  // ← 簡潔調用
-   ```
+#### 步驟 3️⃣：實現 Message Service
+
+```typescript
+// app/Modules/Cart/Infrastructure/Services/CartMessageService.ts
+import type { ICartMessages } from '@/Foundation/Infrastructure/Ports/Messages/ICartMessages'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
+
+export class CartMessageService implements ICartMessages {
+	constructor(private translator: ITranslator) {}
+
+	notFound(): string {
+		return this.translator.trans('cart.not_found')
+	}
+
+	missingRequiredFields(): string {
+		return this.translator.trans('cart.missing_required_fields')
+	}
+
+	stateChangedConflict(): string {
+		return this.translator.trans('cart.state_changed_conflict')
+	}
+
+	clearSuccess(): string {
+		return this.translator.trans('cart.clear_success')
+	}
+
+	checkoutSuccess(): string {
+		return this.translator.trans('cart.checkout_success')
+	}
+}
+```
+
+#### 步驟 4️⃣：在 ServiceProvider 註冊
+
+```typescript
+// app/Modules/Cart/Infrastructure/Providers/CartServiceProvider.ts
+export class CartServiceProvider extends ModuleServiceProvider {
+	override register(container: IContainer): void {
+		// 註冊訊息服務
+		container.singleton('cartMessages', (c) => {
+			const translator = c.make('translator') as ITranslator
+			return new CartMessageService(translator)
+		})
+
+		// ... 其他註冊
+	}
+}
+```
+
+#### 步驟 5️⃣：在 Controller 中使用
+
+```typescript
+// app/Modules/Cart/Presentation/Controllers/CartController.ts
+export class CartController {
+	constructor(
+		private cartRepository: ICartRepository,
+		private cartMessages: ICartMessages  // ← 注入
+	) {}
+
+	async getCart(ctx: IHttpContext): Promise<Response> {
+		const cart = await this.cartRepository.findByUserId(userId)
+		if (!cart) {
+			// ✅ 使用 Message Service
+			return ctx.json({ success: false, error: this.cartMessages.notFound() }, 404)
+		}
+		return ctx.json({ success: true, data: cart })
+	}
+}
+```
 
 ### 翻譯檔案結構
 
 ```
-locales/
+resources/lang/
 ├── en/
-│   ├── auth.json          # API 訊息
-│   ├── email.json         # Email 訊息
-│   └── common.json        # 通用訊息
+│   ├── auth.json        # Session 模組訊息
+│   ├── cart.json        # Cart 模組訊息
+│   ├── order.json       # Order 模組訊息
+│   ├── payment.json     # Payment 模組訊息
+│   └── ...
 └── zh-TW/
     ├── auth.json
-    ├── email.json
-    └── common.json
+    ├── cart.json
+    ├── order.json
+    ├── payment.json
+    └── ...
 ```
+
+### Message Service 清單
+
+當開發新的 Module 時，檢查是否需要建立 Message Service：
+
+| 模組 | Port 介面 | Message Service | 狀態 |
+|------|---------|-----------------|------|
+| Session | IAuthMessages | AuthMessageService | ✅ 完成 |
+| Cart | ICartMessages | CartMessageService | ✅ 完成 |
+| Order | IOrderMessages | OrderMessageService | ⏳ TODO |
+| Payment | IPaymentMessages | PaymentMessageService | ⏳ TODO |
+| Product | IProductMessages | ProductMessageService | ⏳ TODO |
+| User | IUserMessages | UserMessageService | ⏳ TODO |
+| Post | IPostMessages | PostMessageService | ✅ 完成 |
+| Health | IHealthMessages | HealthMessageService | ✅ 完成 |
 
 ### 核心好處
 
@@ -322,6 +420,7 @@ locales/
 | **編譯時檢查** | ❌ → ✅ |
 | **可讀性** | ↑ 顯著 |
 | **可測試性** | ⚠️ → ✅ |
+| **維護性** | ↑ 集中管理 |
 
 ### 詳細文檔
 
@@ -329,6 +428,78 @@ locales/
 - [I18N_GUIDE.md](./docs/09-Internationalization/I18N_GUIDE.md) - 基礎使用
 - [TRANSLATION_SHORTHAND_IMPLEMENTATION.md](./docs/09-Internationalization/TRANSLATION_SHORTHAND_IMPLEMENTATION.md) - 實施步驟
 - [EMAIL_MESSAGE_IMPLEMENTATION_GUIDE.md](./docs/09-Internationalization/EMAIL_MESSAGE_IMPLEMENTATION_GUIDE.md) - Email 訊息設計
+
+## Controller 開發檢查清單
+
+每個 Controller 都應遵循以下規範：
+
+### ✅ 必須檢查項目
+
+- [ ] **無寫死訊息** - 所有成功/錯誤訊息都使用 IXxxMessages Service
+- [ ] **異常處理** - 使用 try-catch 捕獲所有可能的異常
+- [ ] **狀態碼正確** - 4xx/5xx 錯誤使用正確的 HTTP 狀態碼
+- [ ] **訊息一致性** - 同一類型的錯誤使用相同的訊息
+- [ ] **無 console.log** - 所有日誌使用 ILogger
+- [ ] **參數驗證** - 驗證必填參數和資料格式
+- [ ] **使用 DTOs** - 從 ctx.json/ctx.getJsonBody 轉換為 DTO
+- [ ] **無直接 ORM** - Controller 不依賴 ORM，只使用 Repository
+
+### 📝 範例 - 完整的 Controller 模式
+
+```typescript
+export class CartController {
+	constructor(
+		private addItemService: AddItemToCartService,
+		private cartRepository: ICartRepository,
+		private cartMessages: ICartMessages  // ← Message Service 注入
+	) {}
+
+	/**
+	 * 加入商品至購物車
+	 *
+	 * POST /carts/:userId/items
+	 */
+	async addItem(ctx: IHttpContext): Promise<Response> {
+		try {
+			// 1. 驗證參數
+			const { userId } = ctx.params
+			const { productId, quantity } = await ctx.getJsonBody<{
+				productId: string
+				quantity: number
+			}>()
+
+			if (!productId || !quantity) {
+				// ✅ 使用 Message Service
+				return ctx.json(
+					{ success: false, error: this.cartMessages.missingRequiredFields() },
+					400
+				)
+			}
+
+			// 2. 業務邏輯（委派至 Application Service）
+			const cartDto = await this.addItemService.execute({
+				userId: userId!,
+				productId,
+				quantity: Number(quantity),
+			})
+
+			// 3. 回應成功
+			return ctx.json({ success: true, data: cartDto })
+		} catch (error) {
+			// 4. 異常處理
+			if (error instanceof OptimisticLockException) {
+				return ctx.json(
+					{ success: false, error: this.cartMessages.stateChangedConflict() },
+					409
+				)
+			}
+			const message = String(error)
+			const statusCode = message.includes('不存在') ? 404 : 400
+			return ctx.json({ success: false, error: message }, statusCode)
+		}
+	}
+}
+```
 
 ## 開發最佳實踐
 
@@ -345,6 +516,14 @@ locales/
 ---
 
 ## 最近更新摘要
+
+### 2026-03-15 - i18n 推廣與 Controller 檢查清單 ✨
+
+- ✅ **Cart Module i18n 完成**：ICartMessages + CartMessageService + 中英翻譯
+- ✅ **CLAUDE.md 擴展**：詳細的 i18n 實施步驟 + 5 步驟指南
+- ✅ **Controller 檢查清單**：9 項必檢項目 + 完整範例代碼
+- ✅ **Message Service 清單**：追蹤各模組 i18n 實施狀態
+- 🎯 **下一步**：Order、Payment、Product、User 模組補齊 i18n
 
 ### 2026-03-13 - 國際化系統完整實施 ✨
 
