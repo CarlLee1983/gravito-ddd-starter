@@ -109,41 +109,32 @@ export function getDatabaseAccess() {
 }
 
 /**
- * 使用模式
+ * P4 遷移後的使用模式
  *
- * 每個模組在自己的 registerXRepositories.ts 中定義工廠：
+ * 每個模組在 registerXRepositories 中直接向容器註冊 Repository：
  *
  * ```typescript
  * // src/Modules/User/Infrastructure/Providers/registerUserRepositories.ts
-* import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
-   * import { getRegistry } from '@wiring/RepositoryRegistry'
- *
- * function createUserRepository(orm: string, db?: IDatabaseAccess): any {
- *   switch (orm) {
- *     case 'memory':
- *       return new UserRepository()
- *     case 'drizzle':
- *       return new DrizzleUserRepository(db!)
- *     // ...
- *   }
- * }
- *
- * export function registerUserRepositories(): void {
- *   getRegistry().register('user', createUserRepository)
+ * export function registerUserRepositories(
+ *   db: IDatabaseAccess,
+ *   eventDispatcher?: IEventDispatcher,
+ *   registry?: RepositoryRegistry,
+ *   container?: any
+ * ): void {
+ *   // 直接向容器註冊 Repository 實例
+ *   container.singleton('userRepository', () => {
+ *     return new UserRepository(db, eventDispatcher)
+ *   })
  * }
  * ```
  *
- * 在 ServiceProvider 中使用 Registry：
+ * 在 ServiceProvider 中直接取用：
  *
  * ```typescript
  * // src/Modules/User/Infrastructure/Providers/UserServiceProvider.ts
  * override register(container: IContainer): void {
- *   container.singleton('userRepository', () => {
- *     const registry = getRegistry()
- *     const orm = getCurrentORM()
- *     const db = orm !== 'memory' ? getDatabaseAccess() : undefined
- *     return registry.create('user', orm, db)
- *   })
+ *   // userRepository 已由 registerUserRepositories 向容器註冊
+ *   // 無需在此重複註冊
  * }
  * ```
  */

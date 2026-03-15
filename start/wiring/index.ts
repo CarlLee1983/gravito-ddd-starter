@@ -10,12 +10,15 @@
 // 核心導出（應用啟動與 Auto-Wiring 使用）
 export { DatabaseAccessBuilder, createDatabaseAccess } from './DatabaseAccessBuilder'
 export { getCurrentORM, getDatabaseAccess } from './RepositoryFactory'
-export { initializeRegistry, getRegistry, resetRegistry } from './RepositoryRegistry'
+export { RepositoryRegistry } from './RepositoryRegistry'
 export { createRepositoryFactory } from './RepositoryFactoryGenerator'
 export { ModuleAutoWirer } from './ModuleAutoWirer'
 
-// P3 遷移：RepositoryResolver 已移除，使用容器式 Repository 解析
-// 新模式：在 registerRepositories 中向容器直接註冊 Repository 實例
+// P4 遷移完成：全局單例已廢棄
+// - RepositoryResolver 已移除
+// - getRegistry() / initializeRegistry() / resetRegistry() 已廢棄
+// - 所有 Repository 實例由 registerRepositories 向容器直接註冊
+// - 容器完全管理所有依賴，無全局狀態
 
 /**
  * 模組路由接線已改為「模組內自管」：

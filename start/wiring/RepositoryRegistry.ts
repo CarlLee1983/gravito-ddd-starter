@@ -6,22 +6,15 @@
  * - 接線層 (Wiring Layer)：連接領域契約與基礎設施實現的關鍵組件。
  * - 職責：管理所有模組的 Repository 工廠，支援 ORM 的動態切換與解耦。
  *
+ * P4 遷移（已完成）：
+ * - ✅ 移除全局單例（globalRegistry）
+ * - ✅ 容器管理所有 RepositoryRegistry 實例
+ * - ✅ 無全局狀態依賴
+ *
  * 設計原則：
- * - 每個模組自己註冊其 Repository 工廠
- * - 避免 RepositoryFactory 的單點擁堵（monolithic factory）
- * - 遵循開放封閉原則（Open/Closed Principle）
+ * - 每個模組在 registerRepositories 中向容器註冊 Repository 實例
+ * - RepositoryRegistry 僅作為 Registry 服務，由容器管理
  * - 新增模組時無需修改此檔案
- *
- * 架構：
- * ```
- * Module A                          Module B
- * └─ registerRepositories()         └─ registerRepositories()
- *    └─ registry.register()            └─ registry.register()
- *
- * All → RepositoryRegistry
- *       └─ RepositoryFactory
- *          └─ ORM 選擇邏輯
- * ```
  */
 
 import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
@@ -40,13 +33,15 @@ export type RepositoryFactory = (
 ) => any
 
 /**
- * Repository Registry 類別 - 集中管理所有模組的 Repository 工廠
+ * Repository Registry 類別
  *
- * 好處：
- * - ✅ 每個模組在自己的檔案中註冊工廠
- * - ✅ RepositoryFactory 不需要知道所有模組
- * - ✅ 新增模組時無需修改此檔案
- * - ✅ 易於測試和模擬
+ * P4 遷移後的角色：
+ * - 純服務類別，由容器管理
+ * - 不再有全局單例
+ * - 支援模組向容器直接註冊 Repository 實例時進行驗證
+ *
+ * 使用場景（已棄用）：
+ * - 早期 ORM 工廠註冊（已改為直接向容器註冊）
  */
 export class RepositoryRegistry {
 	/** 儲存已註冊工廠的映射表 */
@@ -65,12 +60,12 @@ export class RepositoryRegistry {
 	 *   if (orm === 'drizzle') return new DrizzleUserRepository(db!)
 	 * })
 	 */
-	register(type: string, factory: RepositoryFactory, logger?: any): void {
+	register(type: string, factory: RepositoryFactory): void {
 		if (this.factories.has(type)) {
-			const message = `⚠️ Repository type "${type}" 已被註冊，將覆寫`
-			if (logger) {
-				logger.warn(message)
-			}
+			throw new Error(
+				`❌ Repository type "${type}" 已被註冊。\n` +
+					`若要更新，請先調用 unregister("${type}") 或在初始化時使用不同的類型。`
+			)
 		}
 		this.factories.set(type, factory)
 	}
@@ -119,45 +114,42 @@ export class RepositoryRegistry {
 }
 
 /**
- * 全局 Registry 單例參考（向後相容）
+ * @deprecated P4 遷移：全局單例已移除
  *
- * 遷移中：優先使用容器管理的 Registry
- * 但保留全局單例以支持舊的 getRegistry() 呼叫
- */
-let globalRegistry: RepositoryRegistry | null = null
-
-/**
- * 初始化全局註冊表（向後相容）
- *
- * ⚠️ 棄用：應改用容器管理的 Registry
- * 新代碼應使用: container.make("repositoryRegistry")
+ * 替代方案：使用容器管理的 RepositoryRegistry
+ * ```typescript
+ * const registry = container.make('repositoryRegistry') as RepositoryRegistry
+ * ```
  */
 export function initializeRegistry(): RepositoryRegistry {
-	if (!globalRegistry) {
-		globalRegistry = new RepositoryRegistry()
-	}
-	return globalRegistry
+	throw new Error(
+		'❌ initializeRegistry() 已廢棄 (P4 遷移)。\n' +
+			'應改用容器管理的 Registry：\n' +
+			'  const registry = container.make("repositoryRegistry")'
+	)
 }
 
 /**
- * 獲取全局 Registry 實例（向後相容）
+ * @deprecated P4 遷移：全局單例已移除
  *
- * ⚠️ 棄用：應改用容器管理的 Registry
- * 新代碼應使用: container.make("repositoryRegistry")
- *
- * 此函數保留以支持現有的 Service Provider 實現
- * Phase 3 遷移時改為注入容器實例
+ * 替代方案：使用容器管理的 RepositoryRegistry
+ * ```typescript
+ * const registry = container.make('repositoryRegistry') as RepositoryRegistry
+ * ```
  */
 export function getRegistry(): RepositoryRegistry {
-	if (!globalRegistry) {
-		globalRegistry = new RepositoryRegistry()
-	}
-	return globalRegistry
+	throw new Error(
+		'❌ getRegistry() 已廢棄 (P4 遷移)。\n' +
+			'應改用容器管理的 Registry：\n' +
+			'  const registry = container.make("repositoryRegistry")'
+	)
 }
 
 /**
- * 重設註冊表（向後相容，用於測試隔離）
+ * @deprecated P4 遷移：全局單例已移除
+ *
+ * 此函數已無實際作用
  */
 export function resetRegistry(): void {
-	globalRegistry = null
+	// P4 遷移後，不再有全局單例需要重置
 }
