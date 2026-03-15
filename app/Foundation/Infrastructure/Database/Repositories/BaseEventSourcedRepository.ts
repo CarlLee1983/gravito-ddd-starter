@@ -58,10 +58,9 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 	 * 支援樂觀鎖版本控制與事件存儲
 	 *
 	 * **流程**:
-	 * 1. 樂觀鎖檢查與版本更新
-	 * 2. 事件存儲持久化 (如有 EventStore)
-	 * 3. 領域/整合事件分派 (如有 EventDispatcher)
-	 * 4. 標記事件已提交
+	 * 1. 在事務中：樂觀鎖檢查、版本更新、事件存儲持久化 (原子操作)
+	 * 2. 事務外：領域/整合事件分派 (DB 已提交後才發事件，防止「事件已發但 DB 回滾」)
+	 * 3. 標記事件已提交
 	 *
 	 * @param entity - 聚合根實例
 	 * @throws OptimisticLockException - 版本衝突時拋出
@@ -71,42 +70,47 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 	async save(entity: T): Promise<void> {
 		const row = this.toRow(entity)
 		const tableName = this.getTableName()
-		const existing = await this.db.table(tableName).where('id', '=', entity.id).first()
 
-		if (existing) {
-			// === 更新現有實體（使用樂觀鎖）===
-			const currentVersion = (existing.version as number) ?? 0
-			const newVersion = currentVersion + 1
+		// 🔹 事務內：讀取、驗證、更新（原子性操作，失敗時回滾）
+		await this.db.transaction(async (trx) => {
+			const existing = await trx.table(tableName).where('id', '=', entity.id).first()
 
-			// 驗證版本衝突：檢查是否還有符合舊版本條件的記錄
-			const beforeUpdate = await this.db
-				.table(tableName)
-				.where('id', '=', entity.id)
-				.where('version', '=', currentVersion)
-				.first()
+			if (existing) {
+				// === 更新現有實體（使用樂觀鎖）===
+				const currentVersion = (existing.version as number) ?? 0
+				const newVersion = currentVersion + 1
 
-			if (!beforeUpdate) {
-				// 版本不匹配，表示已被其他操作更新
-				throw new OptimisticLockException(this.getAggregateTypeName(), entity.id, currentVersion)
+				// 驗證版本衝突：檢查是否還有符合舊版本條件的記錄
+				const beforeUpdate = await trx
+					.table(tableName)
+					.where('id', '=', entity.id)
+					.where('version', '=', currentVersion)
+					.first()
+
+				if (!beforeUpdate) {
+					// 版本不匹配，表示已被其他操作更新
+					throw new OptimisticLockException(this.getAggregateTypeName(), entity.id, currentVersion)
+				}
+
+				// 條件更新：WHERE id = ? AND version = ?
+				await trx
+					.table(tableName)
+					.where('id', '=', entity.id)
+					.where('version', '=', currentVersion)
+					.update({ ...row, version: newVersion })
+			} else {
+				// === 新增實體，初始版本為 0 ===
+				await trx.table(tableName).insert({ ...row, version: 0 })
 			}
 
-			// 條件更新：WHERE id = ? AND version = ?
-			await this.db
-				.table(tableName)
-				.where('id', '=', entity.id)
-				.where('version', '=', currentVersion)
-				.update({ ...row, version: newVersion })
-		} else {
-			// === 新增實體，初始版本為 0 ===
-			await this.db.table(tableName).insert({ ...row, version: 0 })
-		}
+			// ✨ 若注入了事件存儲，在事務內先持久化事件
+			if (this.eventStore) {
+				await this.persistEventsToStore(entity)
+			}
+		})
 
-		// ✨ 若注入了事件存儲，先持久化事件（在清除之前）
-		if (this.eventStore) {
-			await this.persistEventsToStore(entity)
-		}
-
-		// ✨ 若注入了分發器，則分發事件
+		// 🔹 事務外：DB 已提交後才分派事件
+		// 優勢：即使事件分派失敗，DB 狀態仍已保存
 		if (this.eventDispatcher) {
 			await this.dispatchEvents(entity)
 		}
