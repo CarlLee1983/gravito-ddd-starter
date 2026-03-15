@@ -303,7 +303,7 @@ describe('Payment Application Services', () => {
 				new Amount(dto.amountCents),
 				PaymentMethod.from(dto.paymentMethod)
 			)
-			payment.clearDomainEvents() // 清空建立時的事件
+			payment.markEventsAsCommitted() // 清空建立時的事件
 
 			mockRepository.findById = mock(async () => payment)
 			successService = new HandlePaymentSuccessService(mockRepository)
@@ -332,7 +332,7 @@ describe('Payment Application Services', () => {
 				new Amount(dto.amountCents),
 				PaymentMethod.from(dto.paymentMethod)
 			)
-			payment.clearDomainEvents()
+			payment.markEventsAsCommitted()
 
 			mockRepository.findById = mock(async () => payment)
 			failureService = new HandlePaymentFailureService(mockRepository)

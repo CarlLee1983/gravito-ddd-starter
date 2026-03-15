@@ -39,7 +39,7 @@ describe('Payment Integration Scenarios', () => {
 			expect(payment.transactionId?.value).toBe('SHOP-TXN-001')
 
 			// 驗證事件
-			const events = payment.getDomainEvents()
+			const events = payment.getUncommittedEvents()
 			expect(events.some(e => e instanceof PaymentInitiated)).toBe(true)
 			expect(events.some(e => e instanceof PaymentSucceeded)).toBe(true)
 		})
@@ -228,15 +228,15 @@ describe('Payment Integration Scenarios', () => {
 			)
 
 			// 檢查初始事件
-			let events = payment.getDomainEvents()
+			let events = payment.getUncommittedEvents()
 			expect(events.some(e => e instanceof PaymentInitiated)).toBe(true)
 
 			// 清空並標記成功
-			payment.clearDomainEvents()
+			payment.markEventsAsCommitted()
 			payment.succeed(new TransactionId('TXN-EVENT-001'))
 
 			// 檢查成功事件
-			events = payment.getDomainEvents()
+			events = payment.getUncommittedEvents()
 			expect(events.some(e => e instanceof PaymentSucceeded)).toBe(true)
 			const succeededEvent = events.find(e => e instanceof PaymentSucceeded) as PaymentSucceeded
 			expect(succeededEvent.orderId).toBe('ORD-EVENT-001')
@@ -250,10 +250,10 @@ describe('Payment Integration Scenarios', () => {
 				PaymentMethod.creditCard()
 			)
 
-			payment.clearDomainEvents()
+			payment.markEventsAsCommitted()
 			payment.fail('測試失敗')
 
-			const events = payment.getDomainEvents()
+			const events = payment.getUncommittedEvents()
 			expect(events.some(e => e instanceof PaymentFailed)).toBe(true)
 			const failedEvent = events.find(e => e instanceof PaymentFailed) as PaymentFailed
 			expect(failedEvent.reason).toBe('測試失敗')
@@ -279,7 +279,7 @@ describe('Payment Integration Scenarios', () => {
 
 			payment.succeed(new TransactionId('TXN-CROSS-001'))
 
-			const events = payment.getDomainEvents()
+			const events = payment.getUncommittedEvents()
 			const succeededEvent = events.find(e => e instanceof PaymentSucceeded)
 
 			if (succeededEvent) {

@@ -27,7 +27,7 @@ describe('Payment Aggregate', () => {
 		})
 
 		it('應該發佈PaymentInitiated事件', () => {
-			const events = payment.getDomainEvents()
+			const events = payment.getUncommittedEvents()
 			expect(events.length).toBe(1)
 			expect(events[0] instanceof PaymentInitiated).toBe(true)
 		})
@@ -53,7 +53,7 @@ describe('Payment Aggregate', () => {
 			const txId = new TransactionId('TXN-456')
 			payment.succeed(txId)
 
-			const events = payment.getDomainEvents()
+			const events = payment.getUncommittedEvents()
 			const succeededEvent = events.find(e => e instanceof PaymentSucceeded)
 			expect(succeededEvent).toBeDefined()
 			expect((succeededEvent as PaymentSucceeded).transactionId.value).toBe('TXN-456')
@@ -88,7 +88,7 @@ describe('Payment Aggregate', () => {
 		it('應該發佈PaymentFailed事件', () => {
 			payment.fail('卡片被拒絕')
 
-			const events = payment.getDomainEvents()
+			const events = payment.getUncommittedEvents()
 			const failedEvent = events.find(e => e instanceof PaymentFailed)
 			expect(failedEvent).toBeDefined()
 			expect((failedEvent as PaymentFailed).reason).toBe('卡片被拒絕')
@@ -257,11 +257,11 @@ describe('Payment Aggregate', () => {
 
 		it('應該清空事件歷史', () => {
 			payment.succeed(new TransactionId('TXN-123'))
-			let events = payment.getDomainEvents()
+			let events = payment.getUncommittedEvents()
 			expect(events.length).toBeGreaterThan(0)
 
-			payment.clearDomainEvents()
-			events = payment.getDomainEvents()
+			payment.markEventsAsCommitted()
+			events = payment.getUncommittedEvents()
 			expect(events.length).toBe(0)
 		})
 	})
