@@ -111,7 +111,7 @@ export class ModuleAutoWirer {
 
 		for (const { def } of modulesFound) {
 			if (def.registerRepositories) {
-				def.registerRepositories(db, eventDispatcher, repositoryRegistry)
+				def.registerRepositories(db, eventDispatcher, repositoryRegistry, adaptedContainer)
 			}
 		}
 

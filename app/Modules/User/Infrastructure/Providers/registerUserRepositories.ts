@@ -17,31 +17,31 @@ import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 import { UserRepository } from '../Persistence/UserRepository'
 
 /**
- * 註冊 User Repository 工廠到註冊表
+ * 註冊 User Repository 到容器
+ *
+ * Phase 3 遷移：改為直接向容器註冊 Repository 實例
+ * 消除 resolveRepository() 的全局依賴
  *
  * @param db - 資料庫存取介面
  * @param eventDispatcher - 領域事件分發器
- * @param registry - Repository 註冊表（從容器解析，P2 修復）
+ * @param registry - 保留以支持向後相容，但不再使用
+ * @param container - DI 容器，直接向其註冊 Repository
  */
 export function registerUserRepositories(
 	db: IDatabaseAccess,
 	eventDispatcher?: IEventDispatcher,
-	registry?: RepositoryRegistry
+	registry?: RepositoryRegistry,
+	container?: any
 ): void {
-	if (!registry) {
+	if (!container) {
 		throw new Error(
-			'❌ RepositoryRegistry 未提供。\n' +
-				'registerUserRepositories() 應由 ModuleAutoWirer 呼叫，它負責傳遞 Registry。'
+			'❌ Container 未提供。\n' +
+				'registerUserRepositories() 應由 ModuleAutoWirer 呼叫，它負責傳遞 Container。'
 		)
 	}
-	console.log(`[registerUserRepositories] eventDispatcher provided: ${eventDispatcher ? '✅ YES' : '❌ NO'}`)
-	const factory = (_orm: string, _db: IDatabaseAccess | undefined) => {
-		console.log(`[UserRepository Factory] Called with eventDispatcher: ${eventDispatcher ? '✅ YES' : '❌ NO'} (from closure)`)
-		const repo = new UserRepository(db, eventDispatcher)
-		console.log(`[UserRepository Factory] UserRepository instance created, eventDispatcher injected: ${eventDispatcher ? 'YES' : 'NO'}`)
-		return repo
-	}
 
-	registry.register('user', factory)
-	console.log('✅ [User] Repository 工廠已註冊 (含 EventDispatcher)')
+	// 直接向容器註冊 Repository 實例
+	container.singleton('userRepository', () => {
+		return new UserRepository(db, eventDispatcher)
+	})
 }

@@ -70,8 +70,6 @@ export class RepositoryRegistry {
 			const message = `⚠️ Repository type "${type}" 已被註冊，將覆寫`
 			if (logger) {
 				logger.warn(message)
-			} else {
-				console.warn(message)
 			}
 		}
 		this.factories.set(type, factory)

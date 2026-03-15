@@ -31,5 +31,4 @@ export function registerCartRepositories(db: IDatabaseAccess, eventDispatcher?: 
 	}
 
 	registry.register('cart', factory)
-	console.log('✅ [Cart] Repository 工廠已註冊')
 }

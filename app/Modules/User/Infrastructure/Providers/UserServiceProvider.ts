@@ -20,8 +20,6 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
-import { resolveRepository } from '@wiring/RepositoryResolver'
-import { getCurrentORM } from '@wiring/RepositoryFactory'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { RegisterUserService } from '../../Application/Services/RegisterUserService'
@@ -53,8 +51,8 @@ export class UserServiceProvider extends ModuleServiceProvider {
 	 * @param container - 框架無關的容器介面，用於註冊單例或工廠
 	 */
 	override register(container: IContainer): void {
-		// 1. 從 Registry 取得 Repository（ORM 選擇已由 Registry 處理）
-		container.singleton('userRepository', () => resolveRepository('user'))
+		// 注意：userRepository 已由 registerUserRepositories() 向容器註冊（P3 遷移）
+		// 此處不需要重複註冊，直接使用 container.make('userRepository')
 
 		// 1.5. 註冊訊息服務（供 Controller 使用）
 		container.singleton('userMessages', (c) => {

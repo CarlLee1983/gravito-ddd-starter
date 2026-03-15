@@ -5,8 +5,6 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
-import { resolveRepository } from '@wiring/RepositoryResolver'
-import { getCurrentORM } from '@wiring/RepositoryFactory'
 import { WelcomePostAutomation } from '../../Application/Handlers/WelcomePostAutomation'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
@@ -32,8 +30,8 @@ export class PostServiceProvider extends ModuleServiceProvider {
 	 * @returns void
 	 */
 	override register(container: IContainer): void {
-		// 從 Registry 取得 Repository（ORM 選擇由 RepositoryResolver 統一處理）
-		container.singleton('postRepository', () => resolveRepository('post'))
+		// 注意：postRepository 已由 registerPostRepositories() 向容器註冊（P3 遷移）
+		// 此處不需要重複註冊，直接使用 container.make('postRepository')
 
 		// 註冊訊息服務（供 Controller 使用）
 		container.singleton('postMessages', (c) => {

@@ -42,12 +42,19 @@ export interface IModuleDefinition {
 
 	/**
 	 * 倉庫註冊函式 (選填)
-	 * 若模組有持久化需求，在此註冊 Repository 工廠
+	 * 若模組有持久化需求，在此註冊 Repository 工廠 + 直接向容器註冊 Repository 實例
 	 *
 	 * @param db - 已選定的資料庫適配器 (Atlas/Drizzle/Memory)
 	 * @param eventDispatcher - 選填的領域事件分發器
+	 * @param repositoryRegistry - Repository 註冊表（由容器提供）
+	 * @param container - DI 容器（允許直接註冊 Repository 實例，消除 resolveRepository 依賴）
 	 */
-	registerRepositories?: (db: IDatabaseAccess, eventDispatcher?: IEventDispatcher) => void
+	registerRepositories?: (
+		db: IDatabaseAccess,
+		eventDispatcher?: IEventDispatcher,
+		repositoryRegistry?: unknown,
+		container?: { singleton(name: string, factory: (c: any) => any): void }
+	) => void
 
 	/**
 	 * 路由與表現層註冊函式 (選填)

@@ -18,10 +18,9 @@ import type { PlanetCore } from '@gravito/core'
  * 從應用的路由器中提取已註冊的 API 端點。
  * 這消除了硬編碼端點列表的維護成本（P6 改進）。
  *
- * @param core - Gravito 核心實例
  * @returns 已註冊的 API 端點物件
  */
-function generateEndpointsList(core: PlanetCore): Record<string, string> {
+function generateEndpointsList(): Record<string, string> {
 	const endpoints: Record<string, string> = {}
 
 	// 標準 API 端點映射
@@ -58,7 +57,7 @@ export async function registerRoutes(core: PlanetCore) {
 			success: true,
 			message: 'Welcome to Gravito DDD API',
 			version: '1.0.0',
-			endpoints: generateEndpointsList(core),
+			endpoints: generateEndpointsList(),
 		})
 	})
 

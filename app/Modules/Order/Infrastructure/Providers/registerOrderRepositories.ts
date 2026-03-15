@@ -26,5 +26,4 @@ export function registerOrderRepositories(db: IDatabaseAccess, eventDispatcher?:
   }
 
   registry.register('order', factory)
-  console.log('✅ [Order] Repository 工廠已註冊')
 }

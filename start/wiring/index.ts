@@ -14,6 +14,9 @@ export { initializeRegistry, getRegistry, resetRegistry } from './RepositoryRegi
 export { createRepositoryFactory } from './RepositoryFactoryGenerator'
 export { ModuleAutoWirer } from './ModuleAutoWirer'
 
+// P3 遷移：RepositoryResolver 已移除，使用容器式 Repository 解析
+// 新模式：在 registerRepositories 中向容器直接註冊 Repository 實例
+
 /**
  * 模組路由接線已改為「模組內自管」：
  * 各模組在 IModuleDefinition.registerRoutes 中自行從 core 取服務、組裝 Controller、註冊路由。

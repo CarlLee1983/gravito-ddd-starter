@@ -67,10 +67,29 @@ export function getCurrentORM(): ORMType {
 	return cachedORM
 }
 
+/** 資料庫存取工廠：回傳 IDatabaseAccess 實例或 undefined (memory) */
+type DatabaseAccessFactory = () => unknown
+
+/** ORM → 資料庫存取工廠對照表 */
+const databaseAccessFactories: Record<ORMType, DatabaseAccessFactory> = {
+	memory: () => undefined,
+	drizzle: () => {
+		const { createDrizzleDatabaseAccess } = require('@/Foundation/Infrastructure/Database/Adapters/Drizzle')
+		return createDrizzleDatabaseAccess()
+	},
+	atlas: () => {
+		const { createAtlasDatabaseAccess } = require('@/Foundation/Infrastructure/Database/Adapters/Atlas')
+		return createAtlasDatabaseAccess()
+	},
+	prisma: () => {
+		throw new Error('❌ Prisma 適配器尚未實現')
+	},
+}
+
 /**
  * 取得資料庫存取適配器 (Database Access Adapter)
  *
- * 根據當前選擇的 ORM 類型，動態載入並初始化對應的基礎設施實作。
+ * 根據當前選擇的 ORM 類型，透過工廠對照表建立對應的基礎設施實作。
  *
  * 設計：
  * - ORM=memory → 返回 undefined（由 DatabaseAccessBuilder 處理內存實作）
@@ -85,27 +104,8 @@ export function getCurrentORM(): ORMType {
  */
 export function getDatabaseAccess() {
 	const orm = getCurrentORM()
-
-	if (orm === 'memory') {
-		return undefined
-	}
-
-	if (orm === 'drizzle') {
-		const { createDrizzleDatabaseAccess } = require('@/Foundation/Infrastructure/Database/Adapters/Drizzle')
-		return createDrizzleDatabaseAccess()
-	}
-
-	if (orm === 'atlas') {
-		const { createAtlasDatabaseAccess } = require('@/Foundation/Infrastructure/Database/Adapters/Atlas')
-		return createAtlasDatabaseAccess()
-	}
-
-	if (orm === 'prisma') {
-		// TODO: 實現 Prisma 適配器
-		throw new Error('❌ Prisma 適配器尚未實現')
-	}
-
-	throw new Error(`❌ 不支援的 ORM: "${orm}"`)
+	const factory = databaseAccessFactories[orm]
+	return factory()
 }
 
 /**
