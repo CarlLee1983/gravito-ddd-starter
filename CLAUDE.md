@@ -26,18 +26,80 @@
 ### 初始設置
 
 ```bash
-# 1. 安裝依賴（Bun 會自動鏈接本地 @gravito/core）
+# 1. 複製環境設定
+cp .env.example .env
+
+# 2. 安裝依賴（Bun 會自動鏈接本地 @gravito/core）
 bun install
 
-# 2. 如果本地修改 @gravito/core，重新鏈接
+# 3. 如果本地修改 @gravito/core，重新鏈接
 bun link @gravito/core
 
-# 3. 啟動開發伺服器
+# 4. 啟動開發伺服器
 bun dev
 
-# 4. 運行測試
+# 5. 運行測試
 bun test
 ```
+
+### 環境配置
+
+本項目使用統一的 `.env.example` 檔案，支持多種部署場景。
+
+#### 快速配置
+
+**本機開發（推薦 SQLite）**
+```bash
+cp .env.example .env
+# 預設使用 SQLite，無需修改
+bun dev
+```
+
+**Docker 環境（PostgreSQL + Redis）**
+```bash
+cp .env.example .env
+# 編輯 .env 檔案，取消註解 PostgreSQL 部分
+# 啟動容器
+docker-compose up -d
+bun dev
+```
+
+**生產環境（Redis + PostgreSQL）**
+```bash
+cp .env.example .env
+# 編輯以下設定：
+# - DB_CONNECTION=postgres
+# - DB_HOST=prod-postgres.internal
+# - REDIS_HOST=prod-redis.internal
+# - REDIS_PASSWORD=secure_password
+# - EVENT_DRIVER=redis
+# - NODE_ENV=production
+bun build && bun start
+```
+
+#### 環境變數說明
+
+詳細的環境變數文檔請參考 `.env.example` 檔案中的註解。主要分類包括：
+- 應用程式設定（APP_NAME、PORT 等）
+- 資料庫設定（DB_CONNECTION、DB_HOST 等）
+- Redis 設定（REDIS_HOST、REDIS_PORT 等）
+- 快取驅動（CACHE_DRIVER）
+- 事件隊列（EVENT_DRIVER）
+
+#### 切換資料庫
+
+要從 SQLite 切換到 PostgreSQL：
+1. 編輯 `.env`
+2. 註解 `DB_CONNECTION=sqlite` 和 `DB_DATABASE=database/database.sqlite`
+3. 取消註解 PostgreSQL 相關設定
+4. 執行遷移：`bun migrate`
+
+#### 注意事項
+
+- **敏感資訊**：不要將 `.env` 提交到版本控制，改用 `.env.local`（已在 `.gitignore`）
+- **JWT_SECRET**：生產環境必須配置，使用至少 32 字元的隨機值
+- **Redis 連接**：本機開發使用 `127.0.0.1`，Docker 使用 `gravito-redis`
+- **EventDriver**：建議本機開發使用 `memory`，生產環境使用 `redis` 或 `rabbitmq`
 
 ## 模組開發工作流
 
