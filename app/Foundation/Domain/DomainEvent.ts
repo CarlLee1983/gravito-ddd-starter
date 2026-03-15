@@ -35,6 +35,10 @@ export abstract class DomainEvent {
 	readonly version: number
 	/** 事件資料內容 */
 	readonly data: Record<string, unknown>
+	/** 關聯 ID（用於 Saga 追蹤多個事件的因果關係） */
+	readonly correlationId?: string
+	/** 因果 ID（指向導致此事件的事件 ID） */
+	readonly causationId?: string
 
 	/**
 	 * 建構子
@@ -44,6 +48,8 @@ export abstract class DomainEvent {
 	 * @param {Record<string, unknown>} [data={}] - 事件負載資料
 	 * @param {number} [version=1] - 事件版本
 	 * @param {Date} [occurredAt] - 發生時間
+	 * @param {string} [correlationId] - 關聯 ID（用於 Saga）
+	 * @param {string} [causationId] - 因果 ID（指向源事件）
 	 */
 	constructor(
 		aggregateId: string,
@@ -51,12 +57,16 @@ export abstract class DomainEvent {
 		data: Record<string, unknown> = {},
 		version: number = 1,
 		occurredAt?: Date,
+		correlationId?: string,
+		causationId?: string,
 	) {
 		this.aggregateId = aggregateId
 		this.eventType = eventType
 		this.occurredAt = occurredAt ?? new Date()
 		this.version = version
 		this.data = data
+		this.correlationId = correlationId
+		this.causationId = causationId
 	}
 
 	/**
