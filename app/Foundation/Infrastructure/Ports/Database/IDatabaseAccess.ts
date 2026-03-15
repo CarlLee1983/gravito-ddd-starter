@@ -109,6 +109,53 @@ export interface IQueryBuilder {
 	 * @returns {Promise<number>} 記錄數量
 	 */
 	count(): Promise<number>
+
+	/**
+	 * IN 查詢
+	 *
+	 * @param {string} column - 欄位名稱
+	 * @param {unknown[]} values - 值陣列
+	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
+	 */
+	whereIn(column: string, values: unknown[]): IQueryBuilder
+
+	/**
+	 * OR 條件
+	 *
+	 * @param {string} column - 欄位名稱
+	 * @param {string} operator - 比較運算子
+	 * @param {unknown} value - 比較值
+	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
+	 */
+	orWhere(column: string, operator: string, value: unknown): IQueryBuilder
+
+	/**
+	 * INNER JOIN
+	 *
+	 * @param {string} table - 要 JOIN 的資料表名稱
+	 * @param {string} localColumn - 本表欄位名稱
+	 * @param {string} foreignColumn - 外表欄位名稱
+	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
+	 */
+	join(table: string, localColumn: string, foreignColumn: string): IQueryBuilder
+
+	/**
+	 * LEFT JOIN
+	 *
+	 * @param {string} table - 要 JOIN 的資料表名稱
+	 * @param {string} localColumn - 本表欄位名稱
+	 * @param {string} foreignColumn - 外表欄位名稱
+	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
+	 */
+	leftJoin(table: string, localColumn: string, foreignColumn: string): IQueryBuilder
+
+	/**
+	 * GROUP BY
+	 *
+	 * @param {...string[]} columns - 要分組的欄位名稱（可變參數）
+	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
+	 */
+	groupBy(...columns: string[]): IQueryBuilder
 }
 
 /**

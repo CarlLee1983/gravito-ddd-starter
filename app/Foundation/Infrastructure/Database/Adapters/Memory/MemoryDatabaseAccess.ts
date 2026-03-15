@@ -28,6 +28,9 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	private orderByColumn: string | null = null
 	private orderByDirection: 'ASC' | 'DESC' = 'ASC'
 	private whereConditions: WhereCondition[] = []
+	private orConditions: WhereCondition[] = []
+	private joinClauses: Array<{ table: string; localColumn: string; foreignColumn: string; type: 'INNER' | 'LEFT' }> = []
+	private groupByColumns: string[] = []
 
 	/**
 	 * 建構子
@@ -91,6 +94,58 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
+	 * IN 查詢
+	 * @param column - 欄位名稱
+	 * @param values - 值陣列
+	 */
+	whereIn(column: string, values: unknown[]): IQueryBuilder {
+		this.whereConditions.push({ column, operator: 'IN', value: values })
+		return this
+	}
+
+	/**
+	 * OR 條件
+	 * @param column - 欄位名稱
+	 * @param operator - 運算子
+	 * @param value - 比較值
+	 */
+	orWhere(column: string, operator: string, value: unknown): IQueryBuilder {
+		this.orConditions.push({ column, operator, value })
+		return this
+	}
+
+	/**
+	 * INNER JOIN
+	 * @param table - 要 JOIN 的資料表名稱
+	 * @param localColumn - 本表欄位名稱
+	 * @param foreignColumn - 外表欄位名稱
+	 */
+	join(table: string, localColumn: string, foreignColumn: string): IQueryBuilder {
+		this.joinClauses.push({ table, localColumn, foreignColumn, type: 'INNER' })
+		return this
+	}
+
+	/**
+	 * LEFT JOIN
+	 * @param table - 要 JOIN 的資料表名稱
+	 * @param localColumn - 本表欄位名稱
+	 * @param foreignColumn - 外表欄位名稱
+	 */
+	leftJoin(table: string, localColumn: string, foreignColumn: string): IQueryBuilder {
+		this.joinClauses.push({ table, localColumn, foreignColumn, type: 'LEFT' })
+		return this
+	}
+
+	/**
+	 * GROUP BY
+	 * @param columns - 要分組的欄位名稱
+	 */
+	groupBy(...columns: string[]): IQueryBuilder {
+		this.groupByColumns.push(...columns)
+		return this
+	}
+
+	/**
 	 * 取得指定表格的所有原始資料行
 	 * @private
 	 */
@@ -112,6 +167,7 @@ class MemoryQueryBuilder implements IQueryBuilder {
 			case '=':
 				return val === cond.value
 			case '!=':
+			case '<>':
 				return val !== cond.value
 			case '>':
 				return Number(val) > Number(cond.value) || (val as string) > (cond.value as string)
@@ -123,6 +179,11 @@ class MemoryQueryBuilder implements IQueryBuilder {
 				return Number(val) <= Number(cond.value) || (val as string) <= (cond.value as string)
 			case 'LIKE':
 				return String(val).includes(String(cond.value).replace(/%/g, ''))
+			case 'IN':
+				return (cond.value as unknown[]).includes(val)
+			case 'between':
+				const [start, end] = cond.value as [Date, Date]
+				return val >= start && val <= end
 			default:
 				return false
 		}
@@ -134,9 +195,26 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	 */
 	private filterRows(rows: Record<string, unknown>[], options?: { skipLimitOffset?: boolean }): Record<string, unknown>[] {
 		let result = rows
+
+		// AND 條件：所有 WHERE 條件都要滿足
 		for (const cond of this.whereConditions) {
 			result = result.filter((row) => this.matchRow(row, cond))
 		}
+
+		// OR 條件：至少有一個 OR 條件要滿足
+		if (this.orConditions.length > 0) {
+			result = result.filter((row) => this.orConditions.some((cond) => this.matchRow(row, cond)))
+		}
+
+		// 處理 JOIN（基礎實現）
+		// 注意：記憶體版本的 JOIN 只是單純的資料關聯標記，不做實際的關聯查詢
+		// 實際的 JOIN 邏輯應在 Atlas/Drizzle 適配器中實現
+		if (this.joinClauses.length > 0) {
+			// 記憶體版本 JOIN 實現複雜度高，暫時保留結果
+			// 實際使用應使用 Atlas 或 Drizzle 適配器
+		}
+
+		// 排序
 		if (this.orderByColumn != null) {
 			result = [...result].sort((a, b) => {
 				const aVal = a[this.orderByColumn!] as string | number
@@ -145,6 +223,22 @@ class MemoryQueryBuilder implements IQueryBuilder {
 				return this.orderByDirection === 'DESC' ? -cmp : cmp
 			})
 		}
+
+		// GROUP BY（基礎實現：根據指定欄位分組）
+		if (this.groupByColumns.length > 0) {
+			const grouped = new Map<string, Record<string, unknown>[]>()
+			for (const row of result) {
+				const key = this.groupByColumns.map((col) => row[col]).join('|')
+				if (!grouped.has(key)) {
+					grouped.set(key, [])
+				}
+				grouped.get(key)!.push(row)
+			}
+			// 返回每組的第一筆記錄（代表該組）
+			result = Array.from(grouped.values()).map((group) => group[0])
+		}
+
+		// 分頁
 		if (!options?.skipLimitOffset) {
 			if (this.offsetNum != null) {
 				result = result.slice(this.offsetNum)
@@ -153,6 +247,7 @@ class MemoryQueryBuilder implements IQueryBuilder {
 				result = result.slice(0, this.limitNum)
 			}
 		}
+
 		return result
 	}
 

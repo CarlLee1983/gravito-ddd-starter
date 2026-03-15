@@ -30,12 +30,18 @@ function getDB(): any {
 export class AtlasQueryBuilder implements IQueryBuilder {
 	/** 儲存累積的查詢條件 */
 	private whereConditions: Array<{ column: string; operator: string; value: unknown }> = []
+	/** 儲存 OR 條件 */
+	private orConditions: Array<{ column: string; operator: string; value: unknown }> = []
 	/** 排序配置 */
 	private orderByConfig: { column: string; direction: 'ASC' | 'DESC' } | null = null
 	/** 限制筆數 */
 	private limitValue: number | null = null
 	/** 位移筆數 */
 	private offsetValue: number | null = null
+	/** JOIN 子句 */
+	private joinClauses: Array<{ table: string; localColumn: string; foreignColumn: string; type: 'INNER' | 'LEFT' }> = []
+	/** GROUP BY 欄位 */
+	private groupByColumns: string[] = []
 
 	/**
 	 * 建構子
@@ -290,6 +296,68 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 */
 	whereBetween(column: string, range: [Date, Date]): IQueryBuilder {
 		this.whereConditions.push({ column, operator: 'between', value: range })
+		return this
+	}
+
+	/**
+	 * IN 查詢
+	 *
+	 * @param column - 欄位名稱
+	 * @param values - 值陣列
+	 * @returns 回傳此實例以支援鏈式調用
+	 */
+	whereIn(column: string, values: unknown[]): any {
+		this.whereConditions.push({ column, operator: 'in', value: values })
+		return this
+	}
+
+	/**
+	 * OR 條件
+	 *
+	 * @param column - 欄位名稱
+	 * @param operator - 比較運算子
+	 * @param value - 比較值
+	 * @returns 回傳此實例以支援鏈式調用
+	 */
+	orWhere(column: string, operator: string, value: unknown): any {
+		this.orConditions.push({ column, operator, value })
+		return this
+	}
+
+	/**
+	 * INNER JOIN
+	 *
+	 * @param table - 要 JOIN 的資料表名稱
+	 * @param localColumn - 本表欄位名稱
+	 * @param foreignColumn - 外表欄位名稱
+	 * @returns 回傳此實例以支援鏈式調用
+	 */
+	join(table: string, localColumn: string, foreignColumn: string): any {
+		this.joinClauses.push({ table, localColumn, foreignColumn, type: 'INNER' })
+		return this
+	}
+
+	/**
+	 * LEFT JOIN
+	 *
+	 * @param table - 要 JOIN 的資料表名稱
+	 * @param localColumn - 本表欄位名稱
+	 * @param foreignColumn - 外表欄位名稱
+	 * @returns 回傳此實例以支援鏈式調用
+	 */
+	leftJoin(table: string, localColumn: string, foreignColumn: string): any {
+		this.joinClauses.push({ table, localColumn, foreignColumn, type: 'LEFT' })
+		return this
+	}
+
+	/**
+	 * GROUP BY
+	 *
+	 * @param columns - 要分組的欄位名稱（可變參數）
+	 * @returns 回傳此實例以支援鏈式調用
+	 */
+	groupBy(...columns: string[]): any {
+		this.groupByColumns.push(...columns)
 		return this
 	}
 

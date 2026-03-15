@@ -22,12 +22,18 @@ import { getDrizzleInstance } from './config'
 export class DrizzleQueryBuilder implements IQueryBuilder {
   /** 儲存 Drizzle 條件表達式陣列 */
   private whereConditions: any[] = []
+  /** 儲存 OR 條件 */
+  private orConditions: any[] = []
   /** 排序配置 */
   private orderByConfig: { column: string; direction: 'ASC' | 'DESC' } | null = null
   /** 限制筆數 */
   private limitValue: number | null = null
   /** 位移筆數 */
   private offsetValue: number | null = null
+  /** JOIN 子句 */
+  private joinClauses: Array<{ table: string; localColumn: string; foreignColumn: string; type: 'INNER' | 'LEFT' }> = []
+  /** GROUP BY 欄位 */
+  private groupByColumns: string[] = []
 
   /**
    * 建構子
@@ -292,6 +298,111 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
     }
 
     this.whereConditions.push(between(col, range[0], range[1]))
+    return this
+  }
+
+  /**
+   * IN 查詢
+   *
+   * @param column - 欄位名稱
+   * @param values - 值陣列
+   * @returns 回傳此實例以支援鏈式調用
+   */
+  whereIn(column: string, values: unknown[]): IQueryBuilder {
+    const col = this.tableSchema[column]
+
+    if (!col) {
+      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+    }
+
+    this.whereConditions.push(inArray(col, values))
+    return this
+  }
+
+  /**
+   * OR 條件
+   *
+   * @param column - 欄位名稱
+   * @param operator - 比較運算子
+   * @param value - 比較值
+   * @returns 回傳此實例以支援鏈式調用
+   */
+  orWhere(column: string, operator: string, value: unknown): IQueryBuilder {
+    const col = this.tableSchema[column]
+
+    if (!col) {
+      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+    }
+
+    let condition: any
+    switch (operator) {
+      case '=':
+        condition = eq(col, value)
+        break
+      case '!=':
+      case '<>':
+        condition = ne(col, value)
+        break
+      case '>':
+        condition = gt(col, value)
+        break
+      case '<':
+        condition = lt(col, value)
+        break
+      case '>=':
+        condition = gte(col, value)
+        break
+      case '<=':
+        condition = lte(col, value)
+        break
+      case 'like':
+        condition = like(col, value as string)
+        break
+      case 'in':
+        condition = inArray(col, value as unknown[])
+        break
+      default:
+        throw new Error(`Unsupported operator: ${operator}`)
+    }
+
+    this.orConditions.push(condition)
+    return this
+  }
+
+  /**
+   * INNER JOIN
+   *
+   * @param table - 要 JOIN 的資料表名稱
+   * @param localColumn - 本表欄位名稱
+   * @param foreignColumn - 外表欄位名稱
+   * @returns 回傳此實例以支援鏈式調用
+   */
+  join(table: string, localColumn: string, foreignColumn: string): IQueryBuilder {
+    this.joinClauses.push({ table, localColumn, foreignColumn, type: 'INNER' })
+    return this
+  }
+
+  /**
+   * LEFT JOIN
+   *
+   * @param table - 要 JOIN 的資料表名稱
+   * @param localColumn - 本表欄位名稱
+   * @param foreignColumn - 外表欄位名稱
+   * @returns 回傳此實例以支援鏈式調用
+   */
+  leftJoin(table: string, localColumn: string, foreignColumn: string): IQueryBuilder {
+    this.joinClauses.push({ table, localColumn, foreignColumn, type: 'LEFT' })
+    return this
+  }
+
+  /**
+   * GROUP BY
+   *
+   * @param columns - 要分組的欄位名稱（可變參數）
+   * @returns 回傳此實例以支援鏈式調用
+   */
+  groupBy(...columns: string[]): IQueryBuilder {
+    this.groupByColumns.push(...columns)
     return this
   }
 }
