@@ -4,7 +4,6 @@
  */
 
 import { PlanetCore, defineConfig } from '@gravito/core'
-import { OrbitNebula } from '@gravito/nebula'
 
 import { buildConfig } from '../config/app/index'
 import { storageConfig, s3RawConfig } from '../config/app/storage'
@@ -14,8 +13,8 @@ import { initializeRegistry } from 'start/wiring/RepositoryRegistry'
 import { getCurrentORM } from 'start/wiring/RepositoryFactory'
 import { DatabaseAccessBuilder } from 'start/wiring/DatabaseAccessBuilder'
 import { ModuleAutoWirer } from 'start/wiring/ModuleAutoWirer'
+import { StorageBootstrapper } from 'start/bootstrap/StorageBootstrapper'
 
-import { S3Store } from '@/Foundation/Infrastructure/Storage/Drivers/S3Store'
 import { SharedServiceProvider } from '@/Foundation/Infrastructure/Providers/SharedServiceProvider'
 import { InfrastructureServiceProvider } from '@/Foundation/Infrastructure/Providers/InfrastructureServiceProvider'
 import { createGravitoServiceProvider } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoServiceProviderAdapter'
@@ -40,21 +39,8 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	// 將 db 註冊到容器中，消除雙軌依賴注入（P0-1 修復）
 	core.container.singleton('databaseAccess', () => db)
 
-	// 消除 S3 配置 mutation，使用不可變模式（S2 改進）
-	const finalStorageConfig =
-		storageConfig.disks?.s3?.driver === 'custom'
-			? {
-					...storageConfig,
-					disks: {
-						...storageConfig.disks,
-						s3: {
-							...storageConfig.disks.s3,
-							store: new S3Store(s3RawConfig),
-						},
-					},
-				}
-			: storageConfig
-	await core.orbit(new OrbitNebula(finalStorageConfig))
+	// 初始化儲存系統（S3 配置細節由 StorageBootstrapper 管理）
+	await StorageBootstrapper.configure(core, storageConfig, s3RawConfig)
 
 	// ─── 基礎設施與模組 ─────────────────────────────────────────────────────
 	core.register(createGravitoServiceProvider(new InfrastructureServiceProvider()))
