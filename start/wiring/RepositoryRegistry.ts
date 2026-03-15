@@ -155,3 +155,4 @@ export function getRegistry(): RepositoryRegistry {
  */
 export function resetRegistry(): void {
 	console.warn('⚠️ resetRegistry() 已棄用，RepositoryRegistry 由 DI 容器管理')
+}
