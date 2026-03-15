@@ -20,6 +20,8 @@
  * ✅ 遵循單一責任原則
  */
 
+import { GravitoLoggerAdapter } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoLoggerAdapter'
+
 /**
  * 系統支援的 ORM 類型定義
  */
@@ -36,15 +38,16 @@ export type ORMType = 'memory' | 'drizzle' | 'atlas' | 'prisma'
  * const orm = getCurrentORM()  // 'memory' | 'drizzle' | ...
  */
 export function getCurrentORM(): ORMType {
+	const logger = new GravitoLoggerAdapter()
 	const orm = process.env.ORM || 'memory'
 	const validORMs: ORMType[] = ['memory', 'drizzle', 'atlas', 'prisma']
 
 	if (!validORMs.includes(orm as ORMType)) {
-		console.warn(`❌ 不支援的 ORM: "${orm}"，使用預設 "memory"`)
+		logger.warn(`不支援的 ORM: "${orm}"，使用預設 "memory"`)
 		return 'memory'
 	}
 
-	console.log(`📦 已選擇 ORM: ${orm}`)
+	logger.info(`已選擇 ORM: ${orm}`)
 	return orm as ORMType
 }
 
