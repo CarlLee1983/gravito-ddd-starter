@@ -5,9 +5,9 @@
 
 import type { PlanetCore } from '@gravito/core'
 import { OrbitNebula } from '@gravito/nebula'
-import type { StorageConfig } from 'config/app/storage'
+import type { StorageConfig } from '@config/app/storage'
 import { S3Store } from '@/Foundation/Infrastructure/Storage/Drivers/S3Store'
-import type { S3StoreConfig } from 'config/app/storage'
+import type { S3StoreConfig } from '@config/app/storage'
 
 /**
  * 儲存系統啟動器
