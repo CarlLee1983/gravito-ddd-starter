@@ -38,14 +38,15 @@ export function wireUserRoutes(ctx: IRouteRegistrationContext): void {
 			setLocale: () => {},
 		} as any
 	}
-	const userMessages = new UserMessageService(translator)
 
 	// 嘗試從容器取得服務
 	let createUserService: CreateUserService
 	let getUserService: GetUserService
+	let userMessages: IUserMessages
 	try {
 		createUserService = ctx.container.make('createUserService') as CreateUserService
 		getUserService = ctx.container.make('getUserService') as GetUserService
+		userMessages = ctx.container.make('userMessages') as IUserMessages
 	} catch (error) {
 		console.warn('[wireUserRoutes] Warning: Application services not ready, skipping route registration')
 		return

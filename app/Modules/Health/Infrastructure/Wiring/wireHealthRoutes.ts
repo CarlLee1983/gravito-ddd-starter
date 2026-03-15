@@ -4,6 +4,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
+import type { IHealthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IHealthMessages'
 import { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
 import type { IDatabaseConnectivityCheck } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
 import { createGravitoDatabaseConnectivityCheck } from '@/Foundation/Infrastructure/Database/Adapters/Atlas'
@@ -102,7 +103,15 @@ export function wireHealthRoutes(ctx: IRouteRegistrationContext): void {
 			setLocale: () => {},
 		} as any
 	}
-	const healthMessages = new HealthMessageService(translator)
+
+	// 從容器取得訊息服務
+	let healthMessages: IHealthMessages
+	try {
+		healthMessages = ctx.container.make('healthMessages') as IHealthMessages
+	} catch (error) {
+		console.warn('[wireHealthRoutes] Warning: Health messages service not ready, using fallback')
+		healthMessages = new HealthMessageService(translator)
+	}
 
 	// 註冊 /health 路由
 	router.get('/health', (hctx) => {
