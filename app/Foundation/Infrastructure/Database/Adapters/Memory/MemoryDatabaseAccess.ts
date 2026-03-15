@@ -196,15 +196,19 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	private filterRows(rows: Record<string, unknown>[], options?: { skipLimitOffset?: boolean }): Record<string, unknown>[] {
 		let result = rows
 
-		// AND 條件：所有 WHERE 條件都要滿足
-		for (const cond of this.whereConditions) {
-			result = result.filter((row) => this.matchRow(row, cond))
-		}
+		// 複合過濾：(AND 條件) OR (OR 條件)
+		// 邏輯：所有 WHERE 條件都滿足 OR 至少一個 OR 條件滿足
+		result = result.filter((row) => {
+			// 檢查所有 AND 條件是否都滿足
+			const allAndConditionsMet = this.whereConditions.every((cond) => this.matchRow(row, cond))
 
-		// OR 條件：至少有一個 OR 條件要滿足
-		if (this.orConditions.length > 0) {
-			result = result.filter((row) => this.orConditions.some((cond) => this.matchRow(row, cond)))
-		}
+			// 檢查是否有 OR 條件滿足
+			const anyOrConditionMet = this.orConditions.length > 0 && this.orConditions.some((cond) => this.matchRow(row, cond))
+
+			// 若無 OR 條件，只需檢查 AND 條件
+			// 若有 OR 條件，則 (AND 都滿足) OR (至少一個 OR 滿足)
+			return this.orConditions.length === 0 ? allAndConditionsMet : allAndConditionsMet || anyOrConditionMet
+		})
 
 		// 處理 JOIN（基礎實現）
 		// 注意：記憶體版本的 JOIN 只是單純的資料關聯標記，不做實際的關聯查詢
