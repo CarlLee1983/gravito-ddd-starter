@@ -257,21 +257,44 @@ class MemoryQueryBuilder implements IQueryBuilder {
 
 	/**
 	 * 取得符合條件的第一筆記錄
+	 * @param columns - 要選取的欄位名稱（可選）
 	 * @returns 記錄物件或 null
 	 */
-	async first(): Promise<Record<string, unknown> | null> {
+	async first(columns?: string[]): Promise<Record<string, unknown> | null> {
 		const rows = this.getTableRows()
 		const filtered = this.filterRows(rows)
-		return filtered[0] ?? null
+		const row = filtered[0] ?? null
+		if (!row || !columns || columns.length === 0) return row
+		
+		const result: Record<string, unknown> = {}
+		for (const col of columns) {
+			if (col in row) {
+				result[col] = row[col]
+			}
+		}
+		return result
 	}
 
 	/**
 	 * 取得符合條件的所有記錄
+	 * @param columns - 要選取的欄位名稱（可選）
 	 * @returns 記錄物件陣列
 	 */
-	async select(): Promise<Record<string, unknown>[]> {
+	async select(columns?: string[]): Promise<Record<string, unknown>[]> {
 		const rows = this.getTableRows()
-		return this.filterRows(rows)
+		const filtered = this.filterRows(rows)
+		
+		if (!columns || columns.length === 0) return filtered
+		
+		return filtered.map(row => {
+			const result: Record<string, unknown> = {}
+			for (const col of columns) {
+				if (col in row) {
+					result[col] = row[col]
+				}
+			}
+			return result
+		})
 	}
 
 	/**

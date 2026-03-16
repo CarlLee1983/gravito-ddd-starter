@@ -4,6 +4,7 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 import { CreateProductService } from '../../Application/Services/CreateProductService'
 import { GetProductService } from '../../Application/Services/GetProductService'
@@ -47,9 +48,9 @@ export class ProductServiceProvider extends ModuleServiceProvider {
       }
     })
 
-    // 註冊查詢服務 (CQRS Read Side)
-    container.singleton('productQueryService', () => {
-      return new ProductQueryService(getDatabaseAccess())
+    // 註冊查詢服務 (CQRS Read Side)，從容器取得 databaseAccess 與 bootstrap 一致
+    container.singleton('productQueryService', (c) => {
+      return new ProductQueryService(c.make('databaseAccess') as IDatabaseAccess)
     })
 
     // 註冊應用層服務
@@ -59,8 +60,8 @@ export class ProductServiceProvider extends ModuleServiceProvider {
     })
 
     container.singleton('getProductService', (c) => {
-      const productRepository = c.make('productRepository')
-      return new GetProductService(productRepository)
+      const productQueryService = c.make('productQueryService')
+      return new GetProductService(productQueryService)
     })
   }
 }

@@ -35,16 +35,18 @@ export interface IQueryBuilder {
 	/**
 	 * 取得單筆記錄
 	 *
+	 * @param {string[]} [columns] - 要選取的欄位名稱（可選，預設選取所有欄位）
 	 * @returns {Promise<Record<string, unknown> | null>} 若記錄存在則返回該記錄，否則返回 null
 	 */
-	first(): Promise<Record<string, unknown> | null>
+	first(columns?: string[]): Promise<Record<string, unknown> | null>
 
 	/**
 	 * 取得多筆記錄
 	 *
+	 * @param {string[]} [columns] - 要選取的欄位名稱（可選，預設選取所有欄位）
 	 * @returns {Promise<Record<string, unknown>[]>} 記錄陣列
 	 */
-	select(): Promise<Record<string, unknown>[]>
+	select(columns?: string[]): Promise<Record<string, unknown>[]>
 
 	/**
 	 * 新增記錄

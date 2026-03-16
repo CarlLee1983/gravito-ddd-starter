@@ -46,6 +46,39 @@ DB_PASSWORD=secret
 
 ---
 
+## 🔍 查詢投影與效能優化 (Projection & Optimization)
+
+為了提升 CQRS 讀取側的效能，`IDatabaseAccess` 支援 **查詢投影 (Projection)**。透過明確指定所需欄位，可避免 `SELECT *` 造成的資料過載。
+
+### 1. 取得多筆記錄 (select)
+
+```typescript
+// ❌ 不推薦：選取所有欄位（隱含 SELECT *）
+const all = await db.table('products').select()
+
+// ✅ 推薦：僅選取必要欄位（投影優化）
+const products = await db.table('products').select(['id', 'name', 'price'])
+```
+
+### 2. 取得單筆記錄 (first)
+
+```typescript
+// ❌ 不推薦：選取所有欄位
+const user = await db.table('users').where('id', '=', '1').first()
+
+// ✅ 推薦：僅選取必要欄位
+const user = await db.table('users')
+  .where('id', '=', '1')
+  .first(['id', 'email', 'display_name'])
+```
+
+### 🚀 效能效益
+- **減少網路負擔**：僅傳輸必要資料列。
+- **節省記憶體**：無需在應用層實例化不必要的屬性。
+- **資料安全性**：在資料庫層級即過濾掉敏感欄位（如 `password`）。
+
+---
+
 ## 🔄 Migration 工作流程
 
 *(以下內容保持不變，主要說明如何建立與執行遷移檔案)*

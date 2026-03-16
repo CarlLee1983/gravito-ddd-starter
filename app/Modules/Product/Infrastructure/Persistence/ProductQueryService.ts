@@ -23,7 +23,10 @@ export class ProductQueryService implements IProductQueryService {
    * @returns 產品回應 DTO 或 null
    */
   async findById(id: ProductId): Promise<ProductResponseDTO | null> {
-    const row = await this.db.table('products').where('id', '=', id.value).first()
+    const row = await this.db
+      .table('products')
+      .where('id', '=', id.value)
+      .first(['id', 'name', 'amount', 'currency', 'sku', 'stock_quantity', 'created_at', 'updated_at'])
     return row ? this.mapToDTO(row) : null
   }
 
@@ -34,7 +37,9 @@ export class ProductQueryService implements IProductQueryService {
    */
   async findAll(): Promise<ProductResponseDTO[]> {
     try {
-      const rows = await this.db.table('products').select()
+      const rows = await this.db
+        .table('products')
+        .select(['id', 'name', 'amount', 'currency', 'sku', 'stock_quantity', 'created_at', 'updated_at'])
       return rows.map(row => this.mapToDTO(row))
     } catch (error) {
       console.warn('[ProductQueryService] Failed to fetch products (table might not exist):', error instanceof Error ? error.message : error)

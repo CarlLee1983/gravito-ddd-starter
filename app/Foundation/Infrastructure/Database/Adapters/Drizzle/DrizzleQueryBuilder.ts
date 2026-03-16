@@ -101,12 +101,26 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   /**
    * 取得符合條件的第一筆記錄
    *
+   * @param columns - 要選取的欄位名稱（可選）
    * @returns 回傳第一筆記錄物件，若找不到則回傳 null
    * @throws 拋出資料庫查詢錯誤
    */
-  async first(): Promise<Record<string, unknown> | null> {
+  async first(columns?: string[]): Promise<Record<string, unknown> | null> {
     try {
-      let query: any = (this.db as any).select().from(this.tableSchema)
+      let query: any
+      
+      if (columns && columns.length > 0) {
+        const selection: Record<string, any> = {}
+        for (const colName of columns) {
+          const col = this.tableSchema[colName]
+          if (col) {
+            selection[colName] = col
+          }
+        }
+        query = (this.db as any).select(selection).from(this.tableSchema)
+      } else {
+        query = (this.db as any).select().from(this.tableSchema)
+      }
 
       if (this.whereConditions.length > 0) {
         query = query.where(and(...this.whereConditions))
@@ -128,12 +142,26 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   /**
    * 取得符合條件的所有多筆記錄
    *
+   * @param columns - 要選取的欄位名稱（可選）
    * @returns 記錄物件陣列
    * @throws 拋出資料庫查詢錯誤
    */
-  async select(): Promise<Record<string, unknown>[]> {
+  async select(columns?: string[]): Promise<Record<string, unknown>[]> {
     try {
-      let query: any = (this.db as any).select().from(this.tableSchema)
+      let query: any
+      
+      if (columns && columns.length > 0) {
+        const selection: Record<string, any> = {}
+        for (const colName of columns) {
+          const col = this.tableSchema[colName]
+          if (col) {
+            selection[colName] = col
+          }
+        }
+        query = (this.db as any).select(selection).from(this.tableSchema)
+      } else {
+        query = (this.db as any).select().from(this.tableSchema)
+      }
 
       if (this.whereConditions.length > 0) {
         query = query.where(and(...this.whereConditions))
