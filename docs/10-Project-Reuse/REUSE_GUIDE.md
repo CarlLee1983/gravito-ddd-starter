@@ -36,7 +36,7 @@
 核心理念：新增模組只要符合目錄結構與契約，啟動時自動裝配。
 
 關鍵元件：
-- `IModuleDefinition`（`app/Shared/Infrastructure/Wiring/ModuleDefinition.ts`）
+- `IModuleDefinition`（`app/Foundation/Infrastructure/Wiring/ModuleDefinition.ts`）
 - `ModuleAutoWirer`（`start/wiring/ModuleAutoWirer.ts`）
 - `bootstrap`（`app/bootstrap.ts`）
 
@@ -98,7 +98,7 @@
 
 ```bash
 # 方式 A: 直接複製
-cp -R gravito-ddd-starter my-app
+cp -R <template-repo> my-app
 cd my-app
 
 # 方式 B: 使用 git template
@@ -179,8 +179,7 @@ bun run typecheck
 
 - `docs/02-Architecture/CORE_DESIGN.md`
 - `docs/02-Architecture/EVENT_SYSTEM.md`
-- `docs/05-Database-ORM/ORM_TRANSPARENT_DESIGN.md`
-- `docs/09-Internationalization/README.md`
+- `docs/05-Database-ORM/ORM_GUIDE.md`
 - `docs/04-Module-Development/DEVELOPMENT_GUIDE.md`
 
 最後更新: 2026-03-16

@@ -40,8 +40,8 @@ function fixESMImports(filePath, distRoot) {
   // 1. 修正路徑別名：@/* -> 相對路徑
   // @/ 在源代碼中指向 src/
   // 編譯後都在 dist/ 中，所以：
-  // - src/file.ts 中的 @/Shared -> dist/src/Shared
-  // - src/a/b.ts 中的 @/Shared -> dist/src/Shared
+  // - app/file.ts 中的 @/Foundation -> dist/app/Foundation
+  // - app/a/b.ts 中的 @/Foundation -> dist/app/Foundation
   // 相對路徑取決於文件的深度
   content = content.replace(
     /from\s+['"]@\/([^'"]+)['"]/g,

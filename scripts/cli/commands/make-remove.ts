@@ -52,7 +52,7 @@ export async function run(args: string[]) {
 		}
 
 		// 清理 Port 介面
-		const portFile = `app/Shared/Infrastructure/Ports/Messages/I${module}Messages.ts`
+		const portFile = `app/Foundation/Infrastructure/Ports/Messages/I${module}Messages.ts`
 		if (existsSync(portFile)) {
 			console.log(`\n   Port 介面:`)
 			console.log(`   📄 ${portFile}`)

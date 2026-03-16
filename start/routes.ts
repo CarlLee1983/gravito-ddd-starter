@@ -21,28 +21,8 @@ import type { PlanetCore } from '@gravito/core'
  * @returns 已註冊的 API 端點物件
  */
 function generateEndpointsList(): Record<string, string> {
-	const endpoints: Record<string, string> = {}
-
-	// 標準 API 端點映射
-	const commonPaths = [
-		'/health',
-		'/health/history',
-		'/api/users',
-		'/api/products',
-		'/api/carts',
-		'/api/orders',
-		'/api/payments',
-		'/api/posts',
-	]
-
-	// 將路徑轉換為端點名稱
-	commonPaths.forEach((path) => {
-		// 例如：/api/users → users, /health → health
-		const key = path.split('/').filter(Boolean).pop() || 'root'
-		endpoints[key] = path
-	})
-
-	return endpoints
+	// Template 版不預設內建模組，因此不硬編碼端點列表
+	return {}
 }
 
 /**
@@ -61,6 +41,5 @@ export async function registerRoutes(core: PlanetCore) {
 		})
 	})
 
-	// --- 前端路由由 Product、Cart、Order 模組的 API 端點提供 ---
-	// Inertia 頁面路由暫時禁用（待 Inertia 中介軟體配置）
+	// 前端頁面路由若使用 Inertia，請在模組內自行提供對應端點
 }

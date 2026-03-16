@@ -70,9 +70,9 @@ async function generateAggregate(ctx: any) {
  * @description ${ctx.pascalCase} 聚合根
  */
 
-import { AggregateRoot } from '@/Shared/Domain/AggregateRoot'
+import { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
 import { ${ctx.pascalCase}Created } from '../Events/${ctx.pascalCase}Created'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 /**
  * ${ctx.pascalCase} 聚合根
@@ -138,7 +138,7 @@ async function generateValueObjects(ctx: any) {
  * @description ${ctx.pascalCase} 標識值物件
  */
 
-import { ValueObject } from '@/Shared/Domain/ValueObject'
+import { ValueObject } from '@/Foundation/Domain/ValueObject'
 
 interface ${ctx.pascalCase}IdProps extends Record<string, unknown> {
 	readonly value: string
@@ -177,7 +177,7 @@ async function generateEvent(ctx: any) {
  * @description ${ctx.pascalCase} 建立事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 export class ${ctx.pascalCase}Created extends DomainEvent {
 	constructor(
@@ -215,7 +215,7 @@ async function generateRepositoryInterface(ctx: any) {
  * @description ${ctx.pascalCase} Repository 介面
  */
 
-import type { IRepository } from '@/Shared/Domain/IRepository'
+import type { IRepository } from '@/Foundation/Domain/IRepository'
 import { ${ctx.pascalCase} } from '../Aggregates/${ctx.pascalCase}'
 
 export interface I${ctx.pascalCase}Repository extends IRepository<${ctx.pascalCase}> {
@@ -345,12 +345,12 @@ async function generateRepository(ctx: any) {
  * @description ${ctx.pascalCase} Repository 實現
  */
 
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
-import type { IEventDispatcher } from '@/Shared/Infrastructure/Ports/Messaging/IEventDispatcher'
-import type { IEventStore } from '@/Shared/Infrastructure/Ports/Database/IEventStore'
-import type { DomainEvent } from '@/Shared/Domain/DomainEvent'
-import type { IntegrationEvent } from '@/Shared/Domain/IntegrationEvent'
-import { BaseEventSourcedRepository } from '@/Shared/Infrastructure/Database/Repositories/BaseEventSourcedRepository'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
+import type { IEventStore } from '@/Foundation/Infrastructure/Ports/Database/IEventStore'
+import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
+import type { IntegrationEvent } from '@/Foundation/Domain/IntegrationEvent'
+import { BaseEventSourcedRepository } from '@/Foundation/Infrastructure/Database/Repositories/BaseEventSourcedRepository'
 import type { I${ctx.pascalCase}Repository } from '../../Domain/Repositories/I${ctx.pascalCase}Repository'
 import { ${ctx.pascalCase} } from '../../Domain/Aggregates/${ctx.pascalCase}'
 
@@ -407,13 +407,13 @@ async function generateServiceProvider(ctx: any) {
  * @description ${ctx.pascalCase} 模組服務提供者
  */
 
-import { ModuleServiceProvider, type IContainer } from '@/Shared/Infrastructure/Ports/Core/IServiceProvider'
+import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 import { resolveRepository } from '@wiring/RepositoryResolver'
 import { Create${ctx.pascalCase}Service } from '../../Application/Services/Create${ctx.pascalCase}Service'
 import { Get${ctx.pascalCase}Service } from '../../Application/Services/Get${ctx.pascalCase}Service'
 import { ${ctx.pascalCase}MessageService } from '../Services/${ctx.pascalCase}MessageService'
 import type { I${ctx.pascalCase}Repository } from '../../Domain/Repositories/I${ctx.pascalCase}Repository'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class ${ctx.pascalCase}ServiceProvider extends ModuleServiceProvider {
 	override register(container: IContainer): void {
@@ -454,7 +454,7 @@ async function generateRegisterRepositories(ctx: any) {
 
 import { ${ctx.pascalCase}Repository } from '../Persistence/${ctx.pascalCase}Repository'
 import { getRegistry } from '@wiring/RepositoryRegistry'
-import type { IDatabaseAccess } from '@/Shared/Infrastructure/Ports/Database/IDatabaseAccess'
+import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 
 export function register${ctx.pascalCase}Repositories(db: IDatabaseAccess): void {
 	const registry = getRegistry()
@@ -473,8 +473,8 @@ async function generateMessageService(ctx: any) {
  * @description ${ctx.pascalCase} 訊息服務
  */
 
-import type { I${ctx.pascalCase}Messages } from '@/Shared/Infrastructure/Ports/Messages/I${ctx.pascalCase}Messages'
-import type { ITranslator } from '@/Shared/Infrastructure/Ports/Services/ITranslator'
+import type { I${ctx.pascalCase}Messages } from '@/Foundation/Infrastructure/Ports/Messages/I${ctx.pascalCase}Messages'
+import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class ${ctx.pascalCase}MessageService implements I${ctx.pascalCase}Messages {
 	constructor(private translator: ITranslator) {}
@@ -495,7 +495,7 @@ async function generateController(ctx: any) {
  * @description ${ctx.pascalCase} HTTP 控制器
  */
 
-import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { I${ctx.pascalCase}Repository } from '../../Domain/Repositories/I${ctx.pascalCase}Repository'
 import { Create${ctx.pascalCase}Service } from '../../Application/Services/Create${ctx.pascalCase}Service'
 import { Get${ctx.pascalCase}Service } from '../../Application/Services/Get${ctx.pascalCase}Service'
@@ -551,7 +551,7 @@ async function generateRoutes(ctx: any) {
  * @description ${ctx.pascalCase} 路由定義
  */
 
-import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import { ${ctx.pascalCase}Controller } from '../Controllers/${ctx.pascalCase}Controller'
 
 export function register${ctx.pascalCase}Routes(router: IModuleRouter, controller: ${ctx.pascalCase}Controller): void {
@@ -571,7 +571,7 @@ async function generateWiring(ctx: any) {
 
 import { register${ctx.pascalCase}Routes } from '../../Presentation/Routes/api'
 import { ${ctx.pascalCase}Controller } from '../../Presentation/Controllers/${ctx.pascalCase}Controller'
-import { createGravitoModuleRouter } from '@/Shared/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
+import { createGravitoModuleRouter } from '@/Foundation/Infrastructure/Adapters/Gravito/GravitoModuleRouter'
 import type { I${ctx.pascalCase}Repository } from '../../Domain/Repositories/I${ctx.pascalCase}Repository'
 
 export function wire${ctx.pascalCase}Routes(core: any): void {
@@ -593,7 +593,7 @@ async function generateModuleIndex(ctx: any) {
  * @description ${ctx.pascalCase} 模組導出與裝配定義
  */
 
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { ${ctx.pascalCase}ServiceProvider } from './Infrastructure/Providers/${ctx.pascalCase}ServiceProvider'
 import { register${ctx.pascalCase}Repositories } from './Infrastructure/Providers/register${ctx.pascalCase}Repositories'
 import { wire${ctx.pascalCase}Routes } from './Infrastructure/Wiring/wire${ctx.pascalCase}Routes'
@@ -651,7 +651,7 @@ export interface I${ctx.pascalCase}Messages {
 }
 `
 	await writeFileWithDir(
-		`app/Shared/Infrastructure/Ports/Messages/I${ctx.pascalCase}Messages.ts`,
+		`app/Foundation/Infrastructure/Ports/Messages/I${ctx.pascalCase}Messages.ts`,
 		content
 	)
 }

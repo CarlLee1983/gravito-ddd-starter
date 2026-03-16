@@ -62,8 +62,7 @@
 ---
 
 ## 相關指南
-- [領域設計詳解 (Entities, VO, Events)](./DOMAIN_DESIGN_GUIDE.md)
-- [分層架構規則與禁止事項](./LAYERED_ARCHITECTURE_RULES.md)
-- [測試策略與覆蓋率目標](./TESTING_STRATEGY.md)
+- [核心架構設計](../02-Architecture/CORE_DESIGN.md)
+- [模組開發指南](../04-Module-Development/DEVELOPMENT_GUIDE.md)
 
-最後更新: 2026-03-13
+最後更新: 2026-03-16

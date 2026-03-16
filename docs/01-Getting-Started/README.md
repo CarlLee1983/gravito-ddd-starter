@@ -8,8 +8,7 @@
 
 | 文檔 | 用途 | 時間 |
 |------|------|------|
-| **[快速參考](./QUICK_REFERENCE.md)** | 最常用的指令和快速檢查 | 5 min |
-| **[環境設置](./SETUP.md)** | 第一次安裝和配置 | 10 min |
+| **[快速實戰](./QUICK_START.md)** | 15 分鐘建立第一個模組 | 15 min |
 
 ---
 
@@ -19,14 +18,14 @@
 
 ```bash
 # 克隆專案
-git clone <repo-url>
-cd gravito-ddd-starter
+git clone <repo-url> my-app
+cd my-app
 
 # 安裝依賴
 bun install
 
-# 設置 Git hooks
-bun run setup
+# 設置 Git hooks（可選）
+bun run setup:hooks
 ```
 
 ### 2. 啟動開發伺服器 (1 min)
@@ -35,31 +34,31 @@ bun run setup
 # Memory 模式（推薦用於開發）
 ORM=memory bun run dev
 
-# 訪問 API
-curl http://localhost:3000/health
+# 訪問 API（模板預設提供 /api）
+curl http://localhost:3000/api
 ```
 
 ### 3. 建立第一個 API (2 min)
 
 ```bash
 # 生成新模組
-bun run make:module Product
+bun run generate:module Product
 
 # 編輯模組代碼
-# src/Modules/Product/Domain/Aggregates/Product.ts
-# src/Modules/Product/Presentation/Controllers/ProductController.ts
+# app/Modules/Product/Domain/...
+# app/Modules/Product/Presentation/...
 
 # 重新啟動伺服器，新路由自動添加
-# GET /api/products
-# POST /api/products
-# GET /api/products/:id
+# GET /products
+# POST /products
+# GET /products/:id
 ```
 
 ### 4. 驗證 (1 min)
 
 ```bash
-# 運行所有測試
-bun test
+# 運行最小測試
+bun run test
 
 # TypeScript 檢查
 bun run typecheck
@@ -71,52 +70,18 @@ bun run typecheck
 
 ## 📚 下一步
 
-### 新手路徑 (完整入門)
-
-1. **了解架構** (20 min)
-   - 讀 [整體架構](../02-Architecture/ARCHITECTURE.md)
-   - 掌握四層架構基本概念
-
-2. **建立第一個業務模組** (1-2 小時)
-   - 跟著 [模組開發指南](../04-Module-Development/MODULE_GUIDE.md)
-   - 按照 [DDD 實施檢查清單](../03-DDD-Design/DDD_IMPLEMENTATION_CHECKLIST.md) 檢查質量
-
-3. **理解數據庫** (20 min)
-   - 讀 [數據庫指南](../05-Database-ORM/DATABASE.md)
-   - 嘗試從 Memory ORM 遷移到 Drizzle
-
-### 有經驗開發者路徑 (快速對接)
-
-1. **讀架構決策** (15 min)
-   - [架構決策](../02-Architecture/ARCHITECTURE_DECISIONS.md)
-   - [抽象化規則](../02-Architecture/ABSTRACTION_RULES.md)
-
-2. **理解 DDD 實施** (20 min)
-   - [DDD 實施檢查清單](../03-DDD-Design/DDD_IMPLEMENTATION_CHECKLIST.md)
-
-3. **探索 ORM 系統** (15 min)
-   - [ORM 透明設計](../05-Database-ORM/ORM_TRANSPARENT_DESIGN.md)
-   - [ORM 遷移指南](../05-Database-ORM/ORM_MIGRATION_GUIDE.md)
+1. 讀 [核心架構設計](../02-Architecture/CORE_DESIGN.md)
+2. 讀 [模組開發指南](../04-Module-Development/DEVELOPMENT_GUIDE.md)
+3. 讀 [DDD 實施檢查清單](../03-DDD-Design/DDD_CHECKLIST.md)
 
 ---
 
 ## 🎯 常見需求
 
-### "我想快速查找指令"
-→ [快速參考](./QUICK_REFERENCE.md)
-
-### "我是 Laravel 開發者，想快速上手"
-→ 讀 [SETUP.md](./SETUP.md)
-→ 對比 [數據庫指南](../05-Database-ORM/DATABASE.md) (類似 Artisan 指令)
-
-### "我是 Node.js 開發者"
-→ 讀 [整體架構](../02-Architecture/ARCHITECTURE.md)
-→ 對比 [模組開發指南](../04-Module-Development/MODULE_GUIDE.md)
-
 ### "我想快速建立一個 CRUD API"
-→ 使用 `bun run make:module <Name> --db`
-→ 按 [模組開發指南](../04-Module-Development/MODULE_GUIDE.md) 實施
-→ 用 [DDD 實施檢查清單](../03-DDD-Design/DDD_IMPLEMENTATION_CHECKLIST.md) 驗證
+→ 使用 `bun run generate:module <Name>`  
+→ 按 [模組開發指南](../04-Module-Development/DEVELOPMENT_GUIDE.md) 實施  
+→ 用 [DDD 實施檢查清單](../03-DDD-Design/DDD_CHECKLIST.md) 驗證
 
 ---
 
@@ -138,15 +103,8 @@ A: 安裝到跑第一個 API：15 分鐘。
 
 ## 📖 參考
 
-- [快速參考](./QUICK_REFERENCE.md) - 所有常用指令
-- [環境設置](./SETUP.md) - 詳細配置步驟
-- [整體架構](../02-Architecture/ARCHITECTURE.md) - 深入理解設計
+- [核心架構設計](../02-Architecture/CORE_DESIGN.md)
+- [模組開發指南](../04-Module-Development/DEVELOPMENT_GUIDE.md)
+- [專案再利用指南](../10-Project-Reuse/REUSE_GUIDE.md)
 
----
-
-**下一步**:
-- 選擇你的學習路徑（新手或有經驗）
-- 閱讀 [環境設置](./SETUP.md)
-- 或直接跳到 [快速參考](./QUICK_REFERENCE.md)
-
-最後更新: 2026-03-11
+最後更新: 2026-03-16

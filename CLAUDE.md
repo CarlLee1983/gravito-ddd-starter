@@ -135,7 +135,7 @@ bun scripts/generate-module.ts Order --redis --cache --db
 每個模組遵循嚴格的分層：
 
 ```
-src/Modules/Product/
+app/Modules/Product/
 ├── Domain/
 │   ├── Entities/Product.ts              # 不知道 ORM 存在
 │   ├── ValueObjects/ProductId.ts
@@ -178,7 +178,7 @@ src/Modules/Product/
 
 ## 自動模組註冊機制
 
-`ModuleAutoWirer` 自動掃描 `src/Modules/*/index.ts`，尋找 `IModuleDefinition` 導出並完成：
+`ModuleAutoWirer` 自動掃描 `app/Modules/*/index.ts`，尋找 `IModuleDefinition` 導出並完成：
 1. Service Provider 註冊（DI 容器綁定）
 2. `registerRepositories()` - Repository 工廠註冊
 3. `registerRoutes()` - HTTP 路由註冊
@@ -239,7 +239,7 @@ cd /Users/carl/Dev/Carl/gravito-core/packages/core && bun run build
 ### Q: 新模組無法自動註冊或路由未生效
 
 **A**: 檢查以下幾點：
-1. `src/Modules/{ModuleName}/index.ts` 是否正確導出 `IModuleDefinition`
+1. `app/Modules/{ModuleName}/index.ts` 是否正確導出 `IModuleDefinition`
 2. `registerRoutes` 函數中，如果需要從容器取得服務（如 redis、database），應使用 try-catch 處理：
    ```typescript
    let service: any
@@ -271,7 +271,7 @@ cd /Users/carl/Dev/Carl/gravito-core/packages/core && bun run build
 ✅ 查詢錯誤處理改進（不再靜默吞掉異常）
 ✅ Repository 層重構（消除 ~300 行重複代碼）
 
-Port 介面位置：`src/Shared/Infrastructure/Ports/`
+Port 介面位置：`app/Foundation/Infrastructure/Ports/`
 - Core/: ILogger、IHealthCheck
 - Database/: IDatabaseAccess、連線檢查
 - Messaging/: IEventDispatcher、IDeadLetterQueue

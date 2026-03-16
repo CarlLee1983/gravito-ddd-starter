@@ -287,8 +287,8 @@ echo ""
 # Check key directories
 DIRS=(
     "src"
-    "src/Shared"
-    "src/Modules"
+    "app/Foundation"
+    "app/Modules"
     "tests"
     "config"
 )

@@ -5,7 +5,7 @@
  * 此檔案定義純粹的 Port 介面，不依賴任何特定框架。
  * 具體的框架適配器（如 Gravito）應在獨立的 Adapter 檔案中實作。
  *
- * @see Shared/Infrastructure/Framework/GravitoHttpContextAdapter.ts - Gravito 適配器
+ * @see Foundation/Infrastructure/Framework/GravitoHttpContextAdapter.ts - Gravito 適配器
  */
 
 /**

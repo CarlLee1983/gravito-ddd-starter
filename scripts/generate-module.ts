@@ -54,7 +54,7 @@ async function generateModule() {
 		}
 
 		// 1. 生成 Entity/Aggregate
-		const entityContent = `import { BaseEntity } from '@/Shared/Domain/BaseEntity'
+		const entityContent = `import { BaseEntity } from '@/Foundation/Domain/BaseEntity'
 
 export interface ${pascalCase}Props {
 	id: string
@@ -91,7 +91,7 @@ export class ${pascalCase} extends BaseEntity {
 		await writeFile(join(modulePath, `Domain/Aggregates/${pascalCase}.ts`), entityContent)
 
 		// 2. 生成 Repository 介面
-		const iRepository = `import type { IRepository } from '@/Shared/Domain/IRepository'
+		const iRepository = `import type { IRepository } from '@/Foundation/Domain/IRepository'
 import { ${pascalCase} } from '../Aggregates/${pascalCase}'
 
 export interface I${pascalCase}Repository extends IRepository<${pascalCase}> {
@@ -228,7 +228,7 @@ export class ${pascalCase}ServiceProvider extends ModuleServiceProvider {
 		await writeFile(join(modulePath, `Infrastructure/Providers/${pascalCase}ServiceProvider.ts`), serviceProvider)
 
 		// 6. 生成 Controller
-		const controller = `import type { IHttpContext } from '@/Shared/Presentation/IHttpContext'
+		const controller = `import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
 import type { I${pascalCase}Repository } from '../../Domain/Repositories/I${pascalCase}Repository'
 
 export class ${pascalCase}Controller {
@@ -249,7 +249,7 @@ export class ${pascalCase}Controller {
 		await writeFile(join(modulePath, `Presentation/Controllers/${pascalCase}Controller.ts`), controller)
 
 		// 7. 生成 Routes
-		const routes = `import type { IModuleRouter } from '@/Shared/Presentation/IModuleRouter'
+		const routes = `import type { IModuleRouter } from '@/Foundation/Presentation/IModuleRouter'
 import type { ${pascalCase}Controller } from '../Controllers/${pascalCase}Controller'
 
 export function register${pascalCase}Routes(router: IModuleRouter, controller: ${pascalCase}Controller): void {

@@ -2,7 +2,7 @@
 
 ## Project Structure & Module Organization
 - `app/Modules/*` holds DDD bounded contexts. Each module follows `Domain/`, `Application/`, `Infrastructure/`, `Presentation/`.
-- `app/Shared/` is the shared kernel used across modules.
+- `app/Foundation/` is the shared kernel used across modules.
 - `bin/server.ts` is the HTTP entry point; `app/bootstrap.ts` wires modules.
 - `tests/` is split into `Unit/`, `Integration/`, `Functional/`, and `E2E/`.
 - `database/` contains migrations and seeders; `start/` contains global routes/wiring.
@@ -13,7 +13,7 @@
 - `bun run build`: compile TypeScript to `dist/` and run cleanup.
 - `bun run start`: run the built server from `dist/`.
 - `bun run test`: run all tests with Bun.
-- `bun run test:unit|test:integration`: run scoped suites (see `tests/Unit/` and `tests/Integration/`).
+- `bun run test:unit`: run the scoped unit test suite (see `tests/Unit/`).
 - `bun run lint` / `bun run format`: Biome linting and formatting.
 - `bun run typecheck`: TypeScript type check.
 - `bun run check`: typecheck + lint + boundaries + tests.

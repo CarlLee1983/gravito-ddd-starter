@@ -145,7 +145,7 @@ bun make dto Order OrderDetailDTO
 **刪除項目:**
 - `app/Modules/<Module>` 整個目錄
 - 翻譯檔案 (`locales/en/<module>.json`, `locales/zh-TW/<module>.json`)
-- Port 介面 (`app/Shared/Infrastructure/Ports/Messages/I<Module>Messages.ts`)
+- Port 介面 (`app/Foundation/Infrastructure/Ports/Messages/I<Module>Messages.ts`)
 
 **範例:**
 ```bash
@@ -289,9 +289,8 @@ bun orbit migrate:fresh        # 重置並重新運行所有 migration
 bun route:list                 # 列出所有路由
 
 # Testing
-bun test                       # 運行所有測試
-bun test:unit                  # 運行單元測試
-bun test:integration          # 運行整合測試
+bun run test                   # 運行最小測試
+bun run test:unit              # 運行單元測試
 
 # Quality Checks
 bun run check                  # 完整檢查（型別 + lint + 邊界 + 測試）

@@ -18,9 +18,9 @@
  * ```
  *
  * **當切換到其他 ORM 時（如 Drizzle）：**
- * 1. 建立 `src/Shared/Infrastructure/Database/Adapters/Drizzle/` 資料夾。
+ * 1. 建立 `app/Foundation/Infrastructure/Database/Adapters/Drizzle/` 資料夾。
  * 2. 實現相同的公開介面 (IDatabaseAccess)。
- * 3. 在接線層 (`src/wiring/`) 中切換適配器建立邏輯。
+ * 3. 在接線層 (`start/wiring/`) 中切換適配器建立邏輯。
  */
 
 export { createAtlasDatabaseAccess, createGravitoDatabaseConnectivityCheck } from './GravitoDatabaseAdapter'

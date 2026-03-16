@@ -6,8 +6,8 @@
  * @public - Domain 層定義的公開介面，所有 Repository 實現都必須遵循此契約。
  *
  * **分層設計**
- * - 定義位置：Domain 層（`src/Shared/Domain/IRepository.ts`）
- * - 實現位置：Infrastructure 層（`src/Modules/{Module}/Infrastructure/Repositories/`）
+ * - 定義位置：Domain 層（`app/Foundation/Domain/IRepository.ts`）
+ * - 實現位置：Infrastructure 層（`app/Modules/{Module}/Infrastructure/Repositories/`）
  * - 消費者：Application 層 Service、Controller
  *
  * **依賴反轉 (Dependency Inversion)**
@@ -51,7 +51,7 @@
  * }
  * ```
  *
- * @see docs/ABSTRACTION_RULES.md - 依賴抽象化規則
+ * @see docs/02-Architecture/CORE_DESIGN.md - 依賴規則與分層
  */
 
 import type { BaseEntity } from './BaseEntity'

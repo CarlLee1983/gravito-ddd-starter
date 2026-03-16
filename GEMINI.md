@@ -8,7 +8,7 @@
 
 ### 1. 目錄規範
 - **`app/Modules/`**: 領域模組存放點。每個子目錄代表一個 Bounded Context。
-- **`app/Shared/`**: 共享核心 (Shared Kernel)，包含基類與通用介面。
+- **`app/Foundation/`**: 共享核心 (Shared Kernel)，包含基類與通用介面。
 - **`app/Adapters/`**: 跨模組適配器與防腐層 (ACL)。
 - **`start/wiring/`**: 系統裝配與自動佈線邏輯。
 - **`storage/`**: 存放變動數據 (如 SQLite 檔案、臨時快取)。

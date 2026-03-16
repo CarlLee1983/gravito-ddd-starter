@@ -14,7 +14,7 @@
 
 ### 核心組件
 
--   **`IModuleDefinition`**: 位於 `app/Shared/Infrastructure/Wiring/ModuleDefinition.ts`. 每個模組必須導出的裝配契約。
+-   **`IModuleDefinition`**: 位於 `app/Foundation/Infrastructure/Wiring/ModuleDefinition.ts`. 每個模組必須導出的裝配契約。
 -   **`ModuleAutoWirer`**: 位於 `start/wiring/ModuleAutoWirer.ts`. 負責掃描、動態導入與執行。
 -   **`bootstrap.ts`**: 啟動自動掃描的起點。
 
@@ -28,7 +28,7 @@
 
 ```typescript
 // app/Modules/User/index.ts
-import type { IModuleDefinition } from '@/Shared/Infrastructure/Wiring/ModuleDefinition'
+import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { UserServiceProvider } from './Infrastructure/Providers/UserServiceProvider'
 import { registerUserRepositories } from './Infrastructure/Providers/registerUserRepositories'
 

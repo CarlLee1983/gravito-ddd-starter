@@ -9,7 +9,7 @@ import type { Config } from 'drizzle-kit'
 
 // @ts-ignore - drizzle-kit 0.31.9 只支持 d1-http，但項目使用 libsql
 const config = {
-  schema: './app/Shared/Infrastructure/Database/Adapters/Drizzle/schema.ts',
+  schema: './app/Foundation/Infrastructure/Database/Adapters/Drizzle/schema.ts',
   out: './drizzle',
   driver: 'better-sqlite',
   dbCredentials: {

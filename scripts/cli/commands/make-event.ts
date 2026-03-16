@@ -31,7 +31,7 @@ export async function run(args: string[]) {
  * @description ${event} 領域事件
  */
 
-import { DomainEvent } from '@/Shared/Domain/DomainEvent'
+import { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 
 export class ${event} extends DomainEvent {
 	constructor(

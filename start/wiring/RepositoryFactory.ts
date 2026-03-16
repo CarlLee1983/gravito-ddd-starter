@@ -11,7 +11,7 @@
  * 2. getDatabaseAccess() - 初始化 Database 適配器
  *
  * Repository 建立邏輯完全委托給 RepositoryRegistry
- * （見 src/wiring/RepositoryRegistry.ts）
+ * （見 start/wiring/RepositoryRegistry.ts）
  *
  * 設計優勢：
  * ✅ RepositoryFactory 保持簡潔（只有 2 個函式）
@@ -122,7 +122,7 @@ export function getDatabaseAccess(): IDatabaseAccess | undefined {
  * 每個模組在 registerXRepositories 中直接向容器註冊 Repository：
  *
  * ```typescript
- * // src/Modules/User/Infrastructure/Providers/registerUserRepositories.ts
+ * // app/Modules/User/Infrastructure/Providers/registerUserRepositories.ts
  * export function registerUserRepositories(
  *   db: IDatabaseAccess,
  *   eventDispatcher?: IEventDispatcher,
@@ -139,7 +139,7 @@ export function getDatabaseAccess(): IDatabaseAccess | undefined {
  * 在 ServiceProvider 中直接取用：
  *
  * ```typescript
- * // src/Modules/User/Infrastructure/Providers/UserServiceProvider.ts
+ * // app/Modules/User/Infrastructure/Providers/UserServiceProvider.ts
  * override register(container: IContainer): void {
  *   // userRepository 已由 registerUserRepositories 向容器註冊
  *   // 無需在此重複註冊

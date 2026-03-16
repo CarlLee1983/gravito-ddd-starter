@@ -36,7 +36,7 @@
  * ```
  */
 
-import type { IQueueWorker } from '../app/Shared/Application/Jobs/IQueueWorker'
+import type { IQueueWorker } from '../app/Foundation/Application/Jobs/IQueueWorker'
 
 /**
  * 解析命令行參數
