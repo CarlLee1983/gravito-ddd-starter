@@ -25,12 +25,14 @@ type WhereCondition = { column: string; operator: string; value: unknown }
 class MemoryQueryBuilder implements IQueryBuilder {
 	private limitNum: number | null = null
 	private offsetNum: number | null = null
-	private orderByColumn: string | null = null
-	private orderByDirection: 'ASC' | 'DESC' = 'ASC'
+	private orderByRules: Array<{ column: string; direction: 'ASC' | 'DESC' }> = []
 	private whereConditions: WhereCondition[] = []
 	private orConditions: WhereCondition[] = []
 	private joinClauses: Array<{ table: string; localColumn: string; foreignColumn: string; type: 'INNER' | 'LEFT' }> = []
 	private groupByColumns: string[] = []
+	private isDistinct: boolean = false
+	private distinctColumns: string[] = []
+	private havingConditions: Array<{ column: string; operator: string; value: unknown }> = []
 
 	/**
 	 * 建構子
@@ -72,13 +74,12 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 設定排序規則
+	 * 設定排序規則（支援多欄位）
 	 * @param column - 欄位名稱
-	 * @param direction - 排序方向 (ASC, DESC)
+	 * @param direction - 排序方向 (ASC, DESC，預設 ASC)
 	 */
-	orderBy(column: string, direction: 'ASC' | 'DESC'): IQueryBuilder {
-		this.orderByColumn = column
-		this.orderByDirection = direction
+	orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): IQueryBuilder {
+		this.orderByRules.push({ column, direction })
 		return this
 	}
 
@@ -164,6 +165,30 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
+	 * 取得去重後的多筆記錄
+	 * @param columns - 要選取的欄位名稱
+	 */
+	async distinct(columns?: string[]): Promise<Record<string, unknown>[]> {
+		this.isDistinct = true
+		if (columns) {
+			this.distinctColumns = columns
+		}
+		const result = await this.select(columns)
+		return result
+	}
+
+	/**
+	 * GROUP BY 後的條件篩選 (HAVING)
+	 * @param column - 聚合欄位名稱
+	 * @param operator - 比較運算子
+	 * @param value - 比較值
+	 */
+	having(column: string, operator: string, value: unknown): IQueryBuilder {
+		this.havingConditions.push({ column, operator, value })
+		return this
+	}
+
+	/**
 	 * 取得指定表格的所有原始資料行
 	 * @private
 	 */
@@ -240,13 +265,18 @@ class MemoryQueryBuilder implements IQueryBuilder {
 			// 實際使用應使用 Atlas 或 Drizzle 適配器
 		}
 
-		// 排序
-		if (this.orderByColumn != null) {
+		// 排序（支援多欄位）
+		if (this.orderByRules.length > 0) {
 			result = [...result].sort((a, b) => {
-				const aVal = a[this.orderByColumn!] as string | number
-				const bVal = b[this.orderByColumn!] as string | number
-				const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
-				return this.orderByDirection === 'DESC' ? -cmp : cmp
+				for (const rule of this.orderByRules) {
+					const aVal = a[rule.column] as string | number
+					const bVal = b[rule.column] as string | number
+					const cmp = aVal < bVal ? -1 : aVal > bVal ? 1 : 0
+					if (cmp !== 0) {
+						return rule.direction === 'DESC' ? -cmp : cmp
+					}
+				}
+				return 0
 			})
 		}
 
@@ -304,19 +334,37 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	 */
 	async select(columns?: string[]): Promise<Record<string, unknown>[]> {
 		const rows = this.getTableRows()
-		const filtered = this.filterRows(rows)
-		
-		if (!columns || columns.length === 0) return filtered
-		
-		return filtered.map(row => {
-			const result: Record<string, unknown> = {}
-			for (const col of columns) {
+		let filtered = this.filterRows(rows)
+
+		if (!columns || columns.length === 0) {
+			columns = columns || (filtered.length > 0 ? Object.keys(filtered[0]) : [])
+		}
+
+		const result = filtered.map(row => {
+			const rowResult: Record<string, unknown> = {}
+			for (const col of columns!) {
 				if (col in row) {
-					result[col] = row[col]
+					rowResult[col] = row[col]
 				}
 			}
-			return result
+			return rowResult
 		})
+
+		// 應用 DISTINCT
+		if (this.isDistinct) {
+			const seen = new Set<string>()
+			const distinctResult: Record<string, unknown>[] = []
+			for (const row of result) {
+				const key = JSON.stringify(row)
+				if (!seen.has(key)) {
+					seen.add(key)
+					distinctResult.push(row)
+				}
+			}
+			return distinctResult
+		}
+
+		return result
 	}
 
 	/**

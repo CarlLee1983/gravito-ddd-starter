@@ -24,8 +24,8 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   private whereConditions: any[] = []
   /** 儲存 OR 條件 */
   private orConditions: any[] = []
-  /** 排序配置 */
-  private orderByConfig: { column: string; direction: 'ASC' | 'DESC' } | null = null
+  /** 排序配置（支援多欄位） */
+  private orderByRules: Array<{ column: string; direction: 'ASC' | 'DESC' }> = []
   /** 限制筆數 */
   private limitValue: number | null = null
   /** 位移筆數 */
@@ -34,6 +34,8 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   private joinClauses: Array<{ table: string; localColumn: string; foreignColumn: string; type: 'INNER' | 'LEFT' }> = []
   /** GROUP BY 欄位 */
   private groupByColumns: string[] = []
+  /** HAVING 條件 */
+  private havingConditions: any[] = []
 
   /**
    * 建構子
@@ -147,10 +149,16 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
         }
       }
 
-      if (this.orderByConfig) {
-        const col = this.tableSchema[this.orderByConfig.column]
+      // 應用 HAVING 條件
+      if (this.havingConditions.length > 0) {
+        query = query.having(and(...this.havingConditions))
+      }
+
+      // 應用排序（支援多欄位）
+      for (const rule of this.orderByRules) {
+        const col = this.tableSchema[rule.column]
         query = query.orderBy(
-          this.orderByConfig.direction === 'ASC' ? asc(col) : desc(col)
+          rule.direction === 'ASC' ? asc(col) : desc(col)
         )
       }
 
@@ -216,10 +224,16 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
         }
       }
 
-      if (this.orderByConfig) {
-        const col = this.tableSchema[this.orderByConfig.column]
+      // 應用 HAVING 條件
+      if (this.havingConditions.length > 0) {
+        query = query.having(and(...this.havingConditions))
+      }
+
+      // 應用排序（支援多欄位）
+      for (const rule of this.orderByRules) {
+        const col = this.tableSchema[rule.column]
         query = query.orderBy(
-          this.orderByConfig.direction === 'ASC' ? asc(col) : desc(col)
+          rule.direction === 'ASC' ? asc(col) : desc(col)
         )
       }
 
@@ -334,15 +348,17 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 設定資料排序規則
+   * 設定資料排序規則（支援多欄位）
+   *
+   * 多次呼叫此方法可建立多欄位排序。呼叫順序決定排序優先級。
    *
    * @param column - 排序欄位
-   * @param direction - 排序方向 (ASC 或 DESC)
+   * @param direction - 排序方向 (ASC 或 DESC，預設為 ASC)
    * @returns 回傳此實例以支援鏈式調用
    */
   orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): IQueryBuilder {
     const normalizedDirection = direction.toUpperCase() as 'ASC' | 'DESC'
-    this.orderByConfig = { column, direction: normalizedDirection }
+    this.orderByRules.push({ column, direction: normalizedDirection })
     return this
   }
 
@@ -528,5 +544,116 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
 
     this.whereConditions.push(isNotNull(col))
     return this
+  }
+
+  /**
+   * GROUP BY 後的條件篩選 (HAVING)
+   *
+   * @param column - 聚合欄位名稱
+   * @param operator - 比較運算子
+   * @param value - 比較值
+   * @returns 回傳此實例以支援鏈式調用
+   */
+  having(column: string, operator: string, value: unknown): IQueryBuilder {
+    const col = this.tableSchema[column]
+
+    if (!col) {
+      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+    }
+
+    let condition: any
+    switch (operator) {
+      case '=':
+        condition = eq(col, value)
+        break
+      case '!=':
+      case '<>':
+        condition = ne(col, value)
+        break
+      case '>':
+        condition = gt(col, value)
+        break
+      case '<':
+        condition = lt(col, value)
+        break
+      case '>=':
+        condition = gte(col, value)
+        break
+      case '<=':
+        condition = lte(col, value)
+        break
+      case 'like':
+        condition = like(col, value as string)
+        break
+      case 'in':
+        condition = inArray(col, value as unknown[])
+        break
+      default:
+        throw new Error(`Unsupported operator in HAVING: ${operator}`)
+    }
+
+    this.havingConditions.push(condition)
+    return this
+  }
+
+  /**
+   * 取得去重後的多筆記錄
+   *
+   * @param columns - 要選取的欄位名稱
+   * @returns 去重後的記錄陣列
+   */
+  async distinct(columns?: string[]): Promise<Record<string, unknown>[]> {
+    try {
+      let query: any
+
+      if (columns && columns.length > 0) {
+        const selection: Record<string, any> = {}
+        for (const colName of columns) {
+          const col = this.tableSchema[colName]
+          if (col) {
+            selection[colName] = col
+          }
+        }
+        query = (this.db as any).selectDistinct(selection).from(this.tableSchema)
+      } else {
+        query = (this.db as any).selectDistinct().from(this.tableSchema)
+      }
+
+      // 應用 JOIN 子句
+      for (const join of this.joinClauses) {
+        if (join.type === 'LEFT') {
+          this.logger?.warn(`LEFT JOIN not fully implemented in Drizzle adapter for table: ${join.table}`)
+        } else {
+          this.logger?.warn(`INNER JOIN not fully implemented in Drizzle adapter for table: ${join.table}`)
+        }
+      }
+
+      if (this.whereConditions.length > 0) {
+        query = query.where(and(...this.whereConditions))
+      }
+
+      // 應用排序（支援多欄位）
+      for (const rule of this.orderByRules) {
+        const col = this.tableSchema[rule.column]
+        query = query.orderBy(
+          rule.direction === 'ASC' ? asc(col) : desc(col)
+        )
+      }
+
+      if (this.offsetValue) {
+        query = query.offset(this.offsetValue)
+      }
+
+      if (this.limitValue) {
+        query = query.limit(this.limitValue)
+      }
+
+      return await query
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      err.message = `DrizzleQueryBuilder.distinct() failed: ${err.message}`
+      this.logger?.error(`Error in distinct()`, err)
+      throw err
+    }
   }
 }

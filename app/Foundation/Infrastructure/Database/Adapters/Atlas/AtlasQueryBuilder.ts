@@ -32,8 +32,8 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	private whereConditions: Array<{ column: string; operator: string; value: unknown }> = []
 	/** 儲存 OR 條件 */
 	private orConditions: Array<{ column: string; operator: string; value: unknown }> = []
-	/** 排序配置 */
-	private orderByConfig: { column: string; direction: 'ASC' | 'DESC' } | null = null
+	/** 排序配置（支援多欄位） */
+	private orderByRules: Array<{ column: string; direction: 'ASC' | 'DESC' }> = []
 	/** 限制筆數 */
 	private limitValue: number | null = null
 	/** 位移筆數 */
@@ -42,6 +42,8 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	private joinClauses: Array<{ table: string; localColumn: string; foreignColumn: string; type: 'INNER' | 'LEFT' }> = []
 	/** GROUP BY 欄位 */
 	private groupByColumns: string[] = []
+	/** HAVING 條件 */
+	private havingConditions: Array<{ column: string; operator: string; value: unknown }> = []
 
 	/**
 	 * 建構子
@@ -112,10 +114,10 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 				query = query.groupBy(...this.groupByColumns)
 			}
 
-			// 應用排序規則
-			if (this.orderByConfig) {
-				const dir = this.orderByConfig.direction === 'ASC' ? 'asc' : 'desc'
-				query = query.orderBy(this.orderByConfig.column, dir)
+			// 應用排序規則（支援多欄位）
+			for (const rule of this.orderByRules) {
+				const dir = rule.direction === 'ASC' ? 'asc' : 'desc'
+				query = query.orderBy(rule.column, dir)
 			}
 
 			// 強制限制為 1 筆記錄
@@ -174,10 +176,15 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 				query = query.groupBy(...this.groupByColumns)
 			}
 
-			// 應用排序
-			if (this.orderByConfig) {
-				const dir = this.orderByConfig.direction === 'ASC' ? 'asc' : 'desc'
-				query = query.orderBy(this.orderByConfig.column, dir)
+			// 應用 HAVING 條件
+			for (const having of this.havingConditions) {
+				query = this.applyWhere(query, having)
+			}
+
+			// 應用排序（支援多欄位）
+			for (const rule of this.orderByRules) {
+				const dir = rule.direction === 'ASC' ? 'asc' : 'desc'
+				query = query.orderBy(rule.column, dir)
 			}
 
 			// 應用 OFFSET 位移
@@ -302,7 +309,9 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 設定資料排序規則
+	 * 設定資料排序規則（支援多欄位）
+	 *
+	 * 多次呼叫此方法可建立多欄位排序。呼叫順序決定排序優先級。
 	 *
 	 * @param column - 排序欄位
 	 * @param direction - 排序方向（ASC 或 DESC，預設為 ASC）
@@ -310,7 +319,7 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 */
 	orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): IQueryBuilder {
 		const normalizedDirection = direction.toUpperCase() as 'ASC' | 'DESC'
-		this.orderByConfig = { column, direction: normalizedDirection }
+		this.orderByRules.push({ column, direction: normalizedDirection })
 		return this
 	}
 
@@ -434,6 +443,79 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	whereNotNull(column: string): any {
 		this.whereConditions.push({ column, operator: 'whereNotNull', value: null })
 		return this
+	}
+
+	/**
+	 * GROUP BY 後的條件篩選 (HAVING)
+	 *
+	 * @param column - 聚合欄位名稱
+	 * @param operator - 比較運算子
+	 * @param value - 比較值
+	 * @returns 回傳此實例以支援鏈式調用
+	 */
+	having(column: string, operator: string, value: unknown): any {
+		this.havingConditions.push({ column, operator, value })
+		return this
+	}
+
+	/**
+	 * 取得去重後的多筆記錄
+	 *
+	 * @param columns - 要選取的欄位名稱
+	 * @returns 去重後的記錄陣列
+	 */
+	async distinct(columns?: string[]): Promise<Record<string, unknown>[]> {
+		try {
+			let query = (this.getQueryDB() as any).table(this.tableName)
+
+			// 應用欄位選取
+			if (columns && columns.length > 0) {
+				query = query.select(columns)
+			}
+
+			// 應用 DISTINCT
+			query = query.distinct()
+
+			// 應用 JOIN 子句
+			for (const join of this.joinClauses) {
+				if (join.type === 'LEFT') {
+					query = query.leftJoin(join.table, join.localColumn, join.foreignColumn)
+				} else {
+					query = query.join(join.table, join.localColumn, join.foreignColumn)
+				}
+			}
+
+			// 應用所有 WHERE 條件
+			for (const cond of this.whereConditions) {
+				query = this.applyWhere(query, cond)
+			}
+
+			// 應用排序（支援多欄位）
+			for (const rule of this.orderByRules) {
+				const dir = rule.direction === 'ASC' ? 'asc' : 'desc'
+				query = query.orderBy(rule.column, dir)
+			}
+
+			// 應用 OFFSET 位移
+			if (this.offsetValue) {
+				query = query.offset(this.offsetValue)
+			}
+
+			// 應用 LIMIT 限制筆數
+			if (this.limitValue) {
+				query = query.limit(this.limitValue)
+			}
+
+			// 調用 .get() 來實際執行查詢
+			const result = await query.get()
+			const rows = Array.isArray(result) ? result : []
+			return rows
+		} catch (error) {
+			const err = error instanceof Error ? error : new Error(String(error))
+			err.message = `AtlasQueryBuilder.distinct() failed: ${err.message}`
+			this.logger?.error(`Error in distinct()`, err)
+			throw err
+		}
 	}
 
 	/**

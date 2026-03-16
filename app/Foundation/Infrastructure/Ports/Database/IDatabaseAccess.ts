@@ -56,6 +56,22 @@ export interface IQueryBuilder {
 	select(columns?: string[]): Promise<Record<string, unknown>[]>
 
 	/**
+	 * 取得去重後的多筆記錄
+	 *
+	 * @param {string[]} [columns] - 要選取的欄位名稱（可選，預設選取所有欄位）
+	 * @returns {Promise<Record<string, unknown>[]>} 去重後的記錄陣列
+	 *
+	 * @example
+	 * ```typescript
+	 * // 取得不重複的狀態值
+	 * const statuses = await db.table('orders')
+	 *   .distinct(['status'])
+	 *   .select()
+	 * ```
+	 */
+	distinct(columns?: string[]): Promise<Record<string, unknown>[]>
+
+	/**
 	 * 新增單筆記錄
 	 *
 	 * @param {Record<string, unknown>} data - 要新增的數據
@@ -105,11 +121,23 @@ export interface IQueryBuilder {
 	/**
 	 * 排序
 	 *
+	 * 支援多次呼叫進行多欄位排序。
+	 * 呼叫順序決定排序優先級（第一次呼叫為優先度最高）。
+	 *
 	 * @param {string} column - 排序欄位
-	 * @param {'ASC' | 'DESC'} direction - 排序方向
+	 * @param {'ASC' | 'DESC'} direction - 排序方向（預設為 'ASC'）
 	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
+	 *
+	 * @example
+	 * ```typescript
+	 * // 多欄位排序：先按 status，再按 created_at
+	 * await db.table('orders')
+	 *   .orderBy('status', 'ASC')
+	 *   .orderBy('created_at', 'DESC')
+	 *   .select()
+	 * ```
 	 */
-	orderBy(column: string, direction: 'ASC' | 'DESC'): IQueryBuilder
+	orderBy(column: string, direction?: 'ASC' | 'DESC'): IQueryBuilder
 
 	/**
 	 * 範圍查詢
@@ -173,6 +201,25 @@ export interface IQueryBuilder {
 	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
 	 */
 	groupBy(...columns: string[]): IQueryBuilder
+
+	/**
+	 * GROUP BY 後的條件篩選（HAVING 子句）
+	 *
+	 * @param {string} column - 聚合欄位名稱
+	 * @param {WhereOperator} operator - 比較運算子
+	 * @param {unknown} value - 比較值
+	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
+	 *
+	 * @example
+	 * ```typescript
+	 * // 取得訂單數量 > 5 的使用者
+	 * await db.table('orders')
+	 *   .groupBy('user_id')
+	 *   .having('count', '>', 5)
+	 *   .select()
+	 * ```
+	 */
+	having(column: string, operator: WhereOperator, value: unknown): IQueryBuilder
 
 	/**
 	 * 檢查欄位為 NULL
