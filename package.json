@@ -31,6 +31,7 @@
     "typecheck": "tsc --noEmit",
     "lint": "biome lint src tests",
     "lint:fix": "biome lint src tests --fix",
+    "lint:ports": "bun scripts/port-lint.ts",
     "format": "biome format src tests --write",
     "format:check": "biome format src tests --check",
     "boundaries": "bun scripts/check-boundaries.ts",
