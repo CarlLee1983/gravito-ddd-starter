@@ -4,7 +4,7 @@
  */
 
 import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
-import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
 import { PaymentRepository } from '../Repositories/PaymentRepository'
 import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 

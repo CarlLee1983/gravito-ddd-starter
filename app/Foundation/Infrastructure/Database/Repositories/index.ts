@@ -4,5 +4,5 @@
  * 導出 CQRS 讀側的查詢倉庫介面與基礎實現。
  */
 
-export type { IQueryRepository } from './IQueryRepository'
+export type { IQueryRepository } from '@/Foundation/Application/Ports/IQueryRepository'
 export { BaseQueryRepository } from './BaseQueryRepository'

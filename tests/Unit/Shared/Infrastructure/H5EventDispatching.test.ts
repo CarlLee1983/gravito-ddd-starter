@@ -20,7 +20,7 @@ import {
 	DEFAULT_RETRY_POLICY,
 	type RetryPolicy,
 } from '@/Foundation/Infrastructure/Events/Policy/EventFailurePolicy'
-import type { Event } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { Event } from '@/Foundation/Application/Ports/IEventDispatcher'
 
 // ==== Test Fixtures ====
 

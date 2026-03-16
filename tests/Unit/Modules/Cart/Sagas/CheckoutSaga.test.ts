@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from 'bun:test'
 import { createCheckoutSaga } from '@/Modules/Cart/Application/Sagas/CheckoutSaga'
-import type { SagaContext } from '@/Foundation/Infrastructure/Sagas/ISaga'
+import type { SagaContext } from '@/Foundation/Application/Sagas/ISaga'
 
 describe('CheckoutSaga', () => {
 	describe('完整結帳流程', () => {

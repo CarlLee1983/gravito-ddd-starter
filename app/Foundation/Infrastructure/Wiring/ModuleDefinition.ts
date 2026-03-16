@@ -9,10 +9,10 @@
 
 import type { IDatabaseAccess } from '../Ports/Database/IDatabaseAccess'
 import type { ModuleServiceProvider } from '../Ports/Core/IServiceProvider'
-import type { IEventDispatcher } from '../Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '../../Application/Ports/IEventDispatcher'
 import type { IModuleRouter } from '../../Presentation/IModuleRouter'
 import type { IAuthRouter } from '../../Presentation/IAuthRouter'
-import type { IMiddlewareResolver } from './IMiddlewareResolver'
+import type { IMiddlewareResolver } from '../../Presentation/IMiddlewareResolver'
 
 /**
  * 路由註冊用 Context（框架無關）

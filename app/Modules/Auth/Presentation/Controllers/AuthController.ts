@@ -11,7 +11,7 @@ import { LoginService } from '../../Application/Services/LoginService'
 import { RegisterService } from '../../Application/Services/RegisterService'
 import { LogoutService } from '../../Application/Services/LogoutService'
 import { InvalidCredentialsException } from '@/Modules/Session/Domain/Exceptions/InvalidCredentialsException'
-import type { IUserProfileService } from '@/Foundation/Infrastructure/Ports/Auth/IUserProfileService'
+import type { IUserProfileService } from '@/Foundation/Application/Ports/Auth/IUserProfileService'
 
 /**
  * Auth 控制器

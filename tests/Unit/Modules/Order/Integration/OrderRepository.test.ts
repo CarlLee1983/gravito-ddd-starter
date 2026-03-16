@@ -6,7 +6,7 @@ import { OrderId } from '@/Modules/Order/Domain/ValueObjects/OrderId'
 import { Money } from '@/Modules/Order/Domain/ValueObjects/Money'
 import { OrderTotal } from '@/Modules/Order/Domain/ValueObjects/OrderTotal'
 import { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
-import { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
 
 describe('OrderRepository Integration', () => {
   let repository: OrderRepository

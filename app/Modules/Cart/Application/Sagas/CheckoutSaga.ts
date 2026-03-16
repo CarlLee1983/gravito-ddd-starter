@@ -17,7 +17,7 @@
  */
 
 import { SequentialSaga } from '@/Foundation/Infrastructure/Sagas/SequentialSaga'
-import type { ISagaStep, SagaContext } from '@/Foundation/Infrastructure/Sagas/ISaga'
+import type { ISagaStep, SagaContext } from '@/Foundation/Application/Sagas/ISaga'
 
 /**
  * 結帳 Saga 輸入

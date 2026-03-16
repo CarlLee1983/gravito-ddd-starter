@@ -3,7 +3,7 @@
  * @description Portal 查詢服務實現。負責聚合多個模組的資料提供給首頁使用（BFF 聚合層）
  */
 
-import type { IPortalQueryService, HomePageData } from '../../Presentation/Queries/IPortalQueryService'
+import type { IPortalQueryService, HomePageData } from '../../Application/Queries/IPortalQueryService'
 import type { IProductQueryService } from '@/Modules/Product/Application/Queries/IProductQueryService'
 
 /**

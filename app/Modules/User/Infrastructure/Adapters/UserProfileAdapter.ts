@@ -5,7 +5,7 @@
  * 將 User Repository 的用戶資料查詢能力適配到 IUserProfileService Port。
  */
 
-import type { IUserProfileService, UserProfileResult } from '@/Foundation/Infrastructure/Ports/Auth/IUserProfileService'
+import type { IUserProfileService, UserProfileResult } from '@/Foundation/Application/Ports/Auth/IUserProfileService'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 
 /**

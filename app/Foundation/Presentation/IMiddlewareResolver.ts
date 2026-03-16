@@ -8,7 +8,7 @@
  * - 支持直接取得 middleware 陣列，方便路由註冊使用
  */
 
-import type { Middleware } from '@/Foundation/Presentation/IModuleRouter'
+import type { Middleware } from './IModuleRouter'
 
 export interface IMiddlewareResolver {
 	/**

@@ -11,7 +11,7 @@
 
 import type { DomainEvent } from '../../../Domain/DomainEvent'
 import type { IntegrationEvent } from '../../../Domain/IntegrationEvent'
-import type { IEventDispatcher, Event, EventHandler } from '../../Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher, Event, EventHandler } from '../../../Application/Ports/IEventDispatcher'
 import type { IDeadLetterQueue } from '../Policy/DeadLetterQueue'
 import type { ILogger } from '../../Ports/Services/ILogger'
 import { calculateDelay, shouldRetry, DEFAULT_RETRY_POLICY, type RetryPolicy } from '../Policy/EventFailurePolicy'

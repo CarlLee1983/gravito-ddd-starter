@@ -11,7 +11,7 @@ import { SessionTokenValidator } from '../Adapters/SessionTokenValidator'
 import { ValidateSessionService } from '../../Application/Services/ValidateSessionService'
 import { JoseTokenSigner } from '@/Foundation/Infrastructure/Adapters/Gravito/JoseTokenSigner'
 import type { ISessionRepository } from '../../Domain/Repositories/ISessionRepository'
-import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
 import type { ITokenSigner } from '@/Foundation/Infrastructure/Ports/Auth/ITokenSigner'
 
 /**

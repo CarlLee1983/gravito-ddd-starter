@@ -3,7 +3,7 @@
  * @description Saga 模式的核心介面定義
  *
  * 在 DDD 架構中的角色：
- * - Infrastructure Port：定義跨聚合根的長時間執行流程（Long-Running Process）
+ * - Application Port：定義跨聚合根的長時間執行流程（Long-Running Process）
  * - 職責：協調多個聚合根之間的事件驅動工作流，實現補償機制的失敗回滾
  *
  * Saga 模式解決的問題：

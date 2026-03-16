@@ -5,7 +5,7 @@
 
 import { describe, it, expect, beforeEach } from 'bun:test'
 import { EventListenerRegistry } from '@/Foundation/Infrastructure/Registries/EventListenerRegistry'
-import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
 import type { IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
 
 describe('EventListenerRegistry', () => {

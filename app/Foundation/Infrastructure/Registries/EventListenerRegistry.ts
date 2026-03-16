@@ -36,7 +36,7 @@
  * ```
  */
 
-import type { IEventDispatcher, EventHandler } from '../Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher, EventHandler } from '../../Application/Ports/IEventDispatcher'
 import type { IContainer } from '../Ports/Core/IServiceProvider'
 import type { ILogger } from '../Ports/Services/ILogger'
 

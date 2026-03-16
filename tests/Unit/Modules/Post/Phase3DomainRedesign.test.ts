@@ -29,7 +29,7 @@ import type { IAuthorService } from '@/Modules/Post/Domain/Services/IAuthorServi
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import { EntityNotFoundException, DuplicateEntityException } from '@/Foundation/Domain/Exceptions'
-import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
 
 // ============ ValueObject 驗證測試 ============
 

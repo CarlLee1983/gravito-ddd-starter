@@ -9,7 +9,7 @@ import { PortalController } from '../../Presentation/Controllers/PortalControlle
 import { PortalPageController } from '../../Presentation/Controllers/PortalPageController'
 import { registerPortalRoutes } from '../../Presentation/Routes/api'
 import { registerPageRoutes } from '../../Presentation/Routes/pages'
-import type { IPortalQueryService } from '../../Presentation/Queries/IPortalQueryService'
+import type { IPortalQueryService } from '../../Application/Queries/IPortalQueryService'
 import { PortalQueryService } from '../Services/PortalQueryService'
 import type { IProductQueryService } from '@/Modules/Product/Application/Queries/IProductQueryService'
 

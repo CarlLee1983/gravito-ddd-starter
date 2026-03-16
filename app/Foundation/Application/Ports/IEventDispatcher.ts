@@ -6,11 +6,11 @@
  * - DomainEvent: 同一 Bounded Context 內的事件
  * - IntegrationEvent: 跨 Bounded Context 的事件
  *
- * Role: Infrastructure Port
+ * Role: Application Port
  */
 
-import type { DomainEvent } from '../../../Domain/DomainEvent'
-import type { IntegrationEvent } from '../../../Domain/IntegrationEvent'
+import type { DomainEvent } from '../../Domain/DomainEvent'
+import type { IntegrationEvent } from '../../Domain/IntegrationEvent'
 
 /**
  * 事件型別聯合體

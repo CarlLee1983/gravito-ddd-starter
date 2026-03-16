@@ -15,7 +15,7 @@ import type {
 	Middleware,
 	MiddlewareOrName,
 } from '@/Foundation/Presentation/IModuleRouter'
-import type { IMiddlewareResolver } from '@/Foundation/Infrastructure/Wiring/IMiddlewareResolver'
+import type { IMiddlewareResolver } from '@/Foundation/Presentation/IMiddlewareResolver'
 
 /**
  * 解析 middleware 或字串名稱為實際 middleware

@@ -3,7 +3,7 @@
  * @description 登入應用服務
  */
 
-import type { ICredentialVerifier } from '@/Foundation/Infrastructure/Ports/Auth/ICredentialVerifier'
+import type { ICredentialVerifier } from '@/Foundation/Application/Ports/Auth/ICredentialVerifier'
 import type { ITokenSigner } from '@/Foundation/Infrastructure/Ports/Auth/ITokenSigner'
 import type { ISessionRepository } from '@/Modules/Session/Domain/Repositories/ISessionRepository'
 import { Session } from '@/Modules/Session/Domain/Aggregates/Session'

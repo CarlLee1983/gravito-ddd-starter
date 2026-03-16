@@ -4,7 +4,7 @@
  */
 
 import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
-import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
 import type { IPaymentRepository } from '../../Domain/Repositories/IPaymentRepository'
 import { Payment } from '../../Domain/Aggregates/Payment'
 import type { PaymentId } from '../../Domain/ValueObjects/PaymentId'

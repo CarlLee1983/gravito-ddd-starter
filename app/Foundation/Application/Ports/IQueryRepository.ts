@@ -7,7 +7,7 @@
  * 與 WriteRepository（命令側）分離，專注於查詢最佳化。
  *
  * **DDD 角色**
- * - 層級：Application / Infrastructure Port (Query)
+ * - 層級：Application Port (Query)
  * - 職責：定義讀側查詢的標準契約，支持 Raw SQL、QueryBuilder 等多種實現
  *
  * **設計原則**

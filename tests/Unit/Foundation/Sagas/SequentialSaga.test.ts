@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from 'bun:test'
 import { SequentialSaga } from '@/Foundation/Infrastructure/Sagas/SequentialSaga'
-import type { ISagaStep, SagaContext } from '@/Foundation/Infrastructure/Sagas/ISaga'
+import type { ISagaStep, SagaContext } from '@/Foundation/Application/Sagas/ISaga'
 
 describe('SequentialSaga', () => {
 	describe('正向執行流程', () => {

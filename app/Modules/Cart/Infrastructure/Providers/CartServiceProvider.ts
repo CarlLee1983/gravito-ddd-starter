@@ -4,7 +4,7 @@
  */
 
 import { ModuleServiceProvider, type IContainer } from '@/Foundation/Infrastructure/Ports/Core/IServiceProvider'
-import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 import { ProductCatalogAdapter } from '../Adapters/ProductCatalogAdapter'
 import { AddItemToCartService } from '../../Application/Services/AddItemToCartService'

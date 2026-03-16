@@ -8,7 +8,7 @@
  * - 使 Auth 和 User 模組可以獨立演進
  */
 
-import { IUserCreator, type UserCreationResult } from '@/Foundation/Infrastructure/Ports/Auth/IUserCreator'
+import { IUserCreator, type UserCreationResult } from '@/Foundation/Application/Ports/Auth/IUserCreator'
 import { RegisterUserService } from '../../Application/Services/RegisterUserService'
 
 /**

@@ -9,7 +9,7 @@
  */
 
 import type { Middleware } from '@/Foundation/Presentation/IModuleRouter'
-import type { IMiddlewareResolver } from '@/Foundation/Infrastructure/Wiring/IMiddlewareResolver'
+import type { IMiddlewareResolver } from '@/Foundation/Presentation/IMiddlewareResolver'
 
 export class GravitoMiddlewareResolver implements IMiddlewareResolver {
 	constructor(private readonly container: { make(name: string): unknown }) {}

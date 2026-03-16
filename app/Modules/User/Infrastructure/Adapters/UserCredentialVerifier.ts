@@ -5,7 +5,7 @@
  * 將 User Repository 的憑證驗證能力適配到 ICredentialVerifier Port。
  */
 
-import type { ICredentialVerifier, CredentialVerificationResult } from '@/Foundation/Infrastructure/Ports/Auth/ICredentialVerifier'
+import type { ICredentialVerifier, CredentialVerificationResult } from '@/Foundation/Application/Ports/Auth/ICredentialVerifier'
 import type { IUserRepository } from '../../Domain/Repositories/IUserRepository'
 import { Email } from '../../Domain/ValueObjects/Email'
 

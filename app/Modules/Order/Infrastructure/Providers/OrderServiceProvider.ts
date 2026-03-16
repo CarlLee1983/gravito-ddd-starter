@@ -8,7 +8,7 @@ import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITr
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
 import { OrderMessageService } from '../Services/OrderMessageService'
-import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
 import type { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 

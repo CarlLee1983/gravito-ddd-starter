@@ -41,7 +41,7 @@
  */
 
 import type { IQueryBuilder } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
-import type { IQueryRepository } from './IQueryRepository'
+import type { IQueryRepository } from '@/Foundation/Application/Ports/IQueryRepository'
 
 /**
  * 基礎查詢倉庫抽象類

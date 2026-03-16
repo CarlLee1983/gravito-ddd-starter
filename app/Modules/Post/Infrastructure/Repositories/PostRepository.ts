@@ -16,7 +16,7 @@
  */
 
 import type { IDatabaseAccess } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
-import type { IEventDispatcher } from '@/Foundation/Infrastructure/Ports/Messaging/IEventDispatcher'
+import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
 import type { IEventStore } from '@/Foundation/Infrastructure/Ports/Database/IEventStore'
 import { BaseEventSourcedRepository } from '@/Foundation/Infrastructure/Database/Repositories/BaseEventSourcedRepository'
 import { toIntegrationEvent, type IntegrationEvent } from '@/Foundation/Domain/IntegrationEvent'

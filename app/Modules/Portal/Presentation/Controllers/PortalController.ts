@@ -4,7 +4,7 @@
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
-import type { IPortalQueryService } from '../Queries/IPortalQueryService'
+import type { IPortalQueryService } from '../../Application/Queries/IPortalQueryService'
 
 /**
  * Portal API 控制器

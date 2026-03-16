@@ -16,7 +16,7 @@
  * @internal 此實現是基礎設施層細節
  */
 
-import type { ISagaStep, ISagaOrchestrator, SagaContext } from './ISaga'
+import type { ISagaStep, ISagaOrchestrator, SagaContext } from '@/Foundation/Application/Sagas/ISaga'
 
 /**
  * 序列 Saga 協調器

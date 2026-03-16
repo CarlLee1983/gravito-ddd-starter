@@ -5,7 +5,7 @@
  * 處理用戶註冊流程：建立用戶 → 自動登入 → 回傳 Session
  */
 
-import type { IUserCreator } from '@/Foundation/Infrastructure/Ports/Auth/IUserCreator'
+import type { IUserCreator } from '@/Foundation/Application/Ports/Auth/IUserCreator'
 import { LoginService } from './LoginService'
 import type { SessionDTO } from '../DTOs/SessionDTO'
 
