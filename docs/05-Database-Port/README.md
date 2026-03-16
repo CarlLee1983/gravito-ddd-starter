@@ -6,10 +6,10 @@
 
 ```
 docs/05-Database-Port/
-├── README.md                                    (本檔案) 統一索引
-├── M9_REDIS_DISTRIBUTED_DEDUPLICATION.md       Redis 分散式事件去重
-├── M10_REDIS_DISTRIBUTED_CACHE.md              Redis 分散式查詢快取
-└── M11_DATABASE_EVENT_DEDUPLICATION.md         資料庫事件去重
+├── README.md                                  (本檔案) 統一索引
+├── REDIS_DISTRIBUTED_DEDUPLICATION.md         Redis 分散式事件去重
+├── REDIS_DISTRIBUTED_QUERY_CACHE.md           Redis 分散式查詢快取
+└── DATABASE_EVENT_DEDUPLICATION.md            資料庫事件去重
 ```
 
 ---
@@ -38,7 +38,7 @@ await dedup.getStats()                 // 統計
 
 **優勢**: 無需額外部署、永久審計、支援複雜查詢
 
-👉 詳見: [M11_DATABASE_EVENT_DEDUPLICATION.md](M11_DATABASE_EVENT_DEDUPLICATION.md)
+👉 詳見: [DATABASE_EVENT_DEDUPLICATION.md](DATABASE_EVENT_DEDUPLICATION.md)
 
 ---
 
@@ -61,7 +61,7 @@ await cache.delete(key)            // 刪除
 await cache.getStats()             // 統計
 ```
 
-👉 詳見: [M10_REDIS_DISTRIBUTED_CACHE.md](M10_REDIS_DISTRIBUTED_CACHE.md)
+👉 詳見: [REDIS_DISTRIBUTED_QUERY_CACHE.md](REDIS_DISTRIBUTED_QUERY_CACHE.md)
 
 ---
 
@@ -84,7 +84,7 @@ await dedup.remove(eventId)        // 移除
 await dedup.getProcessedCount()    // 統計
 ```
 
-👉 詳見: [M9_REDIS_DISTRIBUTED_DEDUPLICATION.md](M9_REDIS_DISTRIBUTED_DEDUPLICATION.md)
+👉 詳見: [REDIS_DISTRIBUTED_DEDUPLICATION.md](REDIS_DISTRIBUTED_DEDUPLICATION.md)
 
 ---
 
@@ -341,9 +341,9 @@ redis-cli EXISTS "dedup:event:order-2026-001"
 
 | 主題 | 文檔 | 內容 |
 |------|------|------|
-| **M11 資料庫去重** | [M11_DATABASE_EVENT_DEDUPLICATION.md](M11_DATABASE_EVENT_DEDUPLICATION.md) | API、TTL、表設計、審計、自動清理、長期保存 |
-| **M10 Redis 快取** | [M10_REDIS_DISTRIBUTED_CACHE.md](M10_REDIS_DISTRIBUTED_CACHE.md) | API、TTL、分散式使用、故障降級 |
-| **M9 Redis 去重** | [M9_REDIS_DISTRIBUTED_DEDUPLICATION.md](M9_REDIS_DISTRIBUTED_DEDUPLICATION.md) | API、使用場景、Saga 集成、多 Worker 協調 |
+| **資料庫去重** | [DATABASE_EVENT_DEDUPLICATION.md](DATABASE_EVENT_DEDUPLICATION.md) | API、TTL、表設計、審計、自動清理、長期保存 |
+| **Redis 快取** | [REDIS_DISTRIBUTED_QUERY_CACHE.md](REDIS_DISTRIBUTED_QUERY_CACHE.md) | API、TTL、分散式使用、故障降級 |
+| **Redis 去重** | [REDIS_DISTRIBUTED_DEDUPLICATION.md](REDIS_DISTRIBUTED_DEDUPLICATION.md) | API、使用場景、Saga 集成、多 Worker 協調 |
 
 ---
 
@@ -363,8 +363,8 @@ redis-cli EXISTS "dedup:event:order-2026-001"
 
 ## 🔗 相關模組
 
-- **M10 Query Cache (Memory)**: `docs/05-Database-Port/M10_QUERY_OPTIMIZATION.md`
-- **M9 Event Deduplication (Memory)**: `docs/05-Database-Port/M9_DEDUPLICATION.md`
+- **Query Cache (Memory)**: `docs/05-Database-Port/MEMORY_QUERY_CACHE.md`
+- **Event Deduplication (Memory)**: `docs/05-Database-Port/MEMORY_EVENT_DEDUPLICATION.md`
 - **IDatabaseAccess**: `docs/02-Architecture/PORTS.md`
 - **IRedisService**: `docs/Foundation/Infrastructure/REDIS_SERVICE.md`
 
