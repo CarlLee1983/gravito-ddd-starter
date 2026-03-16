@@ -1,19 +1,46 @@
 # Database Port - 資料庫抽象層文檔
 
-> **文檔範疇**: Redis 分散式實現（M9 + M10）及其與 Memory 版本的對比
+> **文檔範疇**: Memory / Redis / Database 實現（M9 + M10 + M11）
 
 ## 📚 文檔結構
 
 ```
 docs/05-Database-Port/
-├── README.md                          (本檔案) 統一索引
-├── M10_REDIS_DISTRIBUTED_CACHE.md     Redis 分散式查詢快取
-└── M9_REDIS_DISTRIBUTED_DEDUPLICATION.md Redis 分散式去重
+├── README.md                                    (本檔案) 統一索引
+├── M9_REDIS_DISTRIBUTED_DEDUPLICATION.md       Redis 分散式事件去重
+├── M10_REDIS_DISTRIBUTED_CACHE.md              Redis 分散式查詢快取
+└── M11_DATABASE_EVENT_DEDUPLICATION.md         資料庫事件去重
 ```
 
 ---
 
 ## 核心模組概覽
+
+### M11: Database Event Deduplication
+
+**用途**: 資料庫驅動的事件去重，適合需要長期審計日誌的場景
+
+| 特性 | Memory | Redis | Database |
+|------|--------|-------|----------|
+| 存儲位置 | 進程內 | Redis | 資料庫 |
+| 跨進程共享 | ❌ | ✅ | ✅ |
+| 應用重啟後 | 丟失 | 保留 | ✅ 永久 |
+| 長期保存 | ❌ | ⚠️ 需 TTL | ✅ 審計 |
+| 推薦環境 | 開發 | 生產 | 生產 |
+
+**關鍵 API**:
+```typescript
+await dedup.markProcessed(eventId)     // 標記
+await dedup.isProcessed(eventId)       // 檢查
+await dedup.cleanupExpiredRecords()    // 清理過期
+await dedup.getStats()                 // 統計
+```
+
+**優勢**: 無需額外部署、永久審計、支援複雜查詢
+
+👉 詳見: [M11_DATABASE_EVENT_DEDUPLICATION.md](M11_DATABASE_EVENT_DEDUPLICATION.md)
+
+---
 
 ### M10: Redis Distributed Query Cache
 
@@ -314,8 +341,9 @@ redis-cli EXISTS "dedup:event:order-2026-001"
 
 | 主題 | 文檔 | 內容 |
 |------|------|------|
-| **M10 快取** | [M10_REDIS_DISTRIBUTED_CACHE.md](M10_REDIS_DISTRIBUTED_CACHE.md) | API、TTL、分散式使用、故障降級 |
-| **M9 去重** | [M9_REDIS_DISTRIBUTED_DEDUPLICATION.md](M9_REDIS_DISTRIBUTED_DEDUPLICATION.md) | API、使用場景、Saga 集成、多 Worker 協調 |
+| **M11 資料庫去重** | [M11_DATABASE_EVENT_DEDUPLICATION.md](M11_DATABASE_EVENT_DEDUPLICATION.md) | API、TTL、表設計、審計、自動清理、長期保存 |
+| **M10 Redis 快取** | [M10_REDIS_DISTRIBUTED_CACHE.md](M10_REDIS_DISTRIBUTED_CACHE.md) | API、TTL、分散式使用、故障降級 |
+| **M9 Redis 去重** | [M9_REDIS_DISTRIBUTED_DEDUPLICATION.md](M9_REDIS_DISTRIBUTED_DEDUPLICATION.md) | API、使用場景、Saga 集成、多 Worker 協調 |
 
 ---
 
@@ -342,6 +370,47 @@ redis-cli EXISTS "dedup:event:order-2026-001"
 
 ---
 
+---
+
+## 📊 三種實現對比
+
+```
+                Memory          Redis           Database
+────────────────────────────────────────────────────────
+跨進程          ❌              ✅              ✅
+分散式          ❌              ✅              ✅
+重啟恢復        ⚠️ 丟失         ✅ 24h          ✅ 永久
+長期保存        ❌              ❌              ✅
+額外部署        無              Redis           無
+複雜查詢        ❌              ❌              ✅
+審計能力        ❌              ❌              ✅
+────────────────────────────────────────────────────────
+推薦環境        開發/測試       生產            生產
+```
+
+---
+
+## 🎯 選擇指南
+
+### 使用 Memory 版本當
+- ✅ 開發/測試環境
+- ✅ 無需跨進程協調
+- ✅ 重啟可接受丟失狀態
+
+### 使用 Redis 版本（M9/M10）當
+- ✅ 多 Worker 需要協調
+- ✅ 短期去重/快取（分鐘級）
+- ✅ 已有 Redis 部署
+- ✅ 追求最高效能
+
+### 使用 Database 版本（M11）當
+- ✅ 需要長期審計日誌
+- ✅ 不想維護額外服務（Redis）
+- ✅ 需要複雜的歷史查詢
+- ✅ 事件記錄需永久保存
+
+---
+
 **最後更新**: 2026-03-16
-**版本**: 1.0
-**狀態**: Production Ready ✅
+**版本**: 1.1
+**狀態**: Production Ready ✅ (M9+M10+M11)
