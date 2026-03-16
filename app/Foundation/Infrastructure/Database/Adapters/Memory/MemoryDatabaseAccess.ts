@@ -21,6 +21,11 @@ type WhereCondition = { column: string; operator: string; value: unknown }
 /**
  * 內存版查詢建構器實作
  * 模擬 SQL 的查詢語法與行為
+ *
+ * 設計原則：Immutable Pattern
+ * - 所有返回 IQueryBuilder 的方法都返回新實例
+ * - 保證鏈式調用時無副作用
+ * - 兼容現有 API 接口
  */
 class MemoryQueryBuilder implements IQueryBuilder {
 	private limitNum: number | null = null
@@ -45,123 +50,155 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	) {}
 
 	/**
-	 * 加入查詢條件
+	 * 複製當前查詢建構器的狀態（Immutable 模式）
+	 * @returns 具有相同狀態的新 QueryBuilder 實例
+	 * @private
+	 */
+	private clone(): MemoryQueryBuilder {
+		const cloned = new MemoryQueryBuilder(this.tableName, this.store)
+		cloned.limitNum = this.limitNum
+		cloned.offsetNum = this.offsetNum
+		cloned.orderByRules = [...this.orderByRules]
+		cloned.whereConditions = [...this.whereConditions]
+		cloned.orConditions = [...this.orConditions]
+		cloned.joinClauses = [...this.joinClauses]
+		cloned.groupByColumns = [...this.groupByColumns]
+		cloned.isDistinct = this.isDistinct
+		cloned.distinctColumns = [...this.distinctColumns]
+		cloned.havingConditions = [...this.havingConditions]
+		return cloned
+	}
+
+	/**
+	 * 加入查詢條件（返回新實例，符合 Immutable 模式）
 	 * @param column - 欄位名稱
 	 * @param operator - 運算子 (=, !=, >, <, LIKE 等)
 	 * @param value - 比較值
 	 */
 	where(column: string, operator: string, value: unknown): IQueryBuilder {
-		this.whereConditions.push({ column, operator, value })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator, value })
+		return cloned
 	}
 
 	/**
-	 * 設定限制回傳筆數
+	 * 設定限制回傳筆數（返回新實例，符合 Immutable 模式）
 	 * @param n - 筆數
 	 */
 	limit(n: number): IQueryBuilder {
-		this.limitNum = n
-		return this
+		const cloned = this.clone()
+		cloned.limitNum = n
+		return cloned
 	}
 
 	/**
-	 * 設定位移量
+	 * 設定位移量（返回新實例，符合 Immutable 模式）
 	 * @param n - 位移數量
 	 */
 	offset(n: number): IQueryBuilder {
-		this.offsetNum = n
-		return this
+		const cloned = this.clone()
+		cloned.offsetNum = n
+		return cloned
 	}
 
 	/**
-	 * 設定排序規則（支援多欄位）
+	 * 設定排序規則（支援多欄位，返回新實例，符合 Immutable 模式）
 	 * @param column - 欄位名稱
 	 * @param direction - 排序方向 (ASC, DESC，預設 ASC)
 	 */
 	orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): IQueryBuilder {
-		this.orderByRules.push({ column, direction })
-		return this
+		const cloned = this.clone()
+		cloned.orderByRules.push({ column, direction })
+		return cloned
 	}
 
 	/**
-	 * 加入範圍查詢條件 (時間範圍)
+	 * 加入範圍查詢條件（返回新實例，符合 Immutable 模式）
 	 * @param column - 欄位名稱
 	 * @param range - [開始時間, 結束時間]
 	 */
 	whereBetween(column: string, range: [Date, Date]): IQueryBuilder {
-		this.whereConditions.push({ column, operator: '>=', value: range[0] })
-		this.whereConditions.push({ column, operator: '<=', value: range[1] })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator: '>=', value: range[0] })
+		cloned.whereConditions.push({ column, operator: '<=', value: range[1] })
+		return cloned
 	}
 
 	/**
-	 * IN 查詢
+	 * IN 查詢（返回新實例，符合 Immutable 模式）
 	 * @param column - 欄位名稱
 	 * @param values - 值陣列
 	 */
 	whereIn(column: string, values: unknown[]): IQueryBuilder {
-		this.whereConditions.push({ column, operator: 'IN', value: values })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator: 'IN', value: values })
+		return cloned
 	}
 
 	/**
-	 * OR 條件
+	 * OR 條件（返回新實例，符合 Immutable 模式）
 	 * @param column - 欄位名稱
 	 * @param operator - 運算子
 	 * @param value - 比較值
 	 */
 	orWhere(column: string, operator: string, value: unknown): IQueryBuilder {
-		this.orConditions.push({ column, operator, value })
-		return this
+		const cloned = this.clone()
+		cloned.orConditions.push({ column, operator, value })
+		return cloned
 	}
 
 	/**
-	 * INNER JOIN
+	 * INNER JOIN（返回新實例，符合 Immutable 模式）
 	 * @param table - 要 JOIN 的資料表名稱
 	 * @param localColumn - 本表欄位名稱
 	 * @param foreignColumn - 外表欄位名稱
 	 */
 	join(table: string, localColumn: string, foreignColumn: string): IQueryBuilder {
-		this.joinClauses.push({ table, localColumn, foreignColumn, type: 'INNER' })
-		return this
+		const cloned = this.clone()
+		cloned.joinClauses.push({ table, localColumn, foreignColumn, type: 'INNER' })
+		return cloned
 	}
 
 	/**
-	 * LEFT JOIN
+	 * LEFT JOIN（返回新實例，符合 Immutable 模式）
 	 * @param table - 要 JOIN 的資料表名稱
 	 * @param localColumn - 本表欄位名稱
 	 * @param foreignColumn - 外表欄位名稱
 	 */
 	leftJoin(table: string, localColumn: string, foreignColumn: string): IQueryBuilder {
-		this.joinClauses.push({ table, localColumn, foreignColumn, type: 'LEFT' })
-		return this
+		const cloned = this.clone()
+		cloned.joinClauses.push({ table, localColumn, foreignColumn, type: 'LEFT' })
+		return cloned
 	}
 
 	/**
-	 * GROUP BY
+	 * GROUP BY（返回新實例，符合 Immutable 模式）
 	 * @param columns - 要分組的欄位名稱
 	 */
 	groupBy(...columns: string[]): IQueryBuilder {
-		this.groupByColumns.push(...columns)
-		return this
+		const cloned = this.clone()
+		cloned.groupByColumns.push(...columns)
+		return cloned
 	}
 
 	/**
-	 * 檢查欄位為 NULL
+	 * 檢查欄位為 NULL（返回新實例，符合 Immutable 模式）
 	 * @param column - 欄位名稱
 	 */
 	whereNull(column: string): IQueryBuilder {
-		this.whereConditions.push({ column, operator: 'IS_NULL', value: null })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator: 'IS_NULL', value: null })
+		return cloned
 	}
 
 	/**
-	 * 檢查欄位不為 NULL
+	 * 檢查欄位不為 NULL（返回新實例，符合 Immutable 模式）
 	 * @param column - 欄位名稱
 	 */
 	whereNotNull(column: string): IQueryBuilder {
-		this.whereConditions.push({ column, operator: 'IS_NOT_NULL', value: null })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator: 'IS_NOT_NULL', value: null })
+		return cloned
 	}
 
 	/**
@@ -178,14 +215,15 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * GROUP BY 後的條件篩選 (HAVING)
+	 * GROUP BY 後的條件篩選 (HAVING)（返回新實例，符合 Immutable 模式）
 	 * @param column - 聚合欄位名稱
 	 * @param operator - 比較運算子
 	 * @param value - 比較值
 	 */
 	having(column: string, operator: string, value: unknown): IQueryBuilder {
-		this.havingConditions.push({ column, operator, value })
-		return this
+		const cloned = this.clone()
+		cloned.havingConditions.push({ column, operator, value })
+		return cloned
 	}
 
 	/**

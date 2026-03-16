@@ -26,6 +26,10 @@ function getDB(): any {
  * Atlas 查詢建構器實作類別
  *
  * 將 Atlas 的流式查詢 API 轉換為標準的 IQueryBuilder 契約。
+ *
+ * 設計原則：Immutable Pattern
+ * - 所有返回 IQueryBuilder 的方法都返回新實例
+ * - 保證鏈式調用時無副作用
  */
 export class AtlasQueryBuilder implements IQueryBuilder {
 	/** 儲存累積的查詢條件 */
@@ -66,6 +70,24 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
+	 * 複製當前查詢建構器的狀態（Immutable 模式）
+	 * @returns 具有相同狀態的新 QueryBuilder 實例
+	 * @private
+	 */
+	private clone(): AtlasQueryBuilder {
+		const cloned = new AtlasQueryBuilder(this.tableName, this.trxClient, this.logger)
+		cloned.whereConditions = [...this.whereConditions]
+		cloned.orConditions = [...this.orConditions]
+		cloned.orderByRules = [...this.orderByRules]
+		cloned.limitValue = this.limitValue
+		cloned.offsetValue = this.offsetValue
+		cloned.joinClauses = [...this.joinClauses]
+		cloned.groupByColumns = [...this.groupByColumns]
+		cloned.havingConditions = [...this.havingConditions]
+		return cloned
+	}
+
+	/**
 	 * 添加 WHERE 查詢條件
 	 *
 	 * @param column - 欄位名稱
@@ -74,8 +96,9 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	 * @returns 回傳此實例以支援鏈式調用
 	 */
 	where(column: string, operator: string, value: unknown): IQueryBuilder {
-		this.whereConditions.push({ column, operator, value })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator, value })
+		return cloned
 	}
 
 	/**
