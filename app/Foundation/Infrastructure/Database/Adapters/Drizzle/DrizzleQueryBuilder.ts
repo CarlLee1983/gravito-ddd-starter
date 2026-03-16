@@ -326,6 +326,61 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
+   * 新增或更新記錄（UPSERT）
+   *
+   * @param data - 要新增或更新的數據
+   * @param uniqueFields - 唯一欄位名稱
+   * @returns 新增或更新後的記錄
+   */
+  async upsert(data: Record<string, unknown>, uniqueFields: string[]): Promise<Record<string, unknown>> {
+    try {
+      const db = (this.db as any)
+
+      // 構建欄位映射
+      const insertData: Record<string, any> = {}
+      for (const [key, value] of Object.entries(data)) {
+        const col = this.tableSchema[key]
+        if (col) {
+          insertData[col] = value
+        }
+      }
+
+      // 構建 ON CONFLICT SET 子句
+      const updateData: Record<string, any> = {}
+      for (const [key, value] of Object.entries(data)) {
+        const col = this.tableSchema[key]
+        if (col) {
+          updateData[col] = value
+        }
+      }
+
+      // 使用 Drizzle 的 onConflict API
+      const result = await db
+        .insert(this.tableSchema)
+        .values(insertData)
+        .onConflict((oc: any) => {
+          const targets = uniqueFields
+            .map((field) => this.tableSchema[field])
+            .filter(Boolean)
+
+          if (targets.length > 0) {
+            return oc.columns(...targets).doUpdate({
+              set: updateData,
+            })
+          }
+
+          return oc.doNothing()
+        })
+        .returning()
+
+      return result?.[0] || data
+    } catch (error) {
+      this.logger?.error(`Error in upsert()`, error instanceof Error ? error : new Error(String(error)))
+      throw error
+    }
+  }
+
+  /**
    * 限制回傳的記錄數量
    *
    * @param value - 最大記錄筆數

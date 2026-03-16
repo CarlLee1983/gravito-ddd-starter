@@ -417,6 +417,32 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
+	 * 新增或更新記錄（UPSERT）
+	 * @param data - 要新增或更新的數據
+	 * @param uniqueFields - 唯一欄位名稱
+	 * @returns 新增或更新後的記錄
+	 */
+	async upsert(data: Record<string, unknown>, uniqueFields: string[]): Promise<Record<string, unknown>> {
+		const rows = this.getTableRows()
+
+		// 查找是否存在相同的唯一欄位值
+		const existingIndex = rows.findIndex((row) => {
+			return uniqueFields.every((field) => row[field] === data[field])
+		})
+
+		if (existingIndex >= 0) {
+			// 存在則更新
+			const updated = { ...rows[existingIndex], ...data }
+			rows[existingIndex] = updated
+			return updated
+		} else {
+			// 不存在則新增
+			rows.push(data)
+			return data
+		}
+	}
+
+	/**
 	 * 計算符合條件的記錄總數
 	 * @returns 總數
 	 */

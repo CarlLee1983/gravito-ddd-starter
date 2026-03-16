@@ -287,6 +287,44 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
+	 * 新增或更新記錄（UPSERT）
+	 *
+	 * @param data - 要新增或更新的數據
+	 * @param uniqueFields - 唯一欄位名稱
+	 * @returns 新增或更新後的記錄
+	 */
+	async upsert(data: Record<string, unknown>, uniqueFields: string[]): Promise<Record<string, unknown>> {
+		try {
+			const DB = (this.getQueryDB() as any)
+
+			// 查找是否存在相同的唯一欄位值
+			let query = DB.table(this.tableName)
+			for (const field of uniqueFields) {
+				query = query.where(field, '=', data[field])
+			}
+
+			const existing = await query.first()
+
+			if (existing) {
+				// 存在則更新
+				let updateQuery = DB.table(this.tableName)
+				for (const field of uniqueFields) {
+					updateQuery = updateQuery.where(field, '=', data[field])
+				}
+				await updateQuery.update(data)
+				return { ...existing, ...data }
+			} else {
+				// 不存在則新增
+				await DB.table(this.tableName).insert(data)
+				return data
+			}
+		} catch (error) {
+			this.logger?.error(`Error in upsert()`, error instanceof Error ? error : new Error(String(error)))
+			throw error
+		}
+	}
+
+	/**
 	 * 限制回傳的記錄數量
 	 *
 	 * @param value - 最大記錄筆數

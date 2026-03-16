@@ -236,6 +236,28 @@ export interface IQueryBuilder {
 	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
 	 */
 	whereNotNull(column: string): IQueryBuilder
+
+	/**
+	 * 新增或更新記錄（UPSERT）
+	 *
+	 * 若指定的唯一欄位已存在，則更新該記錄；否則新增記錄。
+	 *
+	 * @param {Record<string, unknown>} data - 要新增或更新的數據
+	 * @param {string[]} uniqueFields - 唯一欄位名稱（判斷是否存在的依據）
+	 * @returns {Promise<Record<string, unknown>>} 新增或更新後的記錄
+	 *
+	 * @example
+	 * ```typescript
+	 * // 新增或更新使用者
+	 * const user = await db.table('users')
+	 *   .upsert(
+	 *     { email: 'john@example.com', name: 'John', age: 30 },
+	 *     ['email']  // 以 email 為唯一欄位
+	 *   )
+	 * // 若 email 存在，更新 name 與 age；否則新增
+	 * ```
+	 */
+	upsert(data: Record<string, unknown>, uniqueFields: string[]): Promise<Record<string, unknown>>
 }
 
 /**
