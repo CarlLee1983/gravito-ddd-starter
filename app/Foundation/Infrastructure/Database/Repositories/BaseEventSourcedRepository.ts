@@ -247,9 +247,15 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 	}
 
 	/**
-	 * 將未提交事件持久化到 EventStore
+	 * 將未提交事件持久化到 EventStore（使用樂觀鎖）
+	 *
+	 * **流程**:
+	 * 1. 讀取聚合根的目前事件版本
+	 * 2. 構建新事件（版本號遞增）
+	 * 3. 使用樂觀鎖附加事件（若版本衝突會拋出異常）
 	 *
 	 * @param entity - 聚合根實例
+	 * @throws EventStoreVersionConflictException - 若版本衝突
 	 * @returns Promise<void>
 	 * @protected
 	 */
@@ -260,7 +266,8 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 			return
 		}
 
-		const currentCount = await this.eventStore!.countByAggregateId(entity.id)
+		// 讀取聚合根的目前版本（用於樂觀鎖檢查）
+		const currentVersion = await this.eventStore!.getCurrentVersion(entity.id)
 
 		const storedEvents = domainEvents.map((event, index) => ({
 			id: crypto.randomUUID(),
@@ -270,10 +277,11 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 			eventType: event.constructor.name,
 			eventData: JSON.stringify(event.toJSON()),
 			eventVersion: 1,
-			aggregateVersion: currentCount + index + 1,
+			aggregateVersion: currentVersion + index + 1,
 			occurredAt: event.occurredAt.toISOString(),
 		}))
 
-		await this.eventStore!.append(storedEvents)
+		// 使用樂觀鎖附加事件：若版本不匹配會拋出 EventStoreVersionConflictException
+		await this.eventStore!.append(storedEvents, entity.id, currentVersion)
 	}
 }
