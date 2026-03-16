@@ -13,7 +13,32 @@ import type { IDatabaseAccess, IQueryBuilder } from '@/Foundation/Infrastructure
 import { getDrizzleInstance } from './config'
 import { DrizzleQueryBuilder } from './DrizzleQueryBuilder'
 import * as schema from './schema'
-import { sql } from 'drizzle-orm'
+import { sql, type SQL } from 'drizzle-orm'
+
+/**
+ * 將 (sqlText, params) 轉成 Drizzle 參數化 SQL（? 佔位符）
+ */
+function toParameterizedSql(sqlText: string, params: unknown[]): SQL {
+  if (params.length === 0) {
+    return sql.raw(sqlText)
+  }
+  const parts = sqlText.split('?')
+  const chunks: SQL[] = []
+  for (let i = 0; i < parts.length; i++) {
+    if (parts[i].length > 0) chunks.push(sql.raw(parts[i]))
+    if (i < params.length) chunks.push(sql`${params[i]}`)
+  }
+  return sql.fromList(chunks)
+}
+
+/**
+ * 將 execute 結果正規化為 Record<string, unknown>[]
+ */
+function toRows(result: unknown): Record<string, unknown>[] {
+  if (Array.isArray(result)) return result as Record<string, unknown>[]
+  const rows = (result as { rows?: unknown[] })?.rows
+  return Array.isArray(rows) ? (rows as Record<string, unknown>[]) : []
+}
 
 /**
  * Drizzle DatabaseAccess 實作類別
@@ -69,8 +94,9 @@ class DrizzleDatabaseAccess implements IDatabaseAccess {
           return callback(trxAccess)
         },
         raw: async (sqlText: string, params?: unknown[]) => {
-          // 在事務中執行原始 SQL
-          return (tx as any).execute(sql.raw(sqlText, params || []))
+          const stmt = toParameterizedSql(sqlText, params || [])
+          const result = await (tx as unknown as { execute: (s: SQL) => Promise<unknown> }).execute(stmt)
+          return toRows(result)
         },
       }
 
@@ -89,9 +115,9 @@ class DrizzleDatabaseAccess implements IDatabaseAccess {
     const db = getDrizzleInstance()
 
     try {
-      // 使用 Drizzle 的 sql.raw 和 execute 來執行原始 SQL
-      const result = await (db as any).execute(sql.raw(sqlText, params || []))
-      return Array.isArray(result) ? result : (result?.rows || [])
+      const stmt = toParameterizedSql(sqlText, params || [])
+      const result = await (db as unknown as { execute: (s: SQL) => Promise<unknown> }).execute(stmt)
+      return toRows(result)
     } catch (error) {
       const err = error instanceof Error ? error : new Error(String(error))
       err.message = `Drizzle raw query failed: ${err.message}`
