@@ -81,7 +81,8 @@ gravito-ddd-starter/
     ├── 06-Adapters-Wiring/   # Adapters & Auto-Wiring mechanism
     ├── 07-Production-Deployment/ # Deploy & Troubleshooting
     ├── 08-Testing-API/       # API Standards & Testing strategy
-    └── 09-Internationalization/ # i18n & Message services ✨
+    ├── 09-Internationalization/ # i18n & Message services ✨
+    └── 10-Project-Reuse/     # Reuse this starter in new projects ✨
 ```
 
 ## 🎯 Architecture Status
@@ -122,6 +123,9 @@ gravito-ddd-starter/
 - **[PAGES_ROUTING_IMPLEMENTATION.md](./docs/05-Frontend-Integration/PAGES_ROUTING_IMPLEMENTATION.md)** ✨ - SSR Page routes implementation.
 - **[I18N_GUIDE.md](./docs/09-Internationalization/I18N_GUIDE.md)** ✨ - Complete i18n system & Message Service Pattern.
 - **[EMAIL_MESSAGE_STRATEGY.md](./docs/09-Internationalization/DESIGN_EMAIL_MESSAGE_STRATEGY.md)** - Email messaging and i18n strategy.
+
+### ♻️ Project Reuse
+- **[REUSE_GUIDE.md](./docs/10-Project-Reuse/REUSE_GUIDE.md)** ✨ - Deep architecture analysis + step-by-step reuse workflow.
 
 ## 🛠️ Development Workflow
 

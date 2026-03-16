@@ -11,7 +11,7 @@
 
 import type { IQueryBuilder } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
-import { and, eq, ne, gt, lt, gte, lte, like, inArray, between, asc, desc, countDistinct } from 'drizzle-orm'
+import { and, eq, ne, gt, lt, gte, lte, like, inArray, between, asc, desc, countDistinct, count, isNull, isNotNull } from 'drizzle-orm'
 import { getDrizzleInstance } from './config'
 
 /**
@@ -108,7 +108,7 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   async first(columns?: string[]): Promise<Record<string, unknown> | null> {
     try {
       let query: any
-      
+
       if (columns && columns.length > 0) {
         const selection: Record<string, any> = {}
         for (const colName of columns) {
@@ -122,8 +122,36 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
         query = (this.db as any).select().from(this.tableSchema)
       }
 
+      // 應用 JOIN 子句
+      for (const join of this.joinClauses) {
+        if (join.type === 'LEFT') {
+          // 在 Drizzle 中，需要動態 require 外表 schema
+          // 這裡先留下基礎結構，實際實現需要 schema registry
+          this.logger?.warn(`LEFT JOIN not fully implemented in Drizzle adapter for table: ${join.table}`)
+        } else {
+          this.logger?.warn(`INNER JOIN not fully implemented in Drizzle adapter for table: ${join.table}`)
+        }
+      }
+
       if (this.whereConditions.length > 0) {
         query = query.where(and(...this.whereConditions))
+      }
+
+      // 應用 GROUP BY 子句
+      if (this.groupByColumns.length > 0) {
+        const groupByCols = this.groupByColumns
+          .map(colName => this.tableSchema[colName])
+          .filter(col => !!col)
+        if (groupByCols.length > 0) {
+          query = query.groupBy(...groupByCols)
+        }
+      }
+
+      if (this.orderByConfig) {
+        const col = this.tableSchema[this.orderByConfig.column]
+        query = query.orderBy(
+          this.orderByConfig.direction === 'ASC' ? asc(col) : desc(col)
+        )
       }
 
       query = query.limit(1)
@@ -149,7 +177,7 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   async select(columns?: string[]): Promise<Record<string, unknown>[]> {
     try {
       let query: any
-      
+
       if (columns && columns.length > 0) {
         const selection: Record<string, any> = {}
         for (const colName of columns) {
@@ -163,8 +191,29 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
         query = (this.db as any).select().from(this.tableSchema)
       }
 
+      // 應用 JOIN 子句
+      for (const join of this.joinClauses) {
+        if (join.type === 'LEFT') {
+          // 在 Drizzle 中，需要動態 require 外表 schema
+          // 這裡先留下基礎結構，實際實現需要 schema registry
+          this.logger?.warn(`LEFT JOIN not fully implemented in Drizzle adapter for table: ${join.table}`)
+        } else {
+          this.logger?.warn(`INNER JOIN not fully implemented in Drizzle adapter for table: ${join.table}`)
+        }
+      }
+
       if (this.whereConditions.length > 0) {
         query = query.where(and(...this.whereConditions))
+      }
+
+      // 應用 GROUP BY 子句
+      if (this.groupByColumns.length > 0) {
+        const groupByCols = this.groupByColumns
+          .map(colName => this.tableSchema[colName])
+          .filter(col => !!col)
+        if (groupByCols.length > 0) {
+          query = query.groupBy(...groupByCols)
+        }
       }
 
       if (this.orderByConfig) {
@@ -202,6 +251,21 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
       await this.db.insert(this.tableSchema).values(data)
     } catch (error) {
       this.logger?.error(`Error in insert()`, error instanceof Error ? error : new Error(String(error)))
+      throw error
+    }
+  }
+
+  /**
+   * 批量插入多筆記錄
+   *
+   * @param data - 要插入的資料物件陣列
+   * @returns 非同步作業
+   */
+  async insertMany(data: Record<string, unknown>[]): Promise<void> {
+    try {
+      await this.db.insert(this.tableSchema).values(data)
+    } catch (error) {
+      this.logger?.error(`Error in insertMany()`, error instanceof Error ? error : new Error(String(error)))
       throw error
     }
   }
@@ -290,10 +354,8 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
    */
   async count(): Promise<number> {
     try {
-      const col = this.tableSchema.id
-
       let query: any = (this.db as any)
-        .select({ count: countDistinct(col) })
+        .select({ count: count() })
         .from(this.tableSchema)
 
       if (this.whereConditions.length > 0) {
@@ -431,6 +493,40 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
    */
   groupBy(...columns: string[]): IQueryBuilder {
     this.groupByColumns.push(...columns)
+    return this
+  }
+
+  /**
+   * 檢查欄位為 NULL
+   *
+   * @param column - 欄位名稱
+   * @returns 回傳此實例以支援鏈式調用
+   */
+  whereNull(column: string): IQueryBuilder {
+    const col = this.tableSchema[column]
+
+    if (!col) {
+      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+    }
+
+    this.whereConditions.push(isNull(col))
+    return this
+  }
+
+  /**
+   * 檢查欄位不為 NULL
+   *
+   * @param column - 欄位名稱
+   * @returns 回傳此實例以支援鏈式調用
+   */
+  whereNotNull(column: string): IQueryBuilder {
+    const col = this.tableSchema[column]
+
+    if (!col) {
+      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+    }
+
+    this.whereConditions.push(isNotNull(col))
     return this
   }
 }

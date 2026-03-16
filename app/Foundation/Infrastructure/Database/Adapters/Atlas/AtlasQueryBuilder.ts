@@ -92,10 +92,24 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 				query = query.select(columns)
 			}
 
+			// 應用 JOIN 子句
+			for (const join of this.joinClauses) {
+				if (join.type === 'LEFT') {
+					query = query.leftJoin(join.table, join.localColumn, join.foreignColumn)
+				} else {
+					query = query.join(join.table, join.localColumn, join.foreignColumn)
+				}
+			}
+
 			// 應用累積的 WHERE 條件
 			for (const cond of this.whereConditions) {
 				this.logger?.debug(`WHERE ${cond.column} ${cond.operator} ${cond.value}`, { condition: cond })
 				query = this.applyWhere(query, cond)
+			}
+
+			// 應用 GROUP BY 子句
+			if (this.groupByColumns.length > 0) {
+				query = query.groupBy(...this.groupByColumns)
 			}
 
 			// 應用排序規則
@@ -140,10 +154,24 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 				query = query.select(columns)
 			}
 
+			// 應用 JOIN 子句
+			for (const join of this.joinClauses) {
+				if (join.type === 'LEFT') {
+					query = query.leftJoin(join.table, join.localColumn, join.foreignColumn)
+				} else {
+					query = query.join(join.table, join.localColumn, join.foreignColumn)
+				}
+			}
+
 			// 應用所有 WHERE 條件
 			for (const cond of this.whereConditions) {
 				this.logger?.debug(`WHERE ${cond.column} ${cond.operator} ${cond.value}`, { condition: cond })
 				query = this.applyWhere(query, cond)
+			}
+
+			// 應用 GROUP BY 子句
+			if (this.groupByColumns.length > 0) {
+				query = query.groupBy(...this.groupByColumns)
 			}
 
 			// 應用排序
@@ -189,6 +217,21 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 			await (this.getQueryDB() as any).table(this.tableName).insert(data)
 		} catch (error) {
 			this.logger?.error(`Error in insert()`, error instanceof Error ? error : new Error(String(error)))
+			throw error
+		}
+	}
+
+	/**
+	 * 批量插入多筆記錄
+	 *
+	 * @param data - 要插入的資料物件陣列
+	 * @returns 非同步作業
+	 */
+	async insertMany(data: Record<string, unknown>[]): Promise<void> {
+		try {
+			await (this.getQueryDB() as any).table(this.tableName).insert(data)
+		} catch (error) {
+			this.logger?.error(`Error in insertMany()`, error instanceof Error ? error : new Error(String(error)))
 			throw error
 		}
 	}
@@ -372,6 +415,28 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
+	 * 檢查欄位為 NULL
+	 *
+	 * @param column - 欄位名稱
+	 * @returns 回傳此實例以支援鏈式調用
+	 */
+	whereNull(column: string): any {
+		this.whereConditions.push({ column, operator: 'whereNull', value: null })
+		return this
+	}
+
+	/**
+	 * 檢查欄位不為 NULL
+	 *
+	 * @param column - 欄位名稱
+	 * @returns 回傳此實例以支援鏈式調用
+	 */
+	whereNotNull(column: string): any {
+		this.whereConditions.push({ column, operator: 'whereNotNull', value: null })
+		return this
+	}
+
+	/**
 	 * 內部輔助方法：將抽象的 WHERE 條件轉換為 Atlas 特定的查詢方法
 	 * @param query - Atlas 原始查詢物件
 	 * @param cond - 內部條件物件
@@ -399,6 +464,10 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 				return query.whereIn(cond.column, cond.value as any[])
 			case 'between':
 				return query.whereBetween(cond.column, cond.value as [Date, Date])
+			case 'whereNull':
+				return query.whereNull(cond.column)
+			case 'whereNotNull':
+				return query.whereNotNull(cond.column)
 			default:
 				throw new Error(`Unsupported operator: ${cond.operator}`)
 		}

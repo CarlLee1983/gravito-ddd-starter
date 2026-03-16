@@ -15,6 +15,13 @@
  */
 
 /**
+ * WHERE 比較運算子類型
+ *
+ * @public
+ */
+export type WhereOperator = '=' | '!=' | '<>' | '>' | '<' | '>=' | '<=' | 'LIKE' | 'like' | 'IN' | 'in'
+
+/**
  * 數據庫查詢建構器介面
  *
  * 提供流暢的查詢 API，隱藏具體 ORM 實現細節。
@@ -26,11 +33,11 @@ export interface IQueryBuilder {
 	 * WHERE 條件
 	 *
 	 * @param {string} column - 欄位名稱
-	 * @param {string} operator - 比較運算子 ('=', '!=', '>', '<', 'LIKE' 等)
+	 * @param {WhereOperator} operator - 比較運算子 ('=', '!=', '>', '<', 'LIKE' 等)
 	 * @param {unknown} value - 比較值
 	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
 	 */
-	where(column: string, operator: string, value: unknown): IQueryBuilder
+	where(column: string, operator: WhereOperator, value: unknown): IQueryBuilder
 
 	/**
 	 * 取得單筆記錄
@@ -49,12 +56,20 @@ export interface IQueryBuilder {
 	select(columns?: string[]): Promise<Record<string, unknown>[]>
 
 	/**
-	 * 新增記錄
+	 * 新增單筆記錄
 	 *
 	 * @param {Record<string, unknown>} data - 要新增的數據
 	 * @returns {Promise<void>}
 	 */
 	insert(data: Record<string, unknown>): Promise<void>
+
+	/**
+	 * 批量新增多筆記錄
+	 *
+	 * @param {Record<string, unknown>[]} data - 要新增的數據陣列
+	 * @returns {Promise<void>}
+	 */
+	insertMany(data: Record<string, unknown>[]): Promise<void>
 
 	/**
 	 * 更新記錄
@@ -125,11 +140,11 @@ export interface IQueryBuilder {
 	 * OR 條件
 	 *
 	 * @param {string} column - 欄位名稱
-	 * @param {string} operator - 比較運算子
+	 * @param {WhereOperator} operator - 比較運算子
 	 * @param {unknown} value - 比較值
 	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
 	 */
-	orWhere(column: string, operator: string, value: unknown): IQueryBuilder
+	orWhere(column: string, operator: WhereOperator, value: unknown): IQueryBuilder
 
 	/**
 	 * INNER JOIN
@@ -158,6 +173,22 @@ export interface IQueryBuilder {
 	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
 	 */
 	groupBy(...columns: string[]): IQueryBuilder
+
+	/**
+	 * 檢查欄位為 NULL
+	 *
+	 * @param {string} column - 欄位名稱
+	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
+	 */
+	whereNull(column: string): IQueryBuilder
+
+	/**
+	 * 檢查欄位不為 NULL
+	 *
+	 * @param {string} column - 欄位名稱
+	 * @returns {IQueryBuilder} 返回自身以支援鏈式調用
+	 */
+	whereNotNull(column: string): IQueryBuilder
 }
 
 /**
@@ -194,6 +225,26 @@ export interface IDatabaseAccess {
 	 * ```
 	 */
 	transaction<T>(callback: (trx: IDatabaseAccess) => Promise<T>): Promise<T>
+
+	/**
+	 * 執行原始 SQL 查詢（逃生口）
+	 *
+	 * 用於執行 IQueryBuilder 無法表達的複雜查詢。
+	 * 實現應使用參數化查詢防止 SQL 注入。
+	 *
+	 * @param {string} sql - SQL 查詢語句
+	 * @param {unknown[]} [params] - 查詢參數（可選）
+	 * @returns {Promise<Record<string, unknown>[]>} 查詢結果陣列
+	 *
+	 * @example
+	 * ```typescript
+	 * const results = await db.raw(
+	 *   'SELECT * FROM users WHERE age > ? AND status = ?',
+	 *   [18, 'active']
+	 * )
+	 * ```
+	 */
+	raw(sql: string, params?: unknown[]): Promise<Record<string, unknown>[]>
 }
 
 /**

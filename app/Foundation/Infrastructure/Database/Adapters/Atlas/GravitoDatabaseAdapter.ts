@@ -74,6 +74,30 @@ class AtlasDatabaseAccess implements IDatabaseAccess {
 			return callback(trxAccess)
 		})
 	}
+
+	/**
+	 * 執行原始 SQL 查詢
+	 *
+	 * @param sql - SQL 查詢語句
+	 * @param params - 查詢參數（可選）
+	 * @returns 查詢結果陣列
+	 */
+	async raw(sql: string, params?: unknown[]): Promise<Record<string, unknown>[]> {
+		const DB = getDB()
+		if (!DB) {
+			throw new Error('Atlas DB 實例未初始化')
+		}
+
+		try {
+			// Atlas 支援 raw() 方法用於執行原始 SQL
+			const result = await DB.raw(sql, params || [])
+			return Array.isArray(result) ? result : [result]
+		} catch (error) {
+			const err = error instanceof Error ? error : new Error(String(error))
+			err.message = `Atlas raw query failed: ${err.message}`
+			throw err
+		}
+	}
 }
 
 /**

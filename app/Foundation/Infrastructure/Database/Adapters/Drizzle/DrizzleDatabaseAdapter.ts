@@ -13,6 +13,7 @@ import type { IDatabaseAccess, IQueryBuilder } from '@/Foundation/Infrastructure
 import { getDrizzleInstance } from './config'
 import { DrizzleQueryBuilder } from './DrizzleQueryBuilder'
 import * as schema from './schema'
+import { sql } from 'drizzle-orm'
 
 /**
  * Drizzle DatabaseAccess 實作類別
@@ -67,10 +68,35 @@ class DrizzleDatabaseAccess implements IDatabaseAccess {
           // 巢狀事務：直接使用外層事務
           return callback(trxAccess)
         },
+        raw: async (sqlText: string, params?: unknown[]) => {
+          // 在事務中執行原始 SQL
+          return (tx as any).execute(sql.raw(sqlText, params || []))
+        },
       }
 
       return callback(trxAccess)
     })
+  }
+
+  /**
+   * 執行原始 SQL 查詢
+   *
+   * @param sqlText - SQL 查詢語句
+   * @param params - 查詢參數（可選）
+   * @returns 查詢結果陣列
+   */
+  async raw(sqlText: string, params?: unknown[]): Promise<Record<string, unknown>[]> {
+    const db = getDrizzleInstance()
+
+    try {
+      // 使用 Drizzle 的 sql.raw 和 execute 來執行原始 SQL
+      const result = await (db as any).execute(sql.raw(sqlText, params || []))
+      return Array.isArray(result) ? result : (result?.rows || [])
+    } catch (error) {
+      const err = error instanceof Error ? error : new Error(String(error))
+      err.message = `Drizzle raw query failed: ${err.message}`
+      throw err
+    }
   }
 }
 

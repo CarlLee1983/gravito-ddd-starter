@@ -53,7 +53,7 @@ export class OrderRepository implements IOrderRepository {
 	 * @returns Promise<Order[]> 訂單聚合根列表
 	 */
 	async findByUserId(userId: string): Promise<Order[]> {
-		const rows = await this.db.table('orders').where('user_id', '=', userId).get()
+		const rows = await this.db.table('orders').where('user_id', '=', userId).select()
 		return rows.map((row) => this.toDomain(row))
 	}
 
@@ -121,7 +121,7 @@ export class OrderRepository implements IOrderRepository {
 	 * @returns Promise<Order[]> 訂單列表
 	 */
 	async findAll(): Promise<Order[]> {
-		const rows = await this.db.table('orders').get()
+		const rows = await this.db.table('orders').select()
 		return rows.map((row) => this.toDomain(row))
 	}
 

@@ -40,6 +40,9 @@ Atlas 與 Drizzle 的雙 ORM 支持架構，以及資料庫切換策略。
 ### 10. [國際化與訊息管理](./09-Internationalization/README.md) ✨
 完整的多語系 i18n 系統、訊息簡寫優化 (Message Service Pattern)、Email 訊息設計。
 
+### 11. [專案再利用指南](./10-Project-Reuse/REUSE_GUIDE.md) ✨ **NEW**
+如何將本專案作為 DDD starter 複用到其他新專案（深度架構分析 + 可操作步驟）。
+
 ---
 
 ## 🎯 最近更新 (2026-03-13)

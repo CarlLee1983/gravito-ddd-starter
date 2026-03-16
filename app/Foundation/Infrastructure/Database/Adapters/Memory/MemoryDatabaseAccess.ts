@@ -146,6 +146,24 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
+	 * 檢查欄位為 NULL
+	 * @param column - 欄位名稱
+	 */
+	whereNull(column: string): IQueryBuilder {
+		this.whereConditions.push({ column, operator: 'IS_NULL', value: null })
+		return this
+	}
+
+	/**
+	 * 檢查欄位不為 NULL
+	 * @param column - 欄位名稱
+	 */
+	whereNotNull(column: string): IQueryBuilder {
+		this.whereConditions.push({ column, operator: 'IS_NOT_NULL', value: null })
+		return this
+	}
+
+	/**
 	 * 取得指定表格的所有原始資料行
 	 * @private
 	 */
@@ -184,6 +202,10 @@ class MemoryQueryBuilder implements IQueryBuilder {
 			case 'between':
 				const [start, end] = cond.value as [Date, Date]
 				return val >= start && val <= end
+			case 'IS_NULL':
+				return val === null || val === undefined
+			case 'IS_NOT_NULL':
+				return val !== null && val !== undefined
 			default:
 				return false
 		}
@@ -307,6 +329,17 @@ class MemoryQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
+	 * 批量新增多筆記錄
+	 * @param data - 資料物件陣列
+	 */
+	async insertMany(data: Record<string, unknown>[]): Promise<void> {
+		const rows = this.getTableRows()
+		for (const item of data) {
+			rows.push({ ...item })
+		}
+	}
+
+	/**
 	 * 更新符合條件的記錄
 	 * @param data - 要更新的欄位與數值
 	 */
@@ -389,5 +422,16 @@ export class MemoryDatabaseAccess implements IDatabaseAccess {
 			}
 			throw error
 		}
+	}
+
+	/**
+	 * 執行原始 SQL 查詢（內存版本不支援）
+	 * @param sql - SQL 查詢語句
+	 * @throws 拋出不支援的操作錯誤
+	 */
+	async raw(sql: string, params?: unknown[]): Promise<Record<string, unknown>[]> {
+		throw new Error(
+			'MemoryDatabaseAccess does not support raw SQL queries. Use table() method instead.'
+		)
 	}
 }
