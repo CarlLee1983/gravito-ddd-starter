@@ -18,6 +18,10 @@ import { getDrizzleInstance } from './config'
  * Drizzle 查詢建構器實作類別
  *
  * 將 Drizzle ORM 的 SQL 式查詢 API 轉換為標準的 IQueryBuilder 契約。
+ *
+ * 設計原則：Immutable Pattern
+ * - 所有返回 IQueryBuilder 的方法都返回新實例
+ * - 保證鏈式調用時無副作用
  */
 export class DrizzleQueryBuilder implements IQueryBuilder {
   /** 儲存 Drizzle 條件表達式陣列 */
@@ -52,52 +56,71 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   ) {}
 
   /**
-   * 添加 WHERE 查詢條件
+   * 複製當前查詢建構器的狀態（Immutable 模式）
+   * @returns 具有相同狀態的新 QueryBuilder 實例
+   * @private
+   */
+  private clone(): DrizzleQueryBuilder {
+    const cloned = new DrizzleQueryBuilder(this.db, this.tableName, this.tableSchema, this.logger)
+    cloned.whereConditions = [...this.whereConditions]
+    cloned.orConditions = [...this.orConditions]
+    cloned.orderByRules = [...this.orderByRules]
+    cloned.limitValue = this.limitValue
+    cloned.offsetValue = this.offsetValue
+    cloned.joinClauses = [...this.joinClauses]
+    cloned.groupByColumns = [...this.groupByColumns]
+    cloned.havingConditions = [...this.havingConditions]
+    return cloned
+  }
+
+  /**
+   * 添加 WHERE 查詢條件（Immutable 模式）
    *
    * @param column - 欄位名稱 (須存在於 schema 中)
    * @param operator - 比較運算子
    * @param value - 比較值
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    * @throws 當欄位名稱在表中不存在時拋出錯誤
    */
   where(column: string, operator: string, value: unknown): IQueryBuilder {
-    const col = this.tableSchema[column]
+    const cloned = this.clone()
+    const col = cloned.tableSchema[column]
 
     if (!col) {
-      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+      throw new Error(`Column "${column}" not found in table "${cloned.tableName}"`)
     }
 
     switch (operator) {
       case '=':
-        this.whereConditions.push(eq(col, value))
+        cloned.whereConditions.push(eq(col, value))
         break
       case '!=':
       case '<>':
-        this.whereConditions.push(ne(col, value))
+        cloned.whereConditions.push(ne(col, value))
         break
       case '>':
-        this.whereConditions.push(gt(col, value))
+        cloned.whereConditions.push(gt(col, value))
         break
       case '<':
-        this.whereConditions.push(lt(col, value))
+        cloned.whereConditions.push(lt(col, value))
         break
       case '>=':
-        this.whereConditions.push(gte(col, value))
+        cloned.whereConditions.push(gte(col, value))
         break
       case '<=':
-        this.whereConditions.push(lte(col, value))
+        cloned.whereConditions.push(lte(col, value))
         break
       case 'like':
-        this.whereConditions.push(like(col, value as string))
+        cloned.whereConditions.push(like(col, value as string))
         break
       case 'in':
-        this.whereConditions.push(inArray(col, value as any[]))
+        cloned.whereConditions.push(inArray(col, value as any[]))
         break
       default:
         throw new Error(`Unsupported operator: ${operator}`)
     }
 
-    return this
+    return cloned
   }
 
   /**
@@ -381,40 +404,43 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 限制回傳的記錄數量
+   * 限制回傳的記錄數量（Immutable 模式）
    *
    * @param value - 最大記錄筆數
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   limit(value: number): IQueryBuilder {
-    this.limitValue = value
-    return this
+    const cloned = this.clone()
+    cloned.limitValue = value
+    return cloned
   }
 
   /**
-   * 跳過指定數量的記錄（分頁偏移）
+   * 跳過指定數量的記錄（分頁偏移，Immutable 模式）
    *
    * @param value - 跳過的筆數
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   offset(value: number): IQueryBuilder {
-    this.offsetValue = value
-    return this
+    const cloned = this.clone()
+    cloned.offsetValue = value
+    return cloned
   }
 
   /**
-   * 設定資料排序規則（支援多欄位）
+   * 設定資料排序規則（支援多欄位，Immutable 模式）
    *
    * 多次呼叫此方法可建立多欄位排序。呼叫順序決定排序優先級。
    *
    * @param column - 排序欄位
    * @param direction - 排序方向 (ASC 或 DESC，預設為 ASC)
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): IQueryBuilder {
+    const cloned = this.clone()
     const normalizedDirection = direction.toUpperCase() as 'ASC' | 'DESC'
-    this.orderByRules.push({ column, direction: normalizedDirection })
-    return this
+    cloned.orderByRules.push({ column, direction: normalizedDirection })
+    return cloned
   }
 
   /**
@@ -445,54 +471,57 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
   }
 
   /**
-   * 建立範圍查詢條件 (如時間區間)
+   * 建立範圍查詢條件 (如時間區間，Immutable 模式)
    *
    * @param column - 欄位名稱
    * @param range - [開始, 結束]
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   whereBetween(column: string, range: [Date, Date]): IQueryBuilder {
-    const col = this.tableSchema[column]
+    const cloned = this.clone()
+    const col = cloned.tableSchema[column]
 
     if (!col) {
-      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+      throw new Error(`Column "${column}" not found in table "${cloned.tableName}"`)
     }
 
-    this.whereConditions.push(between(col, range[0], range[1]))
-    return this
+    cloned.whereConditions.push(between(col, range[0], range[1]))
+    return cloned
   }
 
   /**
-   * IN 查詢
+   * IN 查詢（Immutable 模式）
    *
    * @param column - 欄位名稱
    * @param values - 值陣列
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   whereIn(column: string, values: unknown[]): IQueryBuilder {
-    const col = this.tableSchema[column]
+    const cloned = this.clone()
+    const col = cloned.tableSchema[column]
 
     if (!col) {
-      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+      throw new Error(`Column "${column}" not found in table "${cloned.tableName}"`)
     }
 
-    this.whereConditions.push(inArray(col, values))
-    return this
+    cloned.whereConditions.push(inArray(col, values))
+    return cloned
   }
 
   /**
-   * OR 條件
+   * OR 條件（Immutable 模式）
    *
    * @param column - 欄位名稱
    * @param operator - 比較運算子
    * @param value - 比較值
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   orWhere(column: string, operator: string, value: unknown): IQueryBuilder {
-    const col = this.tableSchema[column]
+    const cloned = this.clone()
+    const col = cloned.tableSchema[column]
 
     if (!col) {
-      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+      throw new Error(`Column "${column}" not found in table "${cloned.tableName}"`)
     }
 
     let condition: any
@@ -526,94 +555,100 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
         throw new Error(`Unsupported operator: ${operator}`)
     }
 
-    this.orConditions.push(condition)
-    return this
+    cloned.orConditions.push(condition)
+    return cloned
   }
 
   /**
-   * INNER JOIN
+   * INNER JOIN（Immutable 模式）
    *
    * @param table - 要 JOIN 的資料表名稱
    * @param localColumn - 本表欄位名稱
    * @param foreignColumn - 外表欄位名稱
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   join(table: string, localColumn: string, foreignColumn: string): IQueryBuilder {
-    this.joinClauses.push({ table, localColumn, foreignColumn, type: 'INNER' })
-    return this
+    const cloned = this.clone()
+    cloned.joinClauses.push({ table, localColumn, foreignColumn, type: 'INNER' })
+    return cloned
   }
 
   /**
-   * LEFT JOIN
+   * LEFT JOIN（Immutable 模式）
    *
    * @param table - 要 JOIN 的資料表名稱
    * @param localColumn - 本表欄位名稱
    * @param foreignColumn - 外表欄位名稱
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   leftJoin(table: string, localColumn: string, foreignColumn: string): IQueryBuilder {
-    this.joinClauses.push({ table, localColumn, foreignColumn, type: 'LEFT' })
-    return this
+    const cloned = this.clone()
+    cloned.joinClauses.push({ table, localColumn, foreignColumn, type: 'LEFT' })
+    return cloned
   }
 
   /**
-   * GROUP BY
+   * GROUP BY（Immutable 模式）
    *
    * @param columns - 要分組的欄位名稱（可變參數）
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   groupBy(...columns: string[]): IQueryBuilder {
-    this.groupByColumns.push(...columns)
-    return this
+    const cloned = this.clone()
+    cloned.groupByColumns.push(...columns)
+    return cloned
   }
 
   /**
-   * 檢查欄位為 NULL
+   * 檢查欄位為 NULL（Immutable 模式）
    *
    * @param column - 欄位名稱
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   whereNull(column: string): IQueryBuilder {
-    const col = this.tableSchema[column]
+    const cloned = this.clone()
+    const col = cloned.tableSchema[column]
 
     if (!col) {
-      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+      throw new Error(`Column "${column}" not found in table "${cloned.tableName}"`)
     }
 
-    this.whereConditions.push(isNull(col))
-    return this
+    cloned.whereConditions.push(isNull(col))
+    return cloned
   }
 
   /**
-   * 檢查欄位不為 NULL
+   * 檢查欄位不為 NULL（Immutable 模式）
    *
    * @param column - 欄位名稱
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   whereNotNull(column: string): IQueryBuilder {
-    const col = this.tableSchema[column]
+    const cloned = this.clone()
+    const col = cloned.tableSchema[column]
 
     if (!col) {
-      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+      throw new Error(`Column "${column}" not found in table "${cloned.tableName}"`)
     }
 
-    this.whereConditions.push(isNotNull(col))
-    return this
+    cloned.whereConditions.push(isNotNull(col))
+    return cloned
   }
 
   /**
-   * GROUP BY 後的條件篩選 (HAVING)
+   * GROUP BY 後的條件篩選 (HAVING，Immutable 模式)
    *
    * @param column - 聚合欄位名稱
    * @param operator - 比較運算子
    * @param value - 比較值
-   * @returns 回傳此實例以支援鏈式調用
+   * @returns 回傳新實例以支援鏈式調用
    */
   having(column: string, operator: string, value: unknown): IQueryBuilder {
-    const col = this.tableSchema[column]
+    const cloned = this.clone()
+    const col = cloned.tableSchema[column]
 
     if (!col) {
-      throw new Error(`Column "${column}" not found in table "${this.tableName}"`)
+      throw new Error(`Column "${column}" not found in table "${cloned.tableName}"`)
     }
 
     let condition: any
@@ -647,8 +682,8 @@ export class DrizzleQueryBuilder implements IQueryBuilder {
         throw new Error(`Unsupported operator in HAVING: ${operator}`)
     }
 
-    this.havingConditions.push(condition)
-    return this
+    cloned.havingConditions.push(condition)
+    return cloned
   }
 
   /**

@@ -348,40 +348,43 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 限制回傳的記錄數量
+	 * 限制回傳的記錄數量（Immutable 模式）
 	 *
 	 * @param value - 最大記錄筆數
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	limit(value: number): IQueryBuilder {
-		this.limitValue = value
-		return this
+		const cloned = this.clone()
+		cloned.limitValue = value
+		return cloned
 	}
 
 	/**
-	 * 跳過指定數量的記錄（分頁偏移）
+	 * 跳過指定數量的記錄（分頁偏移，Immutable 模式）
 	 *
 	 * @param value - 跳過的筆數
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	offset(value: number): IQueryBuilder {
-		this.offsetValue = value
-		return this
+		const cloned = this.clone()
+		cloned.offsetValue = value
+		return cloned
 	}
 
 	/**
-	 * 設定資料排序規則（支援多欄位）
+	 * 設定資料排序規則（支援多欄位，Immutable 模式）
 	 *
 	 * 多次呼叫此方法可建立多欄位排序。呼叫順序決定排序優先級。
 	 *
 	 * @param column - 排序欄位
 	 * @param direction - 排序方向（ASC 或 DESC，預設為 ASC）
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	orderBy(column: string, direction: 'ASC' | 'DESC' = 'ASC'): IQueryBuilder {
+		const cloned = this.clone()
 		const normalizedDirection = direction.toUpperCase() as 'ASC' | 'DESC'
-		this.orderByRules.push({ column, direction: normalizedDirection })
-		return this
+		cloned.orderByRules.push({ column, direction: normalizedDirection })
+		return cloned
 	}
 
 	/**
@@ -411,112 +414,121 @@ export class AtlasQueryBuilder implements IQueryBuilder {
 	}
 
 	/**
-	 * 建立範圍查詢條件（常用於時間範圍）
+	 * 建立範圍查詢條件（常用於時間範圍，Immutable 模式）
 	 *
 	 * @param column - 欄位名稱
 	 * @param range - [開始值, 結束值] 陣列
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	whereBetween(column: string, range: [Date, Date]): IQueryBuilder {
-		this.whereConditions.push({ column, operator: 'between', value: range })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator: 'between', value: range })
+		return cloned
 	}
 
 	/**
-	 * IN 查詢
+	 * IN 查詢（Immutable 模式）
 	 *
 	 * @param column - 欄位名稱
 	 * @param values - 值陣列
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	whereIn(column: string, values: unknown[]): any {
-		this.whereConditions.push({ column, operator: 'in', value: values })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator: 'in', value: values })
+		return cloned
 	}
 
 	/**
-	 * OR 條件
+	 * OR 條件（Immutable 模式）
 	 *
 	 * @param column - 欄位名稱
 	 * @param operator - 比較運算子
 	 * @param value - 比較值
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	orWhere(column: string, operator: string, value: unknown): any {
-		this.orConditions.push({ column, operator, value })
-		return this
+		const cloned = this.clone()
+		cloned.orConditions.push({ column, operator, value })
+		return cloned
 	}
 
 	/**
-	 * INNER JOIN
+	 * INNER JOIN（Immutable 模式）
 	 *
 	 * @param table - 要 JOIN 的資料表名稱
 	 * @param localColumn - 本表欄位名稱
 	 * @param foreignColumn - 外表欄位名稱
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	join(table: string, localColumn: string, foreignColumn: string): any {
-		this.joinClauses.push({ table, localColumn, foreignColumn, type: 'INNER' })
-		return this
+		const cloned = this.clone()
+		cloned.joinClauses.push({ table, localColumn, foreignColumn, type: 'INNER' })
+		return cloned
 	}
 
 	/**
-	 * LEFT JOIN
+	 * LEFT JOIN（Immutable 模式）
 	 *
 	 * @param table - 要 JOIN 的資料表名稱
 	 * @param localColumn - 本表欄位名稱
 	 * @param foreignColumn - 外表欄位名稱
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	leftJoin(table: string, localColumn: string, foreignColumn: string): any {
-		this.joinClauses.push({ table, localColumn, foreignColumn, type: 'LEFT' })
-		return this
+		const cloned = this.clone()
+		cloned.joinClauses.push({ table, localColumn, foreignColumn, type: 'LEFT' })
+		return cloned
 	}
 
 	/**
-	 * GROUP BY
+	 * GROUP BY（Immutable 模式）
 	 *
 	 * @param columns - 要分組的欄位名稱（可變參數）
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	groupBy(...columns: string[]): any {
-		this.groupByColumns.push(...columns)
-		return this
+		const cloned = this.clone()
+		cloned.groupByColumns.push(...columns)
+		return cloned
 	}
 
 	/**
-	 * 檢查欄位為 NULL
+	 * 檢查欄位為 NULL（Immutable 模式）
 	 *
 	 * @param column - 欄位名稱
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	whereNull(column: string): any {
-		this.whereConditions.push({ column, operator: 'whereNull', value: null })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator: 'whereNull', value: null })
+		return cloned
 	}
 
 	/**
-	 * 檢查欄位不為 NULL
+	 * 檢查欄位不為 NULL（Immutable 模式）
 	 *
 	 * @param column - 欄位名稱
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	whereNotNull(column: string): any {
-		this.whereConditions.push({ column, operator: 'whereNotNull', value: null })
-		return this
+		const cloned = this.clone()
+		cloned.whereConditions.push({ column, operator: 'whereNotNull', value: null })
+		return cloned
 	}
 
 	/**
-	 * GROUP BY 後的條件篩選 (HAVING)
+	 * GROUP BY 後的條件篩選 (HAVING)（Immutable 模式）
 	 *
 	 * @param column - 聚合欄位名稱
 	 * @param operator - 比較運算子
 	 * @param value - 比較值
-	 * @returns 回傳此實例以支援鏈式調用
+	 * @returns 回傳新實例以支援鏈式調用
 	 */
 	having(column: string, operator: string, value: unknown): any {
-		this.havingConditions.push({ column, operator, value })
-		return this
+		const cloned = this.clone()
+		cloned.havingConditions.push({ column, operator, value })
+		return cloned
 	}
 
 	/**
