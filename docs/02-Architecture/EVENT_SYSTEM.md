@@ -327,6 +327,48 @@ dispatcher.subscribe('PostCreated', async (event) => {
 })
 ```
 
+## 🛡️ 冪等性 (Idempotency) 與 事務一致性
+
+在分散式系統或具有重試機制的事件系統中，**「事件重複執行」** 是必然發生的現象。為了確保系統穩定，必須遵循以下實務：
+
+### 1. 處理器的冪等性設計
+
+每個 Event Handler 必須設計為可重複執行而不會產生副作用。
+
+**推薦做法：**
+- **資料庫唯一限制**: 使用 `eventId` 或 `aggregateId + version` 作為資料庫的唯一鍵。
+- **狀態檢查**: 在執行邏輯前先檢查目標狀態（例如：如果訂單已支付，則跳過支付成功的處理）。
+- **冪等表 (Idempotency Table)**: 記錄已成功處理的 `eventId`，處理前先查詢該表。
+
+```typescript
+// ✅ 冪等 Handler 範例
+export class UpdateStockHandler {
+  async handle(event: OrderPlacedEvent): Promise<void> {
+    // 1. 檢查該事件是否已處理
+    const alreadyProcessed = await this.idempotencyRepo.exists(event.id);
+    if (alreadyProcessed) return;
+
+    // 2. 執行業務邏輯 (扣減庫存)
+    await this.stockService.decrease(event.productId, event.quantity);
+
+    // 3. 記錄已處理
+    await this.idempotencyRepo.save(event.id);
+  }
+}
+```
+
+### 2. 事務性發送 (Transactional Outbox)
+
+為了防止「資料庫更新成功但事件發送失敗（或反之）」的情況，Gravito 推薦使用 **Outbox Pattern**：
+
+1. 在同一個資料庫事務中，同時寫入 **業務數據** 與 **事件數據 (Outbox Table)**。
+2. 由一個獨立的 Relay 進程（或 SystemWorker）從 Outbox Table 讀取事件並發送至訊息隊列。
+3. 發送成功後，將 Outbox Table 中的事件標記為已發送。
+
+這確保了 **至少一次投遞 (At-least-once delivery)**。
+
+---
+
 ## 性能最佳實踐
 
 ### 1. 選擇正確的分發器

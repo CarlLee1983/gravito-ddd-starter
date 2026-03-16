@@ -8,6 +8,7 @@
 
 | 文檔 | 重點 |
 |------|------|
+| **[Foundation/OVERVIEW.md](./Foundation/OVERVIEW.md)** | 🏗️ **核心基石**：Foundation 層四層結構、基類與 Port 定義 |
 | **[CORE_DESIGN.md](./CORE_DESIGN.md)** | ⭐ **必讀**：四層架構、依賴方向、數據流、模組結構 |
 | **[EVENT_SYSTEM.md](./EVENT_SYSTEM.md)** | 事件驅動架構：領域事件、整合事件、重試機制與 DLQ |
 | **[../03-DDD-Design/DDD_PATTERNS.md](../03-DDD-Design/DDD_PATTERNS.md)** | DDD 模式：實體、聚合、值物件、進階模式 (CQRS/ES/Saga) |
@@ -56,6 +57,9 @@
 ---
 
 ## 🎯 按需求查詢
+
+### "我想理解底層 Foundation 層的分層與基類"
+→ [Foundation/OVERVIEW.md](./Foundation/OVERVIEW.md)
 
 ### "我想理解整體架構與分層規則"
 → [CORE_DESIGN.md](./CORE_DESIGN.md)

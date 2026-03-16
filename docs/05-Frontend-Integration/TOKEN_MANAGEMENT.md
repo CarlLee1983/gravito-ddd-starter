@@ -316,6 +316,37 @@ http 工具自動：
   └─ 如果 401，清除 Token 並重定向
 ```
 
+## 🌊 SSR 與 水合 (Hydration) 策略
+
+在大型 SSR 應用中，確保「伺服器端渲染」與「客戶端激活」時的認證狀態一致至關重要。
+
+### 1. 認證狀態流轉
+
+```
+1. 瀏覽器請求 (包含 HttpOnly Cookie)
+      ↓
+2. 伺服器端 (SSR)
+  ├─ 讀取 Cookie 中的 Token
+  ├─ 呼叫內部 API 驗證用戶
+  └─ 將用戶資料注入 Window.__INITIAL_STATE__
+      ↓
+3. 瀏覽器接收 HTML (已渲染登入狀態)
+      ↓
+4. 客戶端激活 (Hydration)
+  ├─ AuthProvider 從 __INITIAL_STATE__ 讀取用戶資料
+  ├─ tokenManager 從 Cookie 提取 Token 並同步到 localStorage
+  └─ React 接管頁面，無需二次請求 /api/auth/me
+```
+
+### 2. 安全同步 (Security Synchronization)
+
+為了解決 SSR 初始加載與後續 AJAX 請求的認證一致性，我們採用以下策略：
+
+- **伺服器端注入**: 在 `app.ts` 或路由處理器中，將當前 Token 透過 `meta` 標籤或全局變數安全地傳遞給前端（僅限非 HttpOnly 的過渡 Token 或公開資訊）。
+- **雙向驗證**: 
+    - 客戶端 AJAX 請求優先使用 `localStorage` 中的 Token。
+    - 如果 `localStorage` 為空但 Cookie 存在，`tokenManager` 會自動執行一次同步。
+
 ---
 
 ## 🛡️ 安全最佳實踐
@@ -329,50 +360,33 @@ const token = getToken()
 // 2. 自動 Authorization（使用 http 工具）
 await http.get('/api/protected')
 
-// 3. 檢查 Token 過期
-if (isTokenExpiringSoon(5)) {
-  // 刷新 Token 邏輯...
-}
-
-// 4. 登出時清除所有 Token
-clearToken()
-
-// 5. 在 AuthContext 中管理認證狀態
-const { user, isAuthenticated } = useAuth()
+// 3. 確保 SSR 水合一致性
+// 在 Root 組件中：
+const initialState = window.__INITIAL_STATE__;
+<AuthProvider initialUser={initialState.user}>...</AuthProvider>
 ```
 
 ### ❌ 避免做法
 
 ```typescript
-// ❌ 直接訪問 localStorage
-const token = localStorage.getItem('auth_token')
-
-// ❌ 手動添加 Header（使用 http 工具替代）
-fetch('/api/protected', {
-  headers: { Authorization: `Bearer ${token}` }
-})
-
-// ❌ 在 localStorage 存儲敏感信息以外的內容
-localStorage.setItem('sensitive_data', JSON.stringify(userData))
-
-// ❌ 忽視 401 響應
-// （http 工具會自動處理）
+// ❌ 在 SSR 渲染完成前，客戶端直接修改 localStorage
+// 這會導致水合錯誤 (Hydration Mismatch)
 ```
 
 ---
 
 ## 📊 Token 存儲策略
 
-| 策略 | 位置 | 優點 | 缺點 |
-|------|------|------|------|
-| **HTTP-Only Cookie** | 瀏覽器 Cookie | XSS 防護、自動發送 | 前端 JS 無法訪問 |
-| **localStorage** | 瀏覽器存儲 | 前端 JS 可訪問、易於管理 | XSS 易被竊取 |
-| **Memory** | JavaScript 記憶體 | 最安全（JS 無法盜竊） | 頁面刷新丟失 |
+| 策略 | 位置 | 優點 | 缺點 | 適用場景 |
+|------|------|------|------|------|
+| **HttpOnly Cookie** | 瀏覽器 Cookie | XSS 防護、自動發送 | 前端 JS 無法讀取 | **SSR 初始加載、SEO 頁面** |
+| **localStorage** | 瀏覽器存儲 | 前端 JS 可訪問、易於管理 | XSS 易被竊取 | **SPA、非同步 API 請求** |
+| **Memory** | JS 記憶體 | 最安全 | 頁面刷新丟失 | **極高安全性需求 (如支付)** |
 
-**推薦組合**:
-- SSR 頁面：使用 HTTP-Only Cookie（由後端設定）
-- SPA 前端：使用 localStorage（更靈活）
-- 並行使用：Cookie 用於頁面加載，localStorage 用於前端 JS 請求
+**Gravito 推薦組合**:
+- **SSR 頁面**: 伺服器端使用 HttpOnly Cookie 進行認證。
+- **AJAX 請求**: 客戶端從 `localStorage` 讀取 Token 並注入 `Authorization: Bearer <token>`。
+- **靜態站點 (isStaticSite)**: 對於如 `gravito.dev` 等靜態站點，應偵測 `isStaticSite` 標記，避免 Inertia 執行 AJAX 導致 500 錯誤。
 
 ---
 

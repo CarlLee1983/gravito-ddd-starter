@@ -426,6 +426,8 @@ export class UserController {
 - Context: 業務場景 (應用服務)
 - Interaction: 物件間的互動 (方法調用)
 
+詳見 [DCI_PATTERN.md](./DCI_PATTERN.md) 了解具體實作範例。
+
 ## 最佳實踐 (Best Practices)
 
 1. **不可變性 (Immutability)**

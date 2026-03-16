@@ -7,6 +7,9 @@
 ### 1. [環境安裝與入門](./01-Getting-Started/HANDBOOK.md)
 包含環境設置、Docker 配置與專案啟動步驟。
 
+### 1B. [⏱️ 15 分鐘建立第一個模組](./01-Getting-Started/QUICK_START.md) ✨ **NEW**
+快速實戰教學，體驗從 Domain 到 API 的完整開發流程。
+
 ### 2. [核心架構設計](./02-Architecture/CORE_DESIGN.md)
 深入理解 PlanetCore 容器、依賴注入 (DI) 與系統抽象化原則。
 
