@@ -7,7 +7,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
-import type { IProductMessages } from '@/Foundation/Infrastructure/Ports/Messages/IProductMessages'
+import type { IProductMessages } from '@/Modules/Product/Presentation/Ports/IProductMessages'
 import { ProductController } from '../../Presentation/Controllers/ProductController'
 import { ProductPageController } from '../../Presentation/Controllers/ProductPageController'
 import { CreateProductService } from '../../Application/Services/CreateProductService'

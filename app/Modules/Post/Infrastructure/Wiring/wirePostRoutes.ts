@@ -12,7 +12,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
-import type { IPostMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPostMessages'
+import type { IPostMessages } from '@/Modules/Post/Presentation/Ports/IPostMessages'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 import { PostMessageService } from '../Services/PostMessageService'

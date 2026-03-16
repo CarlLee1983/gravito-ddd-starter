@@ -4,7 +4,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
-import type { IHealthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IHealthMessages'
+import type { IHealthMessages } from '@/Modules/Health/Presentation/Ports/IHealthMessages'
 import { IInfrastructureProbe } from '../../Domain/Services/IInfrastructureProbe'
 import type { IDatabaseConnectivityCheck } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseConnectivityCheck'
 import { createGravitoDatabaseConnectivityCheck } from '@/Foundation/Infrastructure/Database/Adapters/Atlas'

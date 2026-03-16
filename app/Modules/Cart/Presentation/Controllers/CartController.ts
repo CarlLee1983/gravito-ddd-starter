@@ -8,7 +8,7 @@ import type { AddItemToCartService } from '../../Application/Services/AddItemToC
 import type { RemoveItemFromCartService } from '../../Application/Services/RemoveItemFromCartService'
 import type { CheckoutCartService } from '../../Application/Services/CheckoutCartService'
 import type { ICartRepository } from '../../Domain/Repositories/ICartRepository'
-import type { ICartMessages } from '@/Foundation/Infrastructure/Ports/Messages/ICartMessages'
+import type { ICartMessages } from '@/Modules/Cart/Presentation/Ports/ICartMessages'
 import { toCartResponseDTO } from '../../Application/DTOs/CartResponseDTO'
 import { OptimisticLockException } from '@/Foundation/Application/OptimisticLockException'
 

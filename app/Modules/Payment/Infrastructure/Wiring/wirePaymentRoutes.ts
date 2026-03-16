@@ -4,7 +4,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
-import type { IPaymentMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPaymentMessages'
+import type { IPaymentMessages } from '@/Modules/Payment/Presentation/Ports/IPaymentMessages'
 import { PaymentController } from '../../Presentation/Controllers/PaymentController'
 import { PaymentPageController } from '../../Presentation/Controllers/PaymentPageController'
 import { registerPaymentRoutes } from '../../Presentation/Routes/api'

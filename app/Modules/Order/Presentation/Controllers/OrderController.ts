@@ -4,7 +4,7 @@
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
-import type { IOrderMessages } from '@/Foundation/Infrastructure/Ports/Messages/IOrderMessages'
+import type { IOrderMessages } from '@/Modules/Order/Presentation/Ports/IOrderMessages'
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { OrderId } from '../../Domain/ValueObjects/OrderId'
 import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'

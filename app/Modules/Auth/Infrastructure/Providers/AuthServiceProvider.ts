@@ -16,7 +16,7 @@ import type { ICredentialVerifier } from '@/Foundation/Application/Ports/Auth/IC
 import type { ITokenSigner } from '@/Foundation/Infrastructure/Ports/Auth/ITokenSigner'
 import type { IUserCreator } from '@/Foundation/Application/Ports/Auth/IUserCreator'
 import type { IUserProfileService } from '@/Foundation/Application/Ports/Auth/IUserProfileService'
-import type { IAuthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IAuthMessages'
+import type { IAuthMessages } from '@/Modules/Auth/Presentation/Ports/IAuthMessages'
 import type { ISessionRepository } from '@/Modules/Session/Domain/Repositories/ISessionRepository'
 import { ValidateSessionService } from '@/Modules/Session/Application/Services/ValidateSessionService'
 import type { ITokenValidator } from '@/Foundation/Infrastructure/Ports/Auth/ITokenValidator'

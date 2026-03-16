@@ -7,7 +7,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
-import type { IUserMessages } from '@/Foundation/Infrastructure/Ports/Messages/IUserMessages'
+import type { IUserMessages } from '@/Modules/User/Presentation/Ports/IUserMessages'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 import { UserMessageService } from '../Services/UserMessageService'

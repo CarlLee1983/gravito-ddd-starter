@@ -6,7 +6,7 @@
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
-import type { IAuthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IAuthMessages'
+import type { IAuthMessages } from '@/Modules/Auth/Presentation/Ports/IAuthMessages'
 import { LoginService } from '../../Application/Services/LoginService'
 import { RegisterService } from '../../Application/Services/RegisterService'
 import { LogoutService } from '../../Application/Services/LogoutService'

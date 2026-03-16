@@ -10,7 +10,7 @@
  * - 易於測試和重構
  */
 
-import type { IAuthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IAuthMessages'
+import type { IAuthMessages } from '@/Modules/Auth/Presentation/Ports/IAuthMessages'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 /**

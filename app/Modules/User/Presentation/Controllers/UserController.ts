@@ -14,7 +14,7 @@
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
-import type { IUserMessages } from '@/Foundation/Infrastructure/Ports/Messages/IUserMessages'
+import type { IUserMessages } from '@/Modules/User/Presentation/Ports/IUserMessages'
 import { CreateUserService } from '../../Application/Services/CreateUserService'
 import { GetUserService } from '../../Application/Services/GetUserService'
 

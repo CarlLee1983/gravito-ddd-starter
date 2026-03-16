@@ -3,7 +3,7 @@
  * @description 訂單訊息服務實現
  */
 
-import type { IOrderMessages } from '@/Foundation/Infrastructure/Ports/Messages/IOrderMessages'
+import type { IOrderMessages } from '@/Modules/Order/Presentation/Ports/IOrderMessages'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class OrderMessageService implements IOrderMessages {

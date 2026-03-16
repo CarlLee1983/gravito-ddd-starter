@@ -3,7 +3,7 @@
  * @description 健康檢查訊息服務實現
  */
 
-import type { IHealthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IHealthMessages'
+import type { IHealthMessages } from '@/Modules/Health/Presentation/Ports/IHealthMessages'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 /**

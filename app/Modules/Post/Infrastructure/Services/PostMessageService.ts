@@ -5,7 +5,7 @@
  * 包裝 ITranslator，提供類型安全的文章訊息方法。
  */
 
-import type { IPostMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPostMessages'
+import type { IPostMessages } from '@/Modules/Post/Presentation/Ports/IPostMessages'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class PostMessageService implements IPostMessages {

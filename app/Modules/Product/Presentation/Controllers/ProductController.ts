@@ -8,7 +8,7 @@ import type { CreateProductService } from '../../Application/Services/CreateProd
 import type { GetProductService } from '../../Application/Services/GetProductService'
 import type { IProductQueryService } from '../../Application/Queries/IProductQueryService'
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
-import type { IProductMessages } from '@/Foundation/Infrastructure/Ports/Messages/IProductMessages'
+import type { IProductMessages } from '@/Modules/Product/Presentation/Ports/IProductMessages'
 
 export class ProductController {
   /**

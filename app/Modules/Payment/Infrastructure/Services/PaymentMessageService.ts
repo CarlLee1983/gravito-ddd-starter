@@ -3,7 +3,7 @@
  * @description 支付訊息服務實現
  */
 
-import type { IPaymentMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPaymentMessages'
+import type { IPaymentMessages } from '@/Modules/Payment/Presentation/Ports/IPaymentMessages'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class PaymentMessageService implements IPaymentMessages {

@@ -4,7 +4,7 @@
  */
 
 import type { IRouteRegistrationContext } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
-import type { IOrderMessages } from '@/Foundation/Infrastructure/Ports/Messages/IOrderMessages'
+import type { IOrderMessages } from '@/Modules/Order/Presentation/Ports/IOrderMessages'
 import { OrderController } from '../../Presentation/Controllers/OrderController'
 import { OrderPageController } from '../../Presentation/Controllers/OrderPageController'
 import { registerOrderRoutes } from '../../Presentation/Routes/api'

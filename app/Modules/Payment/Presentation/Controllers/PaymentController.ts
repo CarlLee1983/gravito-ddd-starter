@@ -4,7 +4,7 @@
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
-import type { IPaymentMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPaymentMessages'
+import type { IPaymentMessages } from '@/Modules/Payment/Presentation/Ports/IPaymentMessages'
 import type { IPaymentRepository } from '../../Domain/Repositories/IPaymentRepository'
 import { PaymentId } from '../../Domain/ValueObjects/PaymentId'
 

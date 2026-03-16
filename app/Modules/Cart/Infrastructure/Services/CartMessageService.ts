@@ -10,7 +10,7 @@
  * - 易於測試和重構
  */
 
-import type { ICartMessages } from '@/Foundation/Infrastructure/Ports/Messages/ICartMessages'
+import type { ICartMessages } from '@/Modules/Cart/Presentation/Ports/ICartMessages'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class CartMessageService implements ICartMessages {

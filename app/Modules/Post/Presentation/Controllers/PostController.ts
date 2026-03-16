@@ -5,7 +5,7 @@
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
-import type { IPostMessages } from '@/Foundation/Infrastructure/Ports/Messages/IPostMessages'
+import type { IPostMessages } from '@/Modules/Post/Presentation/Ports/IPostMessages'
 import { CreatePostService } from '../../Application/Services/CreatePostService'
 import { GetPostService } from '../../Application/Services/GetPostService'
 

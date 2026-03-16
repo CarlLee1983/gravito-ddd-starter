@@ -4,7 +4,7 @@
  */
 
 import type { IHttpContext } from '@/Foundation/Presentation/IHttpContext'
-import type { IHealthMessages } from '@/Foundation/Infrastructure/Ports/Messages/IHealthMessages'
+import type { IHealthMessages } from '@/Modules/Health/Presentation/Ports/IHealthMessages'
 import type { PerformHealthCheckService } from '../../Application/Services/PerformHealthCheckService'
 
 /**

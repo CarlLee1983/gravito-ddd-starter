@@ -10,7 +10,7 @@
  * - 易於測試和重構
  */
 
-import type { IUserMessages } from '@/Foundation/Infrastructure/Ports/Messages/IUserMessages'
+import type { IUserMessages } from '@/Modules/User/Presentation/Ports/IUserMessages'
 import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITranslator'
 
 export class UserMessageService implements IUserMessages {
