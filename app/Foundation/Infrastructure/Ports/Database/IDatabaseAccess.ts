@@ -277,23 +277,37 @@ export interface IDatabaseAccess {
 	table(name: string): IQueryBuilder
 
 	/**
-	 * 在資料庫事務中執行 callback
+	 * 在資料庫事務中執行 callback（支援隔離等級）
 	 * 成功自動提交；拋出異常自動回滾。
 	 *
 	 * @template T
 	 * @param {(trx: IDatabaseAccess) => Promise<T>} callback - 事務內執行的回調函數
+	 * @param {TransactionIsolationLevel} [isolationLevel] - 隔離等級（可選，默認 READ_COMMITTED）
 	 * @returns {Promise<T>} 回調函數的返回值
 	 *
 	 * @example
 	 * ```typescript
+	 * // 基本使用
 	 * const result = await db.transaction(async (trx) => {
 	 *   await trx.table('users').insert({ name: 'John' })
 	 *   await trx.table('logs').insert({ action: 'user_created' })
 	 *   return { success: true }
 	 * })
+	 *
+	 * // 指定隔離等級
+	 * const result = await db.transaction(
+	 *   async (trx) => {
+	 *     // 金融交易，需要更高隔離等級
+	 *     return await processPayment(trx)
+	 *   },
+	 *   TransactionIsolationLevel.REPEATABLE_READ
+	 * )
 	 * ```
 	 */
-	transaction<T>(callback: (trx: IDatabaseAccess) => Promise<T>): Promise<T>
+	transaction<T>(
+		callback: (trx: IDatabaseAccess) => Promise<T>,
+		isolationLevel?: any  // TransactionIsolationLevel（避免循環依賴，使用 any）
+	): Promise<T>
 
 	/**
 	 * 執行原始 SQL 查詢（逃生口）

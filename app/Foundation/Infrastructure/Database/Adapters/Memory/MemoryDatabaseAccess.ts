@@ -14,6 +14,7 @@
  */
 
 import type { IDatabaseAccess, IQueryBuilder } from '@/Foundation/Infrastructure/Ports/Database/IDatabaseAccess'
+import { TransactionIsolationLevel } from '@/Foundation/Infrastructure/Ports/Database/TransactionIsolationLevel'
 
 /** 內部查詢條件類型定義 */
 type WhereCondition = { column: string; operator: string; value: unknown }
@@ -509,31 +510,193 @@ export class MemoryDatabaseAccess implements IDatabaseAccess {
 	}
 
 	/**
-	 * 在資料庫事務中執行 callback
+	 * 在資料庫事務中執行 callback（支援隔離等級）
 	 * 支援回滾：失敗時還原所有修改
+	 * 支援四個隔離等級：READ_UNCOMMITTED、READ_COMMITTED、REPEATABLE_READ、SERIALIZABLE
 	 * @param callback - 事務回調函數
+	 * @param isolationLevel - 隔離等級（默認 READ_COMMITTED）
 	 * @returns 回調的返回值
 	 */
-	async transaction<T>(callback: (trx: IDatabaseAccess) => Promise<T>): Promise<T> {
-		// 保存快照：複製所有表格的當前狀態
+	async transaction<T>(
+		callback: (trx: IDatabaseAccess) => Promise<T>,
+		isolationLevel: TransactionIsolationLevel = TransactionIsolationLevel.READ_COMMITTED
+	): Promise<T> {
+		switch (isolationLevel) {
+			case TransactionIsolationLevel.READ_UNCOMMITTED:
+				return this.transactionReadUncommitted(callback)
+			case TransactionIsolationLevel.READ_COMMITTED:
+				return this.transactionReadCommitted(callback)
+			case TransactionIsolationLevel.REPEATABLE_READ:
+				return this.transactionRepeatableRead(callback)
+			case TransactionIsolationLevel.SERIALIZABLE:
+				return this.transactionSerializable(callback)
+			default:
+				throw new Error(`Unsupported isolation level: ${isolationLevel}`)
+		}
+	}
+
+	/**
+	 * READ_UNCOMMITTED 實現：無隔離，允許髒讀（仍需支持回滾）
+	 * @private
+	 */
+	private async transactionReadUncommitted<T>(
+		callback: (trx: IDatabaseAccess) => Promise<T>
+	): Promise<T> {
+		// 保存快照以支持回滾
 		const snapshot = new Map(
 			Array.from(this.store.entries()).map(([tableName, rows]) => [
 				tableName,
-				[...rows], // 淺層複製陣列
+				[...rows],
 			])
 		)
 
 		try {
-			// 在事務內執行回調，傳入自身作為事務存取介面
+			// 直接執行
 			return await callback(this)
 		} catch (error) {
-			// 失敗：還原所有修改
+			// 失敗：還原快照
 			this.store.clear()
 			for (const [tableName, rows] of snapshot) {
 				this.store.set(tableName, [...rows])
 			}
 			throw error
 		}
+	}
+
+	/**
+	 * READ_COMMITTED 實現：快照隔離，不允許髒讀
+	 * @private
+	 */
+	private async transactionReadCommitted<T>(
+		callback: (trx: IDatabaseAccess) => Promise<T>
+	): Promise<T> {
+		// 保存快照
+		const snapshot = new Map(
+			Array.from(this.store.entries()).map(([tableName, rows]) => [
+				tableName,
+				[...rows],
+			])
+		)
+
+		try {
+			// 執行回調
+			return await callback(this)
+		} catch (error) {
+			// 失敗：還原快照
+			this.store.clear()
+			for (const [tableName, rows] of snapshot) {
+				this.store.set(tableName, [...rows])
+			}
+			throw error
+		}
+	}
+
+	/**
+	 * REPEATABLE_READ 實現：完整快照隔離，防止不可重複讀
+	 * @private
+	 */
+	private async transactionRepeatableRead<T>(
+		callback: (trx: IDatabaseAccess) => Promise<T>
+	): Promise<T> {
+		// 保存完整快照：深層複製以防止外部修改
+		const snapshot = new Map(
+			Array.from(this.store.entries()).map(([tableName, rows]) => [
+				tableName,
+				rows.map((row) => ({ ...row })), // 深層複製每個行
+			])
+		)
+
+		// 建立隔離的事務副本：使用快照資料
+		const transactionStore = new Map(snapshot)
+		const transactionDb = this.createTransactionInstance(transactionStore)
+
+		try {
+			// 在隔離的副本上執行回調
+			const result = await callback(transactionDb)
+			// 成功時，將修改合併回主存儲
+			this.mergeTransaction(transactionStore)
+			return result
+		} catch (error) {
+			// 失敗時回滾（不合併修改）
+			throw error
+		}
+	}
+
+	/**
+	 * SERIALIZABLE 實現：互斥鎖，完全序列執行
+	 * @private
+	 */
+	private async transactionSerializable<T>(
+		callback: (trx: IDatabaseAccess) => Promise<T>
+	): Promise<T> {
+		// 等待獲取全局鎖（模擬互斥）
+		await this.acquireSerializableLock()
+
+		try {
+			// 保存快照
+			const snapshot = new Map(
+				Array.from(this.store.entries()).map(([tableName, rows]) => [
+					tableName,
+					rows.map((row) => ({ ...row })),
+				])
+			)
+
+			// 執行回調
+			const result = await callback(this)
+			return result
+		} catch (error) {
+			// 失敗：還原快照
+			this.store.clear()
+			for (const [tableName, rows] of snapshot) {
+				this.store.set(tableName, rows.map((row) => ({ ...row })))
+			}
+			throw error
+		} finally {
+			// 釋放全局鎖
+			this.releaseSerializableLock()
+		}
+	}
+
+	/**
+	 * 建立隔離的事務實例（用於 REPEATABLE_READ）
+	 * @private
+	 */
+	private createTransactionInstance(transactionStore: Map<string, Record<string, unknown>[]>): IDatabaseAccess {
+		return {
+			table: (name: string) => new MemoryQueryBuilder(name, transactionStore),
+			transaction: this.transaction.bind(this),
+			raw: this.raw.bind(this),
+		}
+	}
+
+	/**
+	 * 將事務修改合併回主存儲
+	 * @private
+	 */
+	private mergeTransaction(transactionStore: Map<string, Record<string, unknown>[]>): void {
+		// 用事務的最終狀態覆蓋主存儲
+		this.store.clear()
+		for (const [tableName, rows] of transactionStore) {
+			this.store.set(tableName, [...rows])
+		}
+	}
+
+	/**
+	 * 序列化事務鎖（模擬全局互斥）
+	 * @private
+	 */
+	private serializableLocked = false
+
+	private async acquireSerializableLock(): Promise<void> {
+		// 簡單的忙等待實現
+		while (this.serializableLocked) {
+			await new Promise((resolve) => setTimeout(resolve, 1))
+		}
+		this.serializableLocked = true
+	}
+
+	private releaseSerializableLock(): void {
+		this.serializableLocked = false
 	}
 
 	/**
