@@ -52,7 +52,7 @@ export { SendPaymentFailedEmailHandler } from './Application/Handlers/SendPaymen
 // 導出訊息服務與控制器
 export { NotificationMessageService } from './Infrastructure/Services/NotificationMessageService'
 export type { INotificationMessages } from './Presentation/Ports/INotificationMessages'
-export { NotificationController } from './Presentation/Controllers/NotificationController'
+export { NotificationController, clearNotificationLogs, getNotificationLogs, addNotificationLog } from './Presentation/Controllers/NotificationController'
 
 // 導出事件（重新導出）
 export { OrderPlaced } from './Domain/Events/OrderPlaced'
