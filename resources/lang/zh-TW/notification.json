@@ -1,0 +1,17 @@
+{
+  "order_confirm_subject": "訂單 {orderId} 已確認",
+  "order_confirm_body": "親愛的 {name}，\n\n感謝您的購買！您的訂單 {orderId} 已成功建立，訂單金額為 {amount}。\n\n我們已開始處理您的訂單，請靜待發貨通知。\n\n祝您購物愉快！",
+  "order_confirm_success": "訂單確認信已發送",
+  "order_confirm_email_sending": "正在發送訂單確認信（訂單 ID: {id}）",
+  "order_placed_received": "已收到訂單下單事件（訂單 ID: {id}）",
+  "payment_success_subject": "支付成功 - 訂單 {orderId}",
+  "payment_success_body": "親愛的 {name}，\n\n恭喜！您的支付已成功完成。\n\n訂單 ID：{orderId}\n支付金額：{amount}\n交易流水號：{transactionId}\n\n感謝您的支持，我們會盡快為您發貨。",
+  "payment_success_notified": "支付成功通知已發送",
+  "payment_success_email_sending": "正在發送支付成功信（訂單 ID: {id}）",
+  "payment_succeeded_received": "已收到支付成功事件（訂單 ID: {id}）",
+  "payment_failed_subject": "支付失敗 - 訂單 {orderId}",
+  "payment_failed_body": "親愛的 {name}，\n\n很遺憾，您的支付未能成功完成。\n\n訂單 ID：{orderId}\n失敗原因：{reason}\n\n請檢查您的支付方式並重新嘗試。如有問題，請聯繫我們的客服團隊。",
+  "payment_failed_notified": "支付失敗通知已發送",
+  "payment_failed_email_sending": "正在發送支付失敗信（訂單 ID: {id}）",
+  "payment_failed_received": "已收到支付失敗事件（訂單 ID: {id}）"
+}
