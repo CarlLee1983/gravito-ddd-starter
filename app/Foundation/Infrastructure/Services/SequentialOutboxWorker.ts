@@ -135,6 +135,8 @@ export class SequentialOutboxWorker implements IOutboxWorker {
 	 * 處理下一批 Outbox 項目
 	 *
 	 * 可在 Worker 運行時或手動調用時使用（例如測試場景）
+	 *
+	 * 去重邏輯：在同一批次中，相同 eventId 只分派一次
 	 */
 	async processNextBatch(batchSize: number = 50): Promise<number> {
 
@@ -150,9 +152,19 @@ export class SequentialOutboxWorker implements IOutboxWorker {
 
 			let successful = 0
 			let failed = 0
+			const processedEventIds = new Set<string>() // 批次級去重
 
 			// 逐個處理
 			for (const entry of entries) {
+				// 去重檢查：如果該 eventId 在本批次已處理過，則跳過
+				if (processedEventIds.has(entry.eventId)) {
+					this.logger.debug('Outbox 項目被去重跳過', {
+						eventId: entry.eventId,
+						reason: '相同 eventId 已在本批次分派',
+					})
+					continue
+				}
+
 				try {
 					// 分派事件
 					await this.eventDispatcher.dispatch(entry.payload)
@@ -160,6 +172,9 @@ export class SequentialOutboxWorker implements IOutboxWorker {
 					// 標記為已處理
 					const processed = entry.markAsProcessed()
 					await this.outboxRepository.save(processed)
+
+					// 記錄該 eventId 已處理
+					processedEventIds.add(entry.eventId)
 
 					successful++
 					this.metrics.successful++

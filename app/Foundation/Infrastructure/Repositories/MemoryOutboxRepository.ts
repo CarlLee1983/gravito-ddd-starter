@@ -60,10 +60,23 @@ export class MemoryOutboxRepository implements IOutboxRepository {
 	 * 查詢所有待處理的項目（PENDING 狀態）
 	 *
 	 * 按 createdAt 升序排序（FIFO）
+	 *
+	 * 去重邏輯：排除已經被成功分派過的 eventId（基於 eventIdIndex）
+	 * 確保相同 eventId 的事件只被分派一次，防止重複處理
 	 */
 	async findUnprocessed(limit: number = 100, offset: number = 0): Promise<OutboxEntry[]> {
 		const pending = Array.from(this.entries.values())
-			.filter((entry) => entry.isPending())
+			.filter((entry) => {
+				// 只返回 PENDING 狀態的項目
+				if (!entry.isPending()) {
+					return false
+				}
+				// 去重：排除已經被成功處理的 eventId
+				if (this.eventIdIndex.has(entry.eventId)) {
+					return false
+				}
+				return true
+			})
 			.sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime())
 
 		return pending.slice(offset, offset + limit)
