@@ -133,11 +133,10 @@ export class SequentialOutboxWorker implements IOutboxWorker {
 
 	/**
 	 * 處理下一批 Outbox 項目
+	 *
+	 * 可在 Worker 運行時或手動調用時使用（例如測試場景）
 	 */
 	async processNextBatch(batchSize: number = 50): Promise<number> {
-		if (!this.running) {
-			return 0
-		}
 
 		const startTime = Date.now()
 
