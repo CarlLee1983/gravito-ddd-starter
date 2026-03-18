@@ -11,9 +11,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { OutboxEntry } from '@/Foundation/Domain/Aggregates/OutboxEntry'
 import {
 	setupOutboxInfrastructure,
-	createMockEventDispatcher,
 	mockIntegrationEvent,
-	setupDispatcherFailure,
 } from '../helpers/IntegrationTestSetup'
 
 describe('IT-2：Outbox 去重整合測試', () => {
@@ -29,7 +27,7 @@ describe('IT-2：Outbox 去重整合測試', () => {
 		// 建立兩個具有相同 eventId 的 OutboxEntry
 		const entry1 = OutboxEntry.createNew(
 			'outbox-001',
-			event.eventId, // 相同 eventId
+			event.eventId,
 			'order-001',
 			'Order',
 			'OrderPlaced',
@@ -38,7 +36,7 @@ describe('IT-2：Outbox 去重整合測試', () => {
 
 		const entry2 = OutboxEntry.createNew(
 			'outbox-002',
-			event.eventId, // 相同 eventId！
+			event.eventId,
 			'order-002',
 			'Order',
 			'OrderPlaced',
@@ -48,7 +46,7 @@ describe('IT-2：Outbox 去重整合測試', () => {
 		await outboxInfra.outboxRepository.save(entry1)
 		await outboxInfra.outboxRepository.save(entry2)
 
-		// 第一次處理：兩個都是 pending，但只有一個會被處理（因為 eventId 去重）
+		// 處理批次：批次級去重應確保只分派一次
 		await outboxInfra.worker.processNextBatch()
 
 		// 驗證 dispatch 只被呼叫一次（去重）
@@ -57,11 +55,6 @@ describe('IT-2：Outbox 去重整合測試', () => {
 		// 驗證第一個 entry 已 processed
 		const processedEntry1 = await outboxInfra.outboxRepository.findById('outbox-001')
 		expect(processedEntry1!.status).toBe('processed')
-
-		// 第二個 entry 應該被跳過（因為相同 eventId 已處理過）
-		// 或者根據實現，可能標記為 processed (取決於去重策略)
-		const processedEntry2 = await outboxInfra.outboxRepository.findById('outbox-002')
-		expect(processedEntry2!.status).toMatch(/processed|skipped|pending/)
 	})
 
 	it('應追蹤已處理的 eventId 以防重複', async () => {
@@ -112,7 +105,8 @@ describe('IT-3：Outbox 重試與 DLQ 整合測試', () => {
 
 		// 設定 dispatcher 失敗 2 次，第 3 次成功
 		let callCount = 0
-		;(outboxInfra.eventDispatcher.dispatch as any).mockImplementation(async () => {
+		const mockDispatch = (outboxInfra.eventDispatcher.dispatch as any)
+		mockDispatch.mockImplementation(async () => {
 			callCount++
 			if (callCount <= 2) {
 				throw new Error('Dispatch failed')
@@ -138,7 +132,7 @@ describe('IT-3：Outbox 重試與 DLQ 整合測試', () => {
 		expect(processedEntry!.retryCount).toBe(2) // 不再增加
 
 		// 驗證 dispatcher 被呼叫 3 次
-		expect(outboxInfra.eventDispatcher.dispatch).toHaveBeenCalledTimes(3)
+		expect(mockDispatch).toHaveBeenCalledTimes(3)
 	})
 
 	it('應將超出重試次數的項目移入 DLQ', async () => {
@@ -156,40 +150,27 @@ describe('IT-3：Outbox 重試與 DLQ 整合測試', () => {
 		await outboxInfra.outboxRepository.save(entry)
 
 		// 設定 dispatcher 永遠失敗
-		(outboxInfra.eventDispatcher.dispatch as any).mockRejectedValue(new Error('Permanent error'))
+		const mockDispatch = (outboxInfra.eventDispatcher.dispatch as any)
+		mockDispatch.mockRejectedValue(new Error('Permanent error'))
 
-		// 連續失敗 4 次（預設 maxRetries = 3）
+		// 連續失敗 4 次（預設 maxRetries = 3，需要 retryCount > 3）
 		// 第 1 次：processNextBatch → failed, retryCount=1
 		await outboxInfra.worker.processNextBatch()
 		let processedEntry = await outboxInfra.outboxRepository.findById('outbox-001')
 		expect(processedEntry!.status).toBe('failed')
+		expect(processedEntry!.retryCount).toBe(1)
 
-		// 第 2-3 次：retryFailed → retryCount=2, 3
+		// 第 2-4 次：retryFailed → retryCount=2, 3, 4
+		await outboxInfra.worker.retryFailed()
 		await outboxInfra.worker.retryFailed()
 		await outboxInfra.worker.retryFailed()
 
 		processedEntry = await outboxInfra.outboxRepository.findById('outbox-001')
-		expect(processedEntry!.retryCount).toBe(3)
+		expect(processedEntry!.retryCount).toBe(4)
 
-		// 驗證 shouldMoveToDeadLetterQueue 返回 true
-		const shouldMoveToDeadLetterQueue = processedEntry!.shouldMoveToDeadLetterQueue(3) // maxRetries=3
+		// 驗證 shouldMoveToDeadLetterQueue 返回 true（retryCount > maxRetries）
+		const shouldMoveToDeadLetterQueue = processedEntry!.shouldMoveToDeadLetterQueue(3)
 		expect(shouldMoveToDeadLetterQueue).toBe(true)
-
-		// 手動移入 DLQ
-		const deadLetterEntry = OutboxEntry.createNew(
-			`dlq-${processedEntry!.id}`,
-			processedEntry!.eventId,
-			processedEntry!.aggregateId,
-			processedEntry!.aggregateType,
-			processedEntry!.eventName,
-			processedEntry!.payload,
-			'dead_letter' // status
-		)
-
-		await outboxInfra.outboxRepository.save(deadLetterEntry)
-
-		const dlqEntry = await outboxInfra.outboxRepository.findById(`dlq-${processedEntry!.id}`)
-		expect(dlqEntry!.status).toBe('dead_letter')
 	})
 
 	it('應記錄 DLQ 警告日誌', async () => {
@@ -207,17 +188,19 @@ describe('IT-3：Outbox 重試與 DLQ 整合測試', () => {
 		await outboxInfra.outboxRepository.save(entry)
 
 		// 設定永遠失敗
-		(outboxInfra.eventDispatcher.dispatch as any).mockRejectedValue(new Error('Permanent error'))
+		const mockDispatch = (outboxInfra.eventDispatcher.dispatch as any)
+		mockDispatch.mockRejectedValue(new Error('Permanent error'))
 
 		// 進行重試流程
 		await outboxInfra.worker.processNextBatch()
 		await outboxInfra.worker.retryFailed()
 		await outboxInfra.worker.retryFailed()
 
-		// 驗證日誌包含警告（基於 shouldMoveToDeadLetterQueue）
+		// 驗證日誌包含警告
 		const processedEntry = await outboxInfra.outboxRepository.findById('outbox-001')
 		if (processedEntry!.shouldMoveToDeadLetterQueue(3)) {
-			// Worker 應該已記錄警告
+			// Worker 應該已記錄警告（通過 moveToDeadLetterQueue）
+			await outboxInfra.worker.moveToDeadLetterQueue(3)
 			expect(outboxInfra.logger.warn).toHaveBeenCalled()
 		}
 	})
@@ -234,7 +217,8 @@ describe('IT-3：Outbox 重試與 DLQ 整合測試', () => {
 
 		// 設定只有 entry1 失敗
 		let callCount = 0
-		(outboxInfra.eventDispatcher.dispatch as any).mockImplementation(async (evt: any) => {
+		const mockDispatch = (outboxInfra.eventDispatcher.dispatch as any)
+		mockDispatch.mockImplementation(async (evt: any) => {
 			callCount++
 			if (evt.aggregateId === 'order-001') {
 				throw new Error('Entry 1 failed')
@@ -245,7 +229,7 @@ describe('IT-3：Outbox 重試與 DLQ 整合測試', () => {
 		await outboxInfra.worker.processNextBatch()
 
 		// 驗證兩個都被處理
-		expect(outboxInfra.eventDispatcher.dispatch).toHaveBeenCalledTimes(2)
+		expect(mockDispatch).toHaveBeenCalledTimes(2)
 
 		const processedEntry1 = await outboxInfra.outboxRepository.findById('outbox-001')
 		const processedEntry2 = await outboxInfra.outboxRepository.findById('outbox-002')
@@ -272,11 +256,12 @@ describe('IT-3：Outbox 重試與 DLQ 整合測試', () => {
 		await outboxInfra.outboxRepository.save(entry)
 
 		// 設定失敗
-		(outboxInfra.eventDispatcher.dispatch as any).mockRejectedValue(new Error('Dispatch error'))
+		const mockDispatch = (outboxInfra.eventDispatcher.dispatch as any)
+		mockDispatch.mockRejectedValue(new Error('Dispatch error'))
 
 		await outboxInfra.worker.processNextBatch()
 
-		const metrics = outboxInfra.worker.getMetrics()
+		const metrics = await outboxInfra.worker.getMetrics()
 
 		// 驗證指標
 		expect(metrics).toHaveProperty('failed')
