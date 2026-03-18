@@ -42,4 +42,29 @@ export interface INotificationMessages {
 	 * @param orderId - 訂單 ID
 	 */
 	paymentFailedNotified(orderId: string): string
+
+	/**
+	 * 缺少收件人錯誤訊息
+	 */
+	missingRecipient(): string
+
+	/**
+	 * 通知發送成功訊息
+	 */
+	notificationSent(): string
+
+	/**
+	 * 日誌已清除訊息
+	 */
+	logsCleared(): string
+
+	/**
+	 * 缺少日誌 ID 錯誤訊息
+	 */
+	missingLogId(): string
+
+	/**
+	 * 日誌未找到錯誤訊息
+	 */
+	logNotFound(): string
 }

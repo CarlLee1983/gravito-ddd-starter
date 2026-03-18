@@ -13,5 +13,10 @@
   "payment_failed_body": "親愛的 {name}，\n\n很遺憾，您的支付未能成功完成。\n\n訂單 ID：{orderId}\n失敗原因：{reason}\n\n請檢查您的支付方式並重新嘗試。如有問題，請聯繫我們的客服團隊。",
   "payment_failed_notified": "支付失敗通知已發送",
   "payment_failed_email_sending": "正在發送支付失敗信（訂單 ID: {id}）",
-  "payment_failed_received": "已收到支付失敗事件（訂單 ID: {id}）"
+  "payment_failed_received": "已收到支付失敗事件（訂單 ID: {id}）",
+  "missing_recipient": "缺少收件人信息，無法發送通知",
+  "sent_success": "通知已成功發送",
+  "logs_cleared": "所有通知日誌已清除",
+  "missing_log_id": "缺少通知日誌 ID",
+  "log_not_found": "找不到指定的通知日誌"
 }

@@ -10,6 +10,7 @@
 
 import type { IModuleDefinition } from '@/Foundation/Infrastructure/Wiring/ModuleDefinition'
 import { NotificationServiceProvider } from './Infrastructure/Providers/NotificationServiceProvider'
+import { registerNotificationRoutes } from './Presentation/Routes/api'
 
 /**
  * Notification 模組定義
@@ -29,11 +30,12 @@ export const notificationModule: IModuleDefinition = {
 	},
 
 	/**
-	 * Notification 初期無 HTTP 端點
-	 * A3.5-A3.6 中會添加端點用於查詢發送日誌等
+	 * 註冊 Notification 模組的 HTTP 端點
+	 * A3.5：查詢日誌、發送通知、獲取統計信息等端點
 	 */
-	registerRoutes: () => {
-		// no-op - 初期無 HTTP 路由
+	registerRoutes: (router, core) => {
+		const controller = core.container.make('notificationController')
+		registerNotificationRoutes(router, controller)
 	},
 }
 
@@ -47,9 +49,10 @@ export { SendOrderConfirmEmailHandler } from './Application/Handlers/SendOrderCo
 export { SendPaymentSuccessEmailHandler } from './Application/Handlers/SendPaymentSuccessEmailHandler'
 export { SendPaymentFailedEmailHandler } from './Application/Handlers/SendPaymentFailedEmailHandler'
 
-// 導出訊息服務
+// 導出訊息服務與控制器
 export { NotificationMessageService } from './Infrastructure/Services/NotificationMessageService'
 export type { INotificationMessages } from './Presentation/Ports/INotificationMessages'
+export { NotificationController } from './Presentation/Controllers/NotificationController'
 
 // 導出事件（重新導出）
 export { OrderPlaced } from './Domain/Events/OrderPlaced'

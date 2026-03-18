@@ -13,5 +13,10 @@
   "payment_failed_body": "Dear {name},\n\nUnfortunately, your payment could not be completed.\n\nOrder ID: {orderId}\nFailure Reason: {reason}\n\nPlease check your payment method and try again. If you have any questions, please contact our customer service team.",
   "payment_failed_notified": "Payment failed notification sent",
   "payment_failed_email_sending": "Sending payment failed email (Order ID: {id})",
-  "payment_failed_received": "Payment failed event received (Order ID: {id})"
+  "payment_failed_received": "Payment failed event received (Order ID: {id})",
+  "missing_recipient": "Missing recipient information, cannot send notification",
+  "sent_success": "Notification sent successfully",
+  "logs_cleared": "All notification logs have been cleared",
+  "missing_log_id": "Missing notification log ID",
+  "log_not_found": "Cannot find the specified notification log"
 }

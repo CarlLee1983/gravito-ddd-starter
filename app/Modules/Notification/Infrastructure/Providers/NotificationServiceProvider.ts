@@ -19,6 +19,7 @@ import { SendOrderConfirmEmailHandler } from '../../Application/Handlers/SendOrd
 import { SendPaymentSuccessEmailHandler } from '../../Application/Handlers/SendPaymentSuccessEmailHandler'
 import { SendPaymentFailedEmailHandler } from '../../Application/Handlers/SendPaymentFailedEmailHandler'
 import { NotificationMessageService } from '../Services/NotificationMessageService'
+import { NotificationController } from '../../Presentation/Controllers/NotificationController'
 import { EventListenerRegistry } from '@/Foundation/Infrastructure/Registries/EventListenerRegistry'
 import { JobRegistry } from '@/Foundation/Infrastructure/Registries/JobRegistry'
 import type { IMailer } from '@/Foundation/Infrastructure/Ports/Services/IMailer'
@@ -49,6 +50,11 @@ export class NotificationServiceProvider extends ModuleServiceProvider {
 				}
 				return new NotificationMessageService(fallback)
 			}
+		})
+
+		// 1.5. 註冊控制器
+		container.singleton('notificationController', (c) => {
+			return new NotificationController(c.make('notificationMessages'))
 		})
 
 		// 2. 註冊 Jobs（單例）

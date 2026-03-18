@@ -34,4 +34,24 @@ export class NotificationMessageService implements INotificationMessages {
 	paymentFailedNotified(orderId: string): string {
 		return this.translator.trans('notification.payment_failed_notified', { orderId })
 	}
+
+	missingRecipient(): string {
+		return this.translator.trans('notification.missing_recipient')
+	}
+
+	notificationSent(): string {
+		return this.translator.trans('notification.sent_success')
+	}
+
+	logsCleared(): string {
+		return this.translator.trans('notification.logs_cleared')
+	}
+
+	missingLogId(): string {
+		return this.translator.trans('notification.missing_log_id')
+	}
+
+	logNotFound(): string {
+		return this.translator.trans('notification.log_not_found')
+	}
 }
