@@ -9,15 +9,19 @@
  * 業務流程：
  * 1. CreateOrderStep：根據購物車建立訂單
  * 2. InitiatePaymentStep：為訂單發起支付
- * 補償：
- * - 支付失敗：CancelPaymentStep（取消已發起的支付）
- * - 都失敗：CancelOrderStep（取消已建立的訂單）
+ * 3. ReserveInventorySagaStep：為訂單商品預留庫存
+ * 補償（倒序執行）：
+ * - 庫存預留失敗 → 取消支付、取消訂單
+ * - 支付失敗 → 取消訂單
+ * - 訂單建立失敗 → 無需補償
  *
  * @internal 示例實現
  */
 
 import { SequentialSaga } from '@/Foundation/Infrastructure/Sagas/SequentialSaga'
 import type { ISagaStep, SagaContext } from '@/Foundation/Application/Sagas/ISaga'
+import type { IInventoryCommandPort } from '@/Modules/Cart/Domain/Ports/IInventoryCommandPort'
+import { ReserveInventorySagaStep } from './ReserveInventorySagaStep'
 
 /**
  * 結帳 Saga 輸入
@@ -118,12 +122,20 @@ class InitiatePaymentStep implements ISagaStep {
  *
  * @param orderService - 訂單應用服務
  * @param paymentService - 支付應用服務
+ * @param inventoryPort - 庫存命令 Port（防腐層）
+ * @param cartItems - 購物車商品（productId + quantity）
  * @returns 結帳 Saga 實例
  */
-export function createCheckoutSaga(orderService: any, paymentService: any): SequentialSaga {
-	const steps = [
+export function createCheckoutSaga(
+	orderService: any,
+	paymentService: any,
+	inventoryPort: IInventoryCommandPort,
+	cartItems: Array<{ productId: string; quantity: number }>
+): SequentialSaga {
+	const steps: ISagaStep[] = [
 		new CreateOrderStep(orderService),
 		new InitiatePaymentStep(paymentService),
+		new ReserveInventorySagaStep(inventoryPort, cartItems),
 	]
 
 	return new SequentialSaga(steps)

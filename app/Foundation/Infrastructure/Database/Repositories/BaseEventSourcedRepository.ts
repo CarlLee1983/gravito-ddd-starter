@@ -21,7 +21,10 @@ import type { IEventStore } from '@/Foundation/Infrastructure/Ports/Database/IEv
 import type { AggregateRoot } from '@/Foundation/Domain/AggregateRoot'
 import type { DomainEvent } from '@/Foundation/Domain/DomainEvent'
 import type { IntegrationEvent } from '@/Foundation/Domain/IntegrationEvent'
+import type { IOutboxRepository } from '@/Foundation/Domain/Repositories/IOutboxRepository'
 import { OptimisticLockException } from '@/Foundation/Application/OptimisticLockException'
+import { OutboxEntry } from '@/Foundation/Domain/Aggregates/OutboxEntry'
+import { v4 as uuidv4 } from 'uuid'
 
 /**
  * Event Sourcing 基底 Repository 抽象類別
@@ -42,11 +45,13 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 	 * @param db - 資料庫存取介面實例 (Port)
 	 * @param eventDispatcher - 領域事件分發器實例（可選）
 	 * @param eventStore - 事件存儲實例（可選）
+	 * @param outboxRepository - Outbox Repository 實例（可選，用於 Transactional Outbox Pattern）
 	 */
 	constructor(
 		protected readonly db: IDatabaseAccess,
 		protected readonly eventDispatcher?: IEventDispatcher,
-		protected readonly eventStore?: IEventStore
+		protected readonly eventStore?: IEventStore,
+		protected readonly outboxRepository?: IOutboxRepository
 	) {}
 
 	// ============================================
@@ -55,12 +60,20 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 
 	/**
 	 * 保存聚合根 (新增或更新)
-	 * 支援樂觀鎖版本控制與事件存儲
+	 * 支援樂觀鎖版本控制、事件存儲與 Transactional Outbox Pattern
 	 *
 	 * **流程**:
-	 * 1. 在事務中：樂觀鎖檢查、版本更新、事件存儲持久化 (原子操作)
-	 * 2. 事務外：領域/整合事件分派 (DB 已提交後才發事件，防止「事件已發但 DB 回滾」)
+	 * 1. 在事務中：樂觀鎖檢查、版本更新、事件存儲、Outbox 項目持久化 (原子操作)
+	 * 2. 事務外：
+	 *    - 若使用 Outbox：Worker 異步分派事件（保證可靠性）
+	 *    - 若無 Outbox：直接分派事件（向後兼容）
 	 * 3. 標記事件已提交
+	 *
+	 * **Transactional Outbox Pattern**:
+	 * 當 outboxRepository 注入時，事件分派轉為異步模式：
+	 * - 聚合根 + Outbox 項目在同一 Transaction 中保存（原子性 ✨）
+	 * - 即使分派失敗，Outbox 仍保存在 DB，Worker 可重試
+	 * - 防止「DB 已提交但事件遺失」的問題
 	 *
 	 * @param entity - 聚合根實例
 	 * @throws OptimisticLockException - 版本衝突時拋出
@@ -71,7 +84,7 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 		const row = this.toRow(entity)
 		const tableName = this.getTableName()
 
-		// 🔹 事務內：讀取、驗證、更新（原子性操作，失敗時回滾）
+		// 🔹 事務內：讀取、驗證、更新、事件存儲、Outbox（原子性操作，失敗時回滾）
 		await this.db.transaction(async (trx) => {
 			const existing = await trx.table(tableName).where('id', '=', entity.id).first()
 
@@ -107,11 +120,18 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 			if (this.eventStore) {
 				await this.persistEventsToStore(entity)
 			}
+
+			// ✨ Transactional Outbox：在事務內持久化 Outbox 項目
+			// 這確保了聚合根 + Outbox 的原子性
+			if (this.outboxRepository) {
+				await this.persistOutboxEntries(entity)
+			}
 		})
 
 		// 🔹 事務外：DB 已提交後才分派事件
 		// 優勢：即使事件分派失敗，DB 狀態仍已保存
-		if (this.eventDispatcher) {
+		if (!this.outboxRepository && this.eventDispatcher) {
+			// 若無 Outbox，直接分派（向後兼容模式）
 			await this.dispatchEvents(entity)
 		}
 
@@ -283,5 +303,50 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 
 		// 使用樂觀鎖附加事件：若版本不匹配會拋出 EventStoreVersionConflictException
 		await this.eventStore!.append(storedEvents, entity.id, currentVersion)
+	}
+
+	/**
+	 * 持久化 Outbox 項目（Transactional Outbox Pattern）
+	 *
+	 * **說明**:
+	 * 將領域事件轉換為整合事件，再包裝成 Outbox 項目存儲在 DB 中。
+	 * 這確保了「聚合根狀態改變 + 待分派事件」的原子性。
+	 * OutboxWorker 會定期掃描 Outbox 並分派事件。
+	 *
+	 * **流程**:
+	 * 1. 讀取聚合根的未提交領域事件
+	 * 2. 轉換為整合事件（使用 toIntegrationEvent）
+	 * 3. 包裝為 OutboxEntry 項目
+	 * 4. 在同一 Transaction 中保存（確保原子性）
+	 *
+	 * @param entity - 聚合根實例
+	 * @returns Promise<void>
+	 * @protected
+	 */
+	protected async persistOutboxEntries(entity: T): Promise<void> {
+		const domainEvents = entity.getUncommittedEvents()
+
+		if (domainEvents.length === 0) {
+			return
+		}
+
+		// 轉換領域事件為整合事件
+		const integrationEvents = domainEvents
+			.map((event) => this.toIntegrationEvent(event))
+			.filter((event) => event !== null) as IntegrationEvent[]
+
+		// 包裝為 Outbox 項目並保存
+		for (const integrationEvent of integrationEvents) {
+			const outboxEntry = OutboxEntry.createNew(
+				uuidv4(), // Outbox 項目自有 ID
+				integrationEvent.eventId,
+				entity.id,
+				this.getAggregateTypeName(),
+				integrationEvent.constructor.name,
+				integrationEvent
+			)
+
+			await this.outboxRepository!.save(outboxEntry)
+		}
 	}
 }
