@@ -122,16 +122,17 @@ export class Cart extends AggregateRoot {
 	 * 加入商品到購物車
 	 *
 	 * @param productId - 商品 ID
-	 * @param quantity - 數量
+	 * @param quantity - 數量（Quantity 物件或數字）
 	 * @param price - 單位價格
 	 * @throws Error 如果商品已在購物車中
 	 */
-	addItem(productId: string, quantity: Quantity, price: number): void {
+	addItem(productId: string, quantity: Quantity | number, price: number): void {
 		if (this._items.has(productId)) {
 			throw new Error('商品已在購物車中，請使用 updateItemQuantity()')
 		}
 
-		this.raiseEvent(new ItemAdded(this.id, productId, quantity.value, price))
+		const quantityValue = typeof quantity === 'number' ? quantity : quantity.value
+		this.raiseEvent(new ItemAdded(this.id, productId, quantityValue, price))
 	}
 
 	/**
@@ -243,5 +244,23 @@ export class Cart extends AggregateRoot {
 	 */
 	isEmpty(): boolean {
 		return this._items.size === 0
+	}
+
+	// ============ 測試兼容性方法 ============
+
+	/**
+	 * 別名：checkout() → requestCheckout()
+	 * 用於測試兼容性
+	 */
+	checkout(): void {
+		return this.requestCheckout()
+	}
+
+	/**
+	 * 別名：getItems() → items
+	 * 用於測試兼容性
+	 */
+	getItems(): CartItem[] {
+		return this.items
 	}
 }

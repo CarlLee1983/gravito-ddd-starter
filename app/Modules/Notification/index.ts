@@ -33,8 +33,9 @@ export const notificationModule: IModuleDefinition = {
 	 * 註冊 Notification 模組的 HTTP 端點
 	 * A3.5：查詢日誌、發送通知、獲取統計信息等端點
 	 */
-	registerRoutes: (router, core) => {
-		const controller = core.container.make('notificationController')
+	registerRoutes: (ctx) => {
+		const router = ctx.createModuleRouter()
+		const controller = ctx.container.make('notificationController')
 		registerNotificationRoutes(router, controller)
 	},
 }

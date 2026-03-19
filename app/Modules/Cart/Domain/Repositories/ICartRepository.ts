@@ -21,4 +21,14 @@ export interface ICartRepository extends IRepository<Cart> {
 	 * @returns Promise 購物車或 null（若不存在）
 	 */
 	findByUserId(userId: string): Promise<Cart | null>
+
+	/**
+	 * 根據使用者 ID 查找或建立購物車
+	 *
+	 * 若購物車不存在，則自動建立新的購物車
+	 *
+	 * @param userId - 使用者 ID
+	 * @returns Promise 購物車（若不存在則建立新的）
+	 */
+	findOrCreateByUserId(userId: string): Promise<Cart>
 }

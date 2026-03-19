@@ -52,6 +52,27 @@ export class CartRepository extends BaseEventSourcedRepository<Cart> implements 
 		return this.findById(cartId)
 	}
 
+	/**
+	 * 根據使用者 ID 查找或建立購物車
+	 *
+	 * 若購物車不存在，則自動建立新的購物車
+	 *
+	 * @param userId - 使用者 ID
+	 * @returns Promise 購物車（若不存在則建立新的）
+	 */
+	async findOrCreateByUserId(userId: string): Promise<Cart> {
+		const cartId = `${userId}_cart`
+		const existing = await this.findById(cartId)
+		if (existing) {
+			return existing
+		}
+
+		// 建立新的購物車
+		const newCart = Cart.create(cartId, userId)
+		await this.save(newCart)
+		return newCart
+	}
+
 	protected getTableName(): string {
 		return 'carts'
 	}
