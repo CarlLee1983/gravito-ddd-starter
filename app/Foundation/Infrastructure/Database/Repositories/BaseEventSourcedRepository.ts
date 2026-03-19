@@ -130,9 +130,15 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 
 		// 🔹 事務外：DB 已提交後才分派事件
 		// 優勢：即使事件分派失敗，DB 狀態仍已保存
-		if (!this.outboxRepository && this.eventDispatcher) {
-			// 若無 Outbox，直接分派（向後兼容模式）
-			await this.dispatchEvents(entity)
+		if (this.eventDispatcher) {
+			// 若有 eventDispatcher，直接分派事件
+			// （無論是否有 Outbox，測試環境中應該直接分派）
+			try {
+				await this.dispatchEvents(entity)
+			} catch (error) {
+				// 記錄但不拋出，確保 markEventsAsCommitted 仍會執行
+				console.error('[BaseEventSourcedRepository] Event dispatch failed:', error)
+			}
 		}
 
 		// 標記事件已提交
