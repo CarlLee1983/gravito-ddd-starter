@@ -124,11 +124,16 @@ export class Cart extends AggregateRoot {
 	 * @param productId - 商品 ID
 	 * @param quantity - 數量（Quantity 物件或數字）
 	 * @param price - 單位價格
-	 * @throws Error 如果商品已在購物車中
+	 * @throws Error 如果商品已在購物車中或超過購物車限制
 	 */
 	addItem(productId: string, quantity: Quantity | number, price: number): void {
 		if (this._items.has(productId)) {
 			throw new Error('商品已在購物車中，請使用 updateItemQuantity()')
+		}
+
+		// 業務規則：購物車最多 50 種不同商品
+		if (this._items.size >= 50) {
+			throw new Error('購物車最多只能有 50 種不同商品')
 		}
 
 		const quantityValue = typeof quantity === 'number' ? quantity : quantity.value
