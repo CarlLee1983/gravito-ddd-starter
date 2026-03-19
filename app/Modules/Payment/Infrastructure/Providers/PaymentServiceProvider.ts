@@ -11,6 +11,8 @@ import { InitiatePaymentService } from '../../Application/Services/InitiatePayme
 import { HandlePaymentSuccessService } from '../../Application/Services/HandlePaymentSuccessService'
 import { HandlePaymentFailureService } from '../../Application/Services/HandlePaymentFailureService'
 import { PaymentMessageService } from '../Services/PaymentMessageService'
+import { OrderPlacedHandler } from '../../Application/Handlers/OrderPlacedHandler'
+import { EventListenerRegistry } from '@/Foundation/Infrastructure/Registries/EventListenerRegistry'
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 
 /**
@@ -65,45 +67,46 @@ export class PaymentServiceProvider extends ModuleServiceProvider {
 			const repo = c.make('paymentRepository')
 			return new HandlePaymentFailureService(repo)
 		})
+
+		// 註冊事件處理器
+		container.singleton('orderPlacedHandler', (c: IContainer) => {
+			const initiatePaymentService = c.make('initiatePaymentService') as InitiatePaymentService
+			const logger = c.make('logger') as ILogger
+			return new OrderPlacedHandler(initiatePaymentService, logger)
+		})
+
+		// 向中心化 Registry 聲明事件監聽
+		EventListenerRegistry.register({
+			moduleName: 'Payment',
+			listeners: [
+				{
+					eventName: 'OrderPlaced',
+					handlerFactory: (c) => {
+						const handler = c.make('orderPlacedHandler') as OrderPlacedHandler
+						return (event) => handler.handle(event)
+					},
+				},
+			],
+		})
 	}
 
 	/**
 	 * 模組啟動後的初始化工作
 	 *
-	 * 主要監聽事件：
-	 * - OrderPlaced: 當訂單建立時，觸發發起支付流程
+	 * 事件監聽由中心化 Registry 管理。
+	 * SharedServiceProvider.boot() 中的 EventListenerRegistry.bindAll() 會自動綁定所有註冊的事件監聽器。
 	 *
 	 * @param context - 模組上下文
 	 */
 	override boot(context: any): void {
 		const container = context.container ?? context
 		const logger = container.make('logger') as ILogger | undefined
-		let eventDispatcher: any
-		try {
-			eventDispatcher = container.make('eventDispatcher')
-		} catch {
-			// 事件分發器可能不存在
+
+		if (process.env.NODE_ENV === 'development') {
+			const message = '✨ [Payment] Module loaded'
+			logger?.info?.(message) || console.log(message)
 		}
 
-		// 監聽訂單建立事件並發起支付
-		if (eventDispatcher) {
-			eventDispatcher.subscribe('OrderPlaced', async (event: any) => {
-				const initiatePaymentService = container.make('initiatePaymentService') as InitiatePaymentService
-				try {
-					await initiatePaymentService.execute({
-						orderId: event.data?.orderId || event.orderId,
-						userId: event.data?.userId || event.userId,
-						amount: event.data?.total || event.total,
-						currency: event.data?.currency || event.currency || 'TWD',
-						paymentMethod: 'credit_card',
-					})
-				} catch (error) {
-					logger?.error?.('[PaymentServiceProvider] 發起支付失敗', error as Error)
-				}
-			})
-		}
-
-		const message = '✨ [Payment] Module loaded'
-		logger?.info?.(message) || console.log(message)
+		// 事件監聽由 EventListenerRegistry 在 SharedServiceProvider.boot() 中自動綁定
 	}
 }

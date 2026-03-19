@@ -8,7 +8,10 @@ import type { ITranslator } from '@/Foundation/Infrastructure/Ports/Services/ITr
 import { IOrderRepository } from '../../Domain/Repositories/IOrderRepository'
 import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
 import { OrderMessageService } from '../Services/OrderMessageService'
-import type { IEventDispatcher } from '@/Foundation/Application/Ports/IEventDispatcher'
+import { CartCheckoutRequestedHandler } from '../../Application/Handlers/CartCheckoutRequestedHandler'
+import { PaymentSucceededHandler } from '../../Application/Handlers/PaymentSucceededHandler'
+import { EventListenerRegistry } from '@/Foundation/Infrastructure/Registries/EventListenerRegistry'
+import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 import type { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 import { getCurrentORM, getDatabaseAccess } from '@wiring/RepositoryFactory'
 
@@ -59,50 +62,58 @@ export class OrderServiceProvider extends ModuleServiceProvider {
       const orderRepository = c.make('orderRepository') as IOrderRepository
       return new PlaceOrderService(orderRepository)
     })
+
+    // 註冊事件處理器
+    container.singleton('cartCheckoutRequestedHandler', (c: IContainer) => {
+      const placeOrderService = c.make('placeOrderService') as PlaceOrderService
+      const logger = c.make('logger') as ILogger
+      return new CartCheckoutRequestedHandler(placeOrderService, logger)
+    })
+
+    container.singleton('paymentSucceededHandler', (c: IContainer) => {
+      const orderRepository = c.make('orderRepository') as IOrderRepository
+      const logger = c.make('logger') as ILogger
+      return new PaymentSucceededHandler(orderRepository, logger)
+    })
+
+    // 向中心化 Registry 聲明事件監聽
+    EventListenerRegistry.register({
+      moduleName: 'Order',
+      listeners: [
+        {
+          eventName: 'CartCheckoutRequested',
+          handlerFactory: (c) => {
+            const handler = c.make('cartCheckoutRequestedHandler') as CartCheckoutRequestedHandler
+            return (event) => handler.handle(event)
+          },
+        },
+        {
+          eventName: 'PaymentSucceeded',
+          handlerFactory: (c) => {
+            const handler = c.make('paymentSucceededHandler') as PaymentSucceededHandler
+            return (event) => handler.handle(event)
+          },
+        },
+      ],
+    })
   }
 
   /**
-   * 啟動模組並註冊跨模組事件監聽
+   * 模組啟動後的初始化工作
    *
-   * 主要監聽事件：
-   * - CartCheckoutRequested: 當購物車請求結帳時，觸發建立訂單流程
-   * - PaymentSucceeded: 當支付成功後，更新對應訂單狀態為已確認 (Confirmed)
+   * 事件監聽與事件處理由中心化 Registry 管理。
+   * SharedServiceProvider.boot() 中的 EventListenerRegistry.bindAll() 會自動綁定所有註冊的事件監聽器。
    *
    * @param context - 模組執行上下文
    */
   override boot(context: any): void {
     const container = context.container ?? context
-    const eventDispatcher = container.make('eventDispatcher') as IEventDispatcher
-    const logger = container.make('logger') as any
+    const logger = container.make('logger') as ILogger | undefined
 
-    // 監聽購物車結帳事件並建立訂單
-    eventDispatcher.subscribe('CartCheckoutRequested', async (event: any) => {
-      const placeOrderService = container.make('placeOrderService') as PlaceOrderService
-      try {
-        await placeOrderService.execute({
-          userId: event.userId,
-          lines: event.items,
-          taxAmount: event.taxAmount || 0,
-        })
-      } catch (error) {
-        logger?.error?.('[OrderServiceProvider] 建立訂單失敗', error as Error)
-      }
-    })
+    if (process.env.NODE_ENV === 'development') {
+      logger?.info?.('✨ [Order] Module loaded') || console.log('📦 [Order] Module loaded')
+    }
 
-    // 監聽支付成功事件並更新訂單為 Confirmed
-    eventDispatcher.subscribe('PaymentSucceeded', async (event: any) => {
-      const orderRepository = container.make('orderRepository') as IOrderRepository
-      try {
-        const order = await orderRepository.findById(event.orderId)
-        if (order) {
-          order.confirm()
-          await orderRepository.update(order)
-        }
-      } catch (error) {
-        logger?.error?.('[OrderServiceProvider] 更新訂單狀態失敗', error as Error)
-      }
-    })
-
-    logger?.info?.('✨ [Order] Module loaded') || console.log('📦 [Order] Module loaded')
+    // 事件監聽由 EventListenerRegistry 在 SharedServiceProvider.boot() 中自動綁定
   }
 }
