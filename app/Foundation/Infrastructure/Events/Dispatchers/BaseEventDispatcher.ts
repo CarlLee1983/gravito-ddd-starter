@@ -62,6 +62,13 @@ export abstract class BaseEventDispatcher implements IEventDispatcher {
 	}
 
 	/**
+	 * 監聽事件（別名方法，等同於 subscribe）
+	 */
+	on(eventName: string, handler: EventHandler): void {
+		this.subscribe(eventName, handler)
+	}
+
+	/**
 	 * 執行所有訂閱者處理函式（帶重試邏輯）
 	 *
 	 * @param eventName - 事件名稱

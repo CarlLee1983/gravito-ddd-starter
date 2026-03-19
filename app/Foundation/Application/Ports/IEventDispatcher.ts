@@ -38,4 +38,11 @@ export interface IEventDispatcher {
 	 * @param handler - 處理函式
 	 */
 	subscribe(eventName: string, handler: EventHandler): void
+
+	/**
+	 * 監聽事件（別名方法）
+	 * @param eventName - 事件名稱或型別
+	 * @param handler - 處理函式
+	 */
+	on(eventName: string, handler: EventHandler): void
 }
