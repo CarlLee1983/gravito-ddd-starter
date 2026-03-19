@@ -1,6 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll } from 'bun:test'
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'bun:test'
 import type { Core } from '@gravito/core'
 import { bootstrap } from '../../app/bootstrap'
+
+// 預先配置 memory ORM 用於整合測試
+process.env.ORM = 'memory'
 
 /**
  * 購物流程集成測試
@@ -14,9 +17,11 @@ describe('Shopping Flow Integration Tests', () => {
   let orderRepository: any
   let paymentRepository: any
   let eventDispatcher: any
+  let db: any
+  let testCounter = 0
 
   beforeAll(async () => {
-    // 啟動應用
+    // 啟動應用（ORM 已配置為 memory）
     core = await bootstrap()
 
     // 取得依賴
@@ -24,6 +29,23 @@ describe('Shopping Flow Integration Tests', () => {
     orderRepository = core.container.make('orderRepository')
     paymentRepository = core.container.make('paymentRepository')
     eventDispatcher = core.container.make('eventDispatcher')
+    db = core.container.make('databaseAccess')
+  })
+
+  beforeEach(async () => {
+    // 為每個測試使用唯一的 ID，避免數據污染
+    testCounter++
+
+    // 清理每個測試前的數據
+    if (db) {
+      try {
+        await db.table('carts').delete()
+        await db.table('orders').delete()
+        await db.table('payments').delete()
+      } catch (e) {
+        // 表可能不存在，忽略
+      }
+    }
   })
 
   afterAll(async () => {
@@ -35,7 +57,7 @@ describe('Shopping Flow Integration Tests', () => {
 
   describe('Complete Shopping Journey', () => {
     it('應該完成完整的購物流程: 建立購物車 → 結帳 → 建立訂單 → 發起支付 → 確認訂單', async () => {
-      const userId = 'user-123'
+      const userId = `user-${testCounter}-123`
       const productId = 'product-456'
 
       // 1️⃣ 建立購物車並添加商品
@@ -103,7 +125,7 @@ describe('Shopping Flow Integration Tests', () => {
 
   describe('Failure Scenarios', () => {
     it('支付失敗時應自動取消訂單', async () => {
-      const userId = 'user-789'
+      const userId = `user-${testCounter}-789`
       const productId = 'product-101'
 
       // 1️⃣ 完成購物車結帳
@@ -138,7 +160,7 @@ describe('Shopping Flow Integration Tests', () => {
     })
 
     it('應防止已發貨訂單被取消', async () => {
-      const userId = 'user-999'
+      const userId = `user-${testCounter}-999`
       const productId = 'product-202'
 
       // 建立並確認訂單
@@ -197,7 +219,7 @@ describe('Shopping Flow Integration Tests', () => {
 
   describe('Event Sourcing Verification', () => {
     it('應能透過事件重放還原聚合根狀態', async () => {
-      const userId = 'user-es'
+      const userId = `user-${testCounter}-es`
       const productId = 'product-es'
 
       // 建立購物車並執行一系列操作
@@ -221,7 +243,7 @@ describe('Shopping Flow Integration Tests', () => {
 
   describe('Cross-Module Event Flow', () => {
     it('應能正確發佈和監聽 IntegrationEvents', async () => {
-      const userId = 'user-events'
+      const userId = `user-${testCounter}-events`
       const productId = 'product-events'
 
       // 監聽事件
@@ -256,7 +278,7 @@ describe('Shopping Flow Integration Tests', () => {
 
   describe('Business Rules Enforcement', () => {
     it('購物車最多 50 種商品', async () => {
-      const userId = 'user-rules-1'
+      const userId = `user-${testCounter}-rules-1`
       const cart = await cartRepository.findOrCreateByUserId(userId)
 
       // 添加 50 種商品（達到上限）
@@ -273,7 +295,7 @@ describe('Shopping Flow Integration Tests', () => {
     })
 
     it('購物車商品數量限制 1-99', async () => {
-      const userId = 'user-rules-2'
+      const userId = `user-${testCounter}-rules-2`
       const cart = await cartRepository.findOrCreateByUserId(userId)
 
       // 添加 99 個商品（達到上限）
@@ -287,7 +309,7 @@ describe('Shopping Flow Integration Tests', () => {
     })
 
     it('空購物車不能結帳', async () => {
-      const userId = 'user-rules-3'
+      const userId = `user-${testCounter}-rules-3`
       const cart = await cartRepository.findOrCreateByUserId(userId)
 
       // 嘗試結帳空購物車（應拋出錯誤）
@@ -297,7 +319,7 @@ describe('Shopping Flow Integration Tests', () => {
     })
 
     it('訂單狀態轉換規則應被強制執行', async () => {
-      const userId = 'user-rules-4'
+      const userId = `user-${testCounter}-rules-4`
       const cart = await cartRepository.findOrCreateByUserId(userId)
       cart.addItem('product-rule', 1, 50000)
       cart.checkout()
