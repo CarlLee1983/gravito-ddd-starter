@@ -10,6 +10,7 @@ import { PlaceOrderService } from '../../Application/Services/PlaceOrderService'
 import { OrderMessageService } from '../Services/OrderMessageService'
 import { CartCheckoutRequestedHandler } from '../../Application/Handlers/CartCheckoutRequestedHandler'
 import { PaymentSucceededHandler } from '../../Application/Handlers/PaymentSucceededHandler'
+import { PaymentFailedHandler } from '../../Application/Handlers/PaymentFailedHandler'
 import { EventListenerRegistry } from '@/Foundation/Infrastructure/Registries/EventListenerRegistry'
 import type { ILogger } from '@/Foundation/Infrastructure/Ports/Services/ILogger'
 import type { RepositoryRegistry } from '@wiring/RepositoryRegistry'
@@ -76,6 +77,12 @@ export class OrderServiceProvider extends ModuleServiceProvider {
       return new PaymentSucceededHandler(orderRepository, logger)
     })
 
+    container.singleton('paymentFailedHandler', (c: IContainer) => {
+      const orderRepository = c.make('orderRepository') as IOrderRepository
+      const logger = c.make('logger') as ILogger
+      return new PaymentFailedHandler(orderRepository, logger)
+    })
+
     // 向中心化 Registry 聲明事件監聽
     EventListenerRegistry.register({
       moduleName: 'Order',
@@ -91,6 +98,13 @@ export class OrderServiceProvider extends ModuleServiceProvider {
           eventName: 'PaymentSucceeded',
           handlerFactory: (c) => {
             const handler = c.make('paymentSucceededHandler') as PaymentSucceededHandler
+            return (event) => handler.handle(event)
+          },
+        },
+        {
+          eventName: 'PaymentFailed',
+          handlerFactory: (c) => {
+            const handler = c.make('paymentFailedHandler') as PaymentFailedHandler
             return (event) => handler.handle(event)
           },
         },

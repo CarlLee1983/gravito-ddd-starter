@@ -88,7 +88,7 @@ describe('Shopping Flow Integration Tests', () => {
 
       const order = orders[0]
       expect(order.status.value).toBe('PENDING')
-      expect(order.total.amount).toBe(100000) // 2 * 50000
+      expect(order.total.total.amount).toBe(100000) // 2 * 50000
 
       // 5️⃣ OrderPlaced 事件已發佈（通過成功建立訂單驗證）
       // 注意：從 repository 載入的聚合根已提交事件，getUncommittedEvents() 為空
@@ -104,10 +104,11 @@ describe('Shopping Flow Integration Tests', () => {
 
       const payment = payments[0]
       expect(payment.status.value).toBe('INITIATED')
-      expect(payment.amount.value).toBe(100000)
+      expect(payment.amount.cents).toBe(100000)
 
       // 7️⃣ 支付成功
-      payment.succeed()
+      const { TransactionId } = await import('../../app/Modules/Payment/Domain/ValueObjects/TransactionId')
+      payment.succeed(TransactionId.from(`txn-${order.id}`))
 
       // 驗證 PaymentSucceeded 事件已發佈（必須在 save() 前檢查）
       let paymentEvents = payment.getUncommittedEvents()
@@ -146,12 +147,13 @@ describe('Shopping Flow Integration Tests', () => {
       // 3️⃣ 支付失敗
       const payments = await paymentRepository.findByOrderId(order.id)
       const payment = payments[0]
-      payment.fail()
-      await paymentRepository.save(payment)
+      payment.fail('Payment declined by processor')
 
-      // 驗證 PaymentFailed 事件已發佈
-      const paymentEvents = payment.getUncommittedEvents()
+      // 驗證 PaymentFailed 事件已發佈（必須在 save() 前檢查，save() 會清除事件）
+      let paymentEvents = payment.getUncommittedEvents()
       expect(paymentEvents.some((e: any) => e.constructor.name === 'PaymentFailed')).toBe(true)
+
+      await paymentRepository.save(payment)
 
       // 4️⃣ 監聽 PaymentFailed 事件，自動取消訂單
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -178,7 +180,8 @@ describe('Shopping Flow Integration Tests', () => {
 
       // 支付成功
       const payments = await paymentRepository.findByOrderId(order.id)
-      payments[0].succeed()
+      const { TransactionId: TxnId } = await import('../../app/Modules/Payment/Domain/ValueObjects/TransactionId')
+      payments[0].succeed(TxnId.from(`txn-${order.id}`))
       await paymentRepository.save(payments[0])
 
       await new Promise(resolve => setTimeout(resolve, 100))
@@ -189,12 +192,12 @@ describe('Shopping Flow Integration Tests', () => {
 
       // 發貨
       confirmedOrder.ship()
-      await orderRepository.save(confirmedOrder)
+      await orderRepository.update(confirmedOrder)
 
       // 嘗試取消已發貨訂單（應拋出錯誤）
       const shippedOrder = await orderRepository.findById(order.id)
       expect(() => {
-        shippedOrder.cancel()
+        shippedOrder.cancel('已發貨，無法取消')
       }).toThrow()
     })
   })
@@ -232,14 +235,19 @@ describe('Shopping Flow Integration Tests', () => {
       await cartRepository.save(originalCart)
 
       // 透過事件重放還原購物車
-      const reconstructedCart = await cartRepository.findById(originalCart.id.value)
+      const reconstructedCart = await cartRepository.findById(originalCart.id)
 
       // 驗證還原的購物車與原始購物車狀態相同
       expect(reconstructedCart.getItems().length).toBe(originalCart.getItems().length)
       expect(reconstructedCart.userId).toBe(originalCart.userId)
 
-      // 驗證版本號
-      expect(reconstructedCart.version).toBeGreaterThan(0)
+      // 驗證購物車項目內容
+      const originalItems = originalCart.getItems()
+      const reconstructedItems = reconstructedCart.getItems()
+      for (let i = 0; i < originalItems.length; i++) {
+        expect(reconstructedItems[i].productId).toBe(originalItems[i].productId)
+        expect(reconstructedItems[i].quantity.value).toBe(originalItems[i].quantity.value)
+      }
     })
   })
 
