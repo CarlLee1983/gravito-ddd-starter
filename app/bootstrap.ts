@@ -46,8 +46,14 @@ export async function bootstrap(port = 3000): Promise<PlanetCore> {
 	await StorageBootstrapper.configure(core, storageConfig, s3RawConfig)
 
 	// ─── 基礎設施與模組 ─────────────────────────────────────────────────────
-	core.register(createGravitoServiceProvider(new InfrastructureServiceProvider()))
-	core.register(createGravitoServiceProvider(new SharedServiceProvider()))
+	// 立即執行 register() 以確保 eventDispatcher 在容器中可用
+	const infrastructureProvider = new InfrastructureServiceProvider()
+	infrastructureProvider.register(core.container as any)
+	core.register(createGravitoServiceProvider(infrastructureProvider))
+
+	const sharedProvider = new SharedServiceProvider()
+	sharedProvider.register(core.container as any)
+	core.register(createGravitoServiceProvider(sharedProvider))
 
 	// ModuleAutoWirer 將從容器解析 eventDispatcher，消除時機窗口問題（P0-2 修復）
 	await ModuleAutoWirer.wire(core, db)

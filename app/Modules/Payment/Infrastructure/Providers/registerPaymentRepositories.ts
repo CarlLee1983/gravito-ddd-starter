@@ -18,6 +18,6 @@ import { RepositoryRegistry } from '@wiring/RepositoryRegistry'
 export function registerPaymentRepositories(db: IDatabaseAccess, eventDispatcher?: IEventDispatcher, registry?: RepositoryRegistry): void {
 	if (!registry) throw new Error("RepositoryRegistry not provided")
 	registry.register('payment', () => {
-		return new PaymentRepository(db)
+		return new PaymentRepository(db, eventDispatcher)
 	})
 }

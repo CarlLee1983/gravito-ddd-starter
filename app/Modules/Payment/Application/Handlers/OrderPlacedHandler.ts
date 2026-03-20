@@ -26,8 +26,8 @@ export class OrderPlacedHandler {
 		try {
 			const orderId = event.orderId || event.data?.orderId
 			const userId = event.userId || event.data?.userId
-			const amount = event.total || event.data?.total || event.amount
-			const currency = event.currency || event.data?.currency || 'TWD'
+			const amount = event.data?.total || event.total || event.amount
+			const currency = event.data?.currency || event.currency || 'TWD'
 
 			this.logger?.info(
 				`[OrderPlacedHandler] 處理 OrderPlaced 事件: orderId=${orderId}, amount=${amount}`
@@ -42,8 +42,7 @@ export class OrderPlacedHandler {
 			await this.initiatePaymentService.execute({
 				orderId,
 				userId,
-				amount,
-				currency,
+				amountCents: amount,
 				paymentMethod: 'credit_card',
 			})
 

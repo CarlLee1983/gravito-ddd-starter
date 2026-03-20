@@ -33,21 +33,28 @@ export class SharedServiceProvider extends ModuleServiceProvider {
 
 		// 註冊領域事件分發器
 		container.singleton('eventDispatcher', (c) => {
-			if (driver === 'redis') {
-				try {
-					const redis = c.make('redis') as IRedisService
-					this.logger.info('使用 RedisEventDispatcher')
-					return new RedisEventDispatcher(redis)
-				} catch (error) {
-					this.logger.warn('Redis 不可用，降級為 Memory 模式: ' + (error instanceof Error ? error.message : error))
-					const logger = new GravitoLoggerAdapter()
-					return new MemoryEventDispatcher(logger)
+			console.log('[eventDispatcher.factory] Creating event dispatcher...')
+			try {
+				if (driver === 'redis') {
+					try {
+						const redis = c.make('redis') as IRedisService
+						this.logger.info('使用 RedisEventDispatcher')
+						return new RedisEventDispatcher(redis)
+					} catch (error) {
+						this.logger.warn('Redis 不可用，降級為 Memory 模式: ' + (error instanceof Error ? error.message : error))
+						const logger = new GravitoLoggerAdapter()
+						return new MemoryEventDispatcher(logger)
+					}
 				}
+				// 直接使用 GravitoLoggerAdapter，避免依賴容器
+				const logger = new GravitoLoggerAdapter()
+				this.logger.info('使用 MemoryEventDispatcher')
+				console.log('[eventDispatcher.factory] ✅ MemoryEventDispatcher created successfully')
+				return new MemoryEventDispatcher(logger)
+			} catch (error) {
+				console.error('[eventDispatcher.factory] ❌ Error creating eventDispatcher:', error)
+				throw error
 			}
-			// 直接使用 GravitoLoggerAdapter，避免依賴容器
-			const logger = new GravitoLoggerAdapter()
-			this.logger.info('使用 MemoryEventDispatcher')
-			return new MemoryEventDispatcher(logger)
 		})
 
 		// 註冊統一 Worker (僅在 Redis 模式下有效)

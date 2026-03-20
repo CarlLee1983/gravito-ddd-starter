@@ -338,13 +338,14 @@ describe('Shopping Flow Integration Tests', () => {
       }).toThrow()
 
       // 必須先確認
-      const payments = await paymentRepository.findByOrderId(order.id.value)
-      payments[0].succeed()
+      const payments = await paymentRepository.findByOrderId(order.id)
+      const { TransactionId } = await import('../../app/Modules/Payment')
+      payments[0].succeed(TransactionId.from(`txn-${order.id}`))
       await paymentRepository.save(payments[0])
 
       await new Promise(resolve => setTimeout(resolve, 100))
 
-      const confirmedOrder = await orderRepository.findById(order.id.value)
+      const confirmedOrder = await orderRepository.findById(order.id)
       // 現在才能發貨
       expect(() => {
         confirmedOrder.ship()

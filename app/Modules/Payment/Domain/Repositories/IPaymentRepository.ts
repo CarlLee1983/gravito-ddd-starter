@@ -14,8 +14,8 @@ export interface IPaymentRepository {
 	findAll(params?: { limit?: number; offset?: number }): Promise<Payment[]>
 	/** 根據 ID 查詢 */
 	findById(id: PaymentId): Promise<Payment | null>
-	/** 根據訂單 ID 查詢 */
-	findByOrderId(orderId: string): Promise<Payment | null>
+	/** 根據訂單 ID 查詢所有支付記錄 */
+	findByOrderId(orderId: string): Promise<Payment[]>
 	/** 根據交易流水號查詢 */
 	findByTransactionId(transactionId: string): Promise<Payment | null>
 	/** 儲存或更新支付 */

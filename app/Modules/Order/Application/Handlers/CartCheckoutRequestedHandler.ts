@@ -24,15 +24,34 @@ export class CartCheckoutRequestedHandler {
 
 	async handle(event: any): Promise<void> {
 		try {
+			// 支援兩種事件格式：DomainEvent (properties directly) 或 IntegrationEvent (nested in data)
+			const userId = event.userId || event.data?.userId
+			let items = event.items || event.data?.items || []
+
+			// 如果 items 是字符串（從 IntegrationEvent），解析它
+			if (typeof items === 'string') {
+				items = JSON.parse(items)
+			}
+
+			const taxAmount = event.taxAmount || event.data?.taxAmount || 0
+
 			this.logger?.info(
-				`[CartCheckoutRequestedHandler] 處理 CartCheckoutRequested 事件: userId=${event.userId}`
+				`[CartCheckoutRequestedHandler] 處理 CartCheckoutRequested 事件: userId=${userId}, items count=${items.length}`
 			)
+
+			// 轉換購物車項目格式為 OrderLineDTO 格式
+			const orderLines = items.map((item: any) => ({
+				productId: item.productId,
+				productName: item.productName || `Product ${item.productId}`,
+				quantity: item.quantity,
+				unitPrice: item.unitPrice || item.price || 0,
+			}))
 
 			// 從事件提取資料並建立訂單
 			await this.placeOrderService.execute({
-				userId: event.userId,
-				lines: event.items || [],
-				taxAmount: event.taxAmount || 0,
+				userId,
+				lines: orderLines,
+				taxAmount,
 			})
 
 			this.logger?.info(

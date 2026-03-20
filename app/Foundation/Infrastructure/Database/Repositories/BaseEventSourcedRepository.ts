@@ -260,16 +260,27 @@ export abstract class BaseEventSourcedRepository<T extends AggregateRoot> {
 		const domainEvents = entity.getUncommittedEvents()
 
 		if (domainEvents.length === 0) {
+			console.log(`[dispatchEvents] No uncommitted events for ${entity.id}`)
 			return
 		}
+
+		console.log(`[dispatchEvents] Found ${domainEvents.length} events for ${entity.id}: ${domainEvents.map((e) => e.constructor.name).join(', ')}`)
 
 		// 轉換領域事件為整合事件
 		const integrationEvents = domainEvents
 			.map((event) => this.toIntegrationEvent(event))
 			.filter((event) => event !== null) as IntegrationEvent[]
 
+		console.log(`[dispatchEvents] Dispatching ${domainEvents.length + integrationEvents.length} total events (domain + integration)`)
+
 		// 同時分派領域事件和整合事件
-		await this.eventDispatcher!.dispatch([...domainEvents, ...integrationEvents])
+		if (!this.eventDispatcher) {
+			console.log(`[dispatchEvents] ⚠️  eventDispatcher is undefined, cannot dispatch events`)
+			return
+		}
+
+		await this.eventDispatcher.dispatch([...domainEvents, ...integrationEvents])
+		console.log(`[dispatchEvents] ✅ Events dispatched successfully`)
 	}
 
 	/**

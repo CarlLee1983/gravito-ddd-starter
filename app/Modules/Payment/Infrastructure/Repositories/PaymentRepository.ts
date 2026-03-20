@@ -44,14 +44,14 @@ export class PaymentRepository implements IPaymentRepository {
 	}
 
 	/**
-	 * 根據訂單 ID 查詢支付記錄
+	 * 根據訂單 ID 查詢所有支付記錄
 	 *
 	 * @param orderId - 訂單 ID
-	 * @returns 支付領域對象或 null
+	 * @returns 支付領域對象陣列
 	 */
-	async findByOrderId(orderId: string): Promise<Payment | null> {
-		const row = await this.db.table('payments').where('order_id', '=', orderId).first()
-		return row ? this.toDomain(row) : null
+	async findByOrderId(orderId: string): Promise<Payment[]> {
+		const rows = await this.db.table('payments').where('order_id', '=', orderId).select()
+		return rows.map(row => this.toDomain(row))
 	}
 
 	/**

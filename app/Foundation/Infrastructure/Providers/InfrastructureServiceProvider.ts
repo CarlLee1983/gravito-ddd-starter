@@ -12,6 +12,7 @@ import { GravitoLoggerAdapter } from '../Adapters/Gravito/GravitoLoggerAdapter'
 import { GravitoTranslatorAdapter } from '../Adapters/Gravito/GravitoTranslatorAdapter'
 import { GravitoMailAdapter } from '../Adapters/Gravito/GravitoMailAdapter'
 import { RedisJobQueueAdapter } from '../Adapters/Redis/RedisJobQueueAdapter'
+import { MemoryJobQueueAdapter } from '../Adapters/Memory/MemoryJobQueueAdapter'
 import { StorageManager } from '../Storage/StorageManager'
 import type { RedisClientContract } from '@gravito/plasma'
 import type { CacheManager } from '@gravito/stasis'
@@ -60,10 +61,18 @@ export class InfrastructureServiceProvider extends ModuleServiceProvider {
 			return new GravitoMailAdapter()
 		})
 
-		// 6. 註冊 JobQueue 適配器
+		// 6. 註冊 JobQueue 適配器（優先使用 Redis，降級為 Memory）
 		container.singleton('jobQueue', (c) => {
-			const redis = c.make('redis-adapter')
-			return new RedisJobQueueAdapter(redis)
+			try {
+				const redis = c.make('redis-adapter')
+				if (redis) {
+					return new RedisJobQueueAdapter(redis)
+				}
+			} catch (err) {
+				// Redis 不可用，降級為內存隊列
+			}
+			// 降級為內存隊列（用於測試或本機開發）
+			return new MemoryJobQueueAdapter()
 		})
 	}
 
