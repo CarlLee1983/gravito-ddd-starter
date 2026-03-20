@@ -99,7 +99,7 @@ describe('Shopping Flow Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // 驗證支付已自動發起
-      const payments = await paymentRepository.findByOrderId(order.id.value)
+      const payments = await paymentRepository.findByOrderId(order.id)
       expect(payments.length).toBeGreaterThan(0)
 
       const payment = payments[0]
@@ -120,7 +120,7 @@ describe('Shopping Flow Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // 驗證訂單已自動確認
-      const confirmedOrder = await orderRepository.findById(order.id.value)
+      const confirmedOrder = await orderRepository.findById(order.id)
       expect(confirmedOrder.status.value).toBe('CONFIRMED')
     })
   })
@@ -144,7 +144,7 @@ describe('Shopping Flow Integration Tests', () => {
       expect(order.status.value).toBe('PENDING')
 
       // 3️⃣ 支付失敗
-      const payments = await paymentRepository.findByOrderId(order.id.value)
+      const payments = await paymentRepository.findByOrderId(order.id)
       const payment = payments[0]
       payment.fail()
       await paymentRepository.save(payment)
@@ -157,7 +157,7 @@ describe('Shopping Flow Integration Tests', () => {
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // 驗證訂單已自動取消
-      const cancelledOrder = await orderRepository.findById(order.id.value)
+      const cancelledOrder = await orderRepository.findById(order.id)
       expect(cancelledOrder.status.value).toBe('CANCELLED')
     })
 
@@ -177,14 +177,14 @@ describe('Shopping Flow Integration Tests', () => {
       const order = orders[0]
 
       // 支付成功
-      const payments = await paymentRepository.findByOrderId(order.id.value)
+      const payments = await paymentRepository.findByOrderId(order.id)
       payments[0].succeed()
       await paymentRepository.save(payments[0])
 
       await new Promise(resolve => setTimeout(resolve, 100))
 
       // 重新取得訂單（確保狀態已更新）
-      const confirmedOrder = await orderRepository.findById(order.id.value)
+      const confirmedOrder = await orderRepository.findById(order.id)
       expect(confirmedOrder.status.value).toBe('CONFIRMED')
 
       // 發貨
@@ -192,7 +192,7 @@ describe('Shopping Flow Integration Tests', () => {
       await orderRepository.save(confirmedOrder)
 
       // 嘗試取消已發貨訂單（應拋出錯誤）
-      const shippedOrder = await orderRepository.findById(order.id.value)
+      const shippedOrder = await orderRepository.findById(order.id)
       expect(() => {
         shippedOrder.cancel()
       }).toThrow()
