@@ -48,7 +48,7 @@ export class RefundController {
 			const userId = ctx.params.userId ?? 'anonymous'
 
 			const refundDto = await this.refundService.requestRefund(
-				{ orderId, type, items: items as any[] },
+				{ orderId, type: type as 'refund_only' | 'return_and_refund', items: items as any[] },
 				userId
 			)
 

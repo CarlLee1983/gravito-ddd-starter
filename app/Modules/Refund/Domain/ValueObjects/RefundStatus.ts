@@ -107,4 +107,8 @@ export class RefundStatus extends ValueObject<RefundStatusProps> {
 	isTerminal(): boolean {
 		return TERMINAL_STATUSES.has(this.props.status)
 	}
+
+	toString(): string {
+		return this.props.status
+	}
 }
