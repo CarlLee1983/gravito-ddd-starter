@@ -41,8 +41,30 @@
 
 ### 🚫 禁止事項
 - **禁止** 包含業務邏輯。
-- **禁止** 直接調用 Repository (應調用 Application Service)。
 - **禁止** 直接訪問數據庫。
+
+### Controller 呼叫策略
+
+Controller 根據操作複雜度選擇呼叫對象：
+
+**經過 Application Service** — 當操作涉及業務編排：
+- 跨多個聚合根/服務協調（如 `LoginService`：驗證憑證 → 建 Session → 簽 Token）
+- Domain 狀態變更（如 `PlaceOrderService`：建訂單 → 發事件）
+- 事務邊界（如 `CheckoutCartService`：驗庫存 → 建訂單 → 清購物車）
+
+```
+Controller → ApplicationService.execute() → Domain → Repository
+```
+
+**直接呼叫 Repository / Port** — 當操作為純查詢且無額外邏輯：
+- 單一 Repository 查詢後直接回傳（如 `AuditLogController.queryByEntity()`）
+- 透過 Application Port 取得資料（如 `AuthController.me()` → `IUserProfileService.findById()`）
+
+```
+Controller → Repository.findByXxx() → Response
+```
+
+> **原則**：有編排就需要 Service，純透傳就直接呼叫。當查詢需要權限過濾、跨模組關聯或聚合轉換時，再抽出 Application Service。
 
 ---
 
@@ -58,4 +80,4 @@ Presentation → Application → Domain ← Infrastructure
 - **Domain Model**: 用於 Application 與 Domain 之間。
 - **Row/Entity Object**: 用於 Infrastructure 與數據庫之間。
 
-最後更新: 2026-03-13
+最後更新: 2026-03-26

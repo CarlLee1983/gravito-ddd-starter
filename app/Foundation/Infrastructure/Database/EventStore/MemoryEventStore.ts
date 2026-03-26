@@ -1,7 +1,6 @@
 import type { IEventStore, StoredEvent } from '../../Ports/Database/IEventStore'
 import type { IEventStoreSnapshot, EventStoreSnapshotData } from '../../Ports/Database/EventStoreSnapshot'
 import { EventStoreVersionConflictException } from '@/Foundation/Application/EventStoreVersionConflictException'
-import { v4 as uuidv4 } from 'uuid'
 
 /**
  * 記憶體事件存儲實現
@@ -97,7 +96,11 @@ export class MemoryEventStore implements IEventStore, IEventStoreSnapshot {
   async loadByEventType(eventType: string): Promise<StoredEvent[]> {
     const result: StoredEvent[] = []
     for (const events of this.events.values()) {
-      result.push(...events.filter((e) => e.eventType === eventType))
+      if (eventType === '*') {
+        result.push(...events)
+      } else {
+        result.push(...events.filter((e) => e.eventType === eventType))
+      }
     }
     return result
   }

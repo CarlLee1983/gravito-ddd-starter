@@ -1,0 +1,8 @@
+{
+  "query_success": "審計日誌查詢成功",
+  "export_success": "審計日誌匯出成功",
+  "missing_query_params": "缺少查詢參數：請提供 entityType+entityId、severity 或 from+to",
+  "invalid_date_range": "無效的日期範圍",
+  "invalid_severity": "無效的嚴重性等級，允許值：INFO、WARNING、ERROR",
+  "query_failed": "審計日誌查詢失敗"
+}

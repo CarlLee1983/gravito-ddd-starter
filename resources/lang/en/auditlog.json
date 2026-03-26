@@ -1,0 +1,8 @@
+{
+  "query_success": "Audit logs queried successfully",
+  "export_success": "Audit logs exported successfully",
+  "missing_query_params": "Missing query params: provide entityType+entityId, severity, or from+to",
+  "invalid_date_range": "Invalid date range",
+  "invalid_severity": "Invalid severity level. Allowed: INFO, WARNING, ERROR",
+  "query_failed": "Audit log query failed"
+}
