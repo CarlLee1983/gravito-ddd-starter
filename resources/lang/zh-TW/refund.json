@@ -1,0 +1,15 @@
+{
+  "not_found": "退款申請不存在",
+  "already_processing": "退款正在處理中",
+  "invalid_status_transition": "無效的狀態轉換: :from → :to",
+  "request_success": "退款申請已提交",
+  "approve_success": "退款申請已通過",
+  "reject_success": "退款申請已拒絕",
+  "items_shipped_success": "退貨已標記寄出",
+  "items_received_success": "退貨已確認收到",
+  "refund_completed": "退款完成，金額: :amount",
+  "refund_failed": "退款失敗",
+  "missing_required_fields": "缺少必要欄位",
+  "exceeds_order_amount": "退款金額超過訂單金額",
+  "order_not_eligible": "此訂單不符合退款條件"
+}

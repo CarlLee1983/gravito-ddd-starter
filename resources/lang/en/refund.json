@@ -1,0 +1,15 @@
+{
+  "not_found": "Refund request not found",
+  "already_processing": "Refund is already being processed",
+  "invalid_status_transition": "Invalid status transition: :from → :to",
+  "request_success": "Refund request submitted",
+  "approve_success": "Refund request approved",
+  "reject_success": "Refund request rejected",
+  "items_shipped_success": "Return items marked as shipped",
+  "items_received_success": "Return items confirmed received",
+  "refund_completed": "Refund completed, amount: :amount",
+  "refund_failed": "Refund failed",
+  "missing_required_fields": "Missing required fields",
+  "exceeds_order_amount": "Refund amount exceeds order amount",
+  "order_not_eligible": "This order is not eligible for refund"
+}
